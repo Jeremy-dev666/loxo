@@ -1,0 +1,17 @@
+{
+  "name": "swarmdev",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-Agent IM Collaboration Platform for Software Development",
+  "scripts": {
+    "dev:web": "pnpm --filter @swarmdev/web dev",
+    "dev:server": "pnpm --filter @swarmdev/server dev",
+    "dev": "pnpm run dev:web & pnpm run dev:server",
+    "build": "pnpm --filter @swarmdev/web build",
+    "lint": "pnpm --filter @swarmdev/web lint"
+  },
+  "keywords": ["multi-agent", "ai", "collaboration"],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.0"
+}
