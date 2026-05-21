@@ -4,6 +4,9 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth';
+import conversationsRouter from './routes/conversations';
+import agentsRouter from './routes/agents';
+import { authMiddleware } from './middleware/auth';
 
 dotenv.config();
 
@@ -20,8 +23,10 @@ const io = new Server(httpServer, {
 app.use(cors());
 app.use(express.json());
 
-// 注册登录api
+// Routes
 app.use('/api/auth', authRouter);
+app.use('/api/conversations', authMiddleware, conversationsRouter);
+app.use('/api/agents', authMiddleware, agentsRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -36,6 +41,8 @@ io.on('connection', (socket) => {
     console.log(`Client disconnected: ${socket.id}`);
   });
 });
+
+export { io };
 
 const PORT = process.env.PORT || 4000;
 
