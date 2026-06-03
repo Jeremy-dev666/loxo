@@ -1,60 +1,62 @@
-import { Router } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { db } from '../db';
-import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify'
+import bcrypt from 'bcryptjs'
+import { eq } from 'drizzle-orm'
+import { db } from '../db'
+import { users } from '../db/schema'
 
-const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'swarmdev-dev-secret';
+interface RegisterBody {
+    email: string
+    userName: string
+    password: string
+}
 
-// 用户注册
-router.post('/register', async (req, res) => {
-    const { email, userName, password } = req.body;
+interface LoginBody {
+    email: string
+    password: string
+}
 
-    // 检查邮箱是否已存在
-    const existing = await db.select().from(users).where(eq(users.email, email));
-    if (existing.length > 0) {
-        return res.status(400).json({ error: 'Email already exists' });
-    }
+export async function authRoutes(app: FastifyInstance) {
+    app.post<{ Body: RegisterBody }>('/register', async (req, reply) => {
+        const { email, userName, password } = req.body
 
-    // 加密密码
-    const passwordHash = await bcrypt.hash(password, 10);
+        const existing = await db.select().from(users).where(eq(users.email, email))
+        if (existing.length > 0) {
+            return reply.code(400).send({ error: 'Email already exists' })
+        }
 
-    // 插入用户
-    const [user] = await db.insert(users).values({
-        email,
-        userName,
-        passwordHash,
-    }).returning();
+        const passwordHash = await bcrypt.hash(password, 10)
 
-    // 生成 JWT
-    // jwt.sign(payload, secretkey, configuration(optional))
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const [user] = await db
+            .insert(users)
+            .values({ email, userName, passwordHash })
+            .returning()
 
-    res.status(201).json({ token, user: { id: user.id, email: user.email, userName: user.userName } });
-});
+        const token = app.jwt.sign({ userId: user.id }, { expiresIn: '7d' })
 
-// 登录
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+        return reply.code(201).send({
+            token,
+            user: { id: user.id, email: user.email, userName: user.userName },
+        })
+    })
 
-    // 查找用户
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    if (!user) {
-        return res.status(401).json({ error: 'User does not exist' });
-    }
+    app.post<{ Body: LoginBody }>('/login', async (req, reply) => {
+        const { email, password } = req.body
 
-    // 验证密码
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
-        return res.status(401).json({ error: 'Invalid password' });
-    }
+        const [user] = await db.select().from(users).where(eq(users.email, email))
+        if (!user) {
+            return reply.code(401).send({ error: 'User does not exist' })
+        }
 
-    // 生成 JWT
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const valid = await bcrypt.compare(password, user.passwordHash)
+        if (!valid) {
+            return reply.code(401).send({ error: 'Invalid password' })
+        }
 
-    res.json({ token, user: { id: user.id, email: user.email, userName: user.userName } });
-});
+        const token = app.jwt.sign({ userId: user.id }, { expiresIn: '7d' })
 
-export default router;
+        return reply.send({
+            token,
+            user: { id: user.id, email: user.email, userName: user.userName },
+        })
+    })
+}

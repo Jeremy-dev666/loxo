@@ -1,51 +1,32 @@
-import express from 'express';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import authRouter from './routes/auth';
-import conversationsRouter from './routes/conversations';
-import agentsRouter from './routes/agents';
-import { authMiddleware } from './middleware/auth';
+import 'dotenv/config'
+import Fastify from 'fastify'
+import cors from '@fastify/cors'
+import jwt from '@fastify/jwt'
+import { authRoutes } from './routes/auth'
 
-dotenv.config();
+const app = Fastify({ logger: true })
 
-const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
+await app.register(cors, {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST'],
-  },
-});
+})
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+await app.register(jwt, {
+    secret: process.env.JWT_SECRET || 'swarmdev-dev-secret',
+})
 
-// Routes
-app.use('/api/auth', authRouter);
-app.use('/api/conversations', authMiddleware, conversationsRouter);
-app.use('/api/agents', authMiddleware, agentsRouter);
+await app.register(authRoutes, { prefix: '/api/auth' })
 
-// Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+app.get('/api/health', async () => ({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+}))
 
-// Socket.io connection
-io.on('connection', (socket) => {
-  console.log(`Client connected: ${socket.id}`);
+const port = Number(process.env.PORT) || 4000
 
-  socket.on('disconnect', () => {
-    console.log(`Client disconnected: ${socket.id}`);
-  });
-});
-
-export { io };
-
-const PORT = process.env.PORT || 4000;
-
-httpServer.listen(PORT, () => {
-  console.log(`SwarmDev server running on http://localhost:${PORT}`);
-});
+try {
+    await app.listen({ port, host: '0.0.0.0' })
+    app.log.info(`SwarmDev server running on http://localhost:${port}`)
+} catch (err) {
+    app.log.error(err)
+    process.exit(1)
+}

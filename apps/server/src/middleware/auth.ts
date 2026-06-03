@@ -1,23 +1,16 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import type { FastifyRequest, FastifyReply } from 'fastify'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'swarmdev-dev-secret';
-
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
-    const header = req.headers.authorization;
-
-    if (!header || !header.startsWith('Bearer ')) {
-        res.status(401).json({ error: 'Missing or invalid authorization header' });
-        return;
+declare module 'fastify' {
+    interface FastifyRequest {
+        userId?: string
     }
+}
 
-    const token = header.split(' ')[1];
-
+export async function authHook(req: FastifyRequest, reply: FastifyReply) {
     try {
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-        req.user = { userId: decoded.userId };
-        next();
+        const decoded = await req.jwtVerify<{ userId: string }>()
+        req.userId = decoded.userId
     } catch {
-        res.status(401).json({ error: 'Invalid or expired token' });
+        reply.code(401).send({ error: 'Invalid or expired token' })
     }
 }
