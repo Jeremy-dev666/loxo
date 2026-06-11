@@ -13,3 +13,43 @@ export interface AuthResponse {
     token: string
     user: User
 }
+
+export type GoalStatus = 'active' | 'completed' | 'archived'
+
+export interface Goal {
+    id: string
+    userId: string
+    title: string
+    description: string | null
+    status: GoalStatus
+    createdAt: string
+    updatedAt: string
+}
+
+export type ProjectStatus = 'active' | 'completed' | 'archived'
+
+export interface Project {
+    id: string
+    userId: string
+    goalId: string | null
+    name: string
+    description: string | null
+    status: ProjectStatus
+    createdAt: string
+    updatedAt: string
+}
+
+export type IssueStatus = 'todo' | 'in_progress' | 'in_review' | 'done'
+
+export type IssuePriority = 'low' | 'medium' | 'high'
+
+export interface Issue {
+    id: string
+    projectId: string
+    title: string
+    description: string | null
+    status: IssueStatus
+    priority: IssuePriority
+    createdAt: string
+    updatedAt: string
+}
