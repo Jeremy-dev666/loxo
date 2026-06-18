@@ -68,3 +68,26 @@ export interface Issue {
     createdAt: string
     updatedAt: string
 }
+
+export type SubmissionStatus = 'pending' | 'approved' | 'changes_requested'
+
+export interface Submission {
+    id: string
+    issueId: string
+    agentId: string | null
+    content: string
+    status: SubmissionStatus
+    createdAt: string
+    updatedAt: string
+}
+
+export type ReviewDecision = 'approve' | 'request_changes'
+
+export interface Review {
+    id: string
+    submissionId: string
+    userId: string
+    decision: ReviewDecision
+    comment: string | null
+    createdAt: string
+}

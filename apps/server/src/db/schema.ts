@@ -73,3 +73,39 @@ export const issues = pgTable('issues', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
+
+export const submissionStatusEnum = pgEnum('submission_status', [
+    'pending',
+    'approved',
+    'changes_requested',
+])
+
+// An agent's submitted work for an issue. Multiple submissions form the review history.
+export const submissions = pgTable('submissions', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    issueId: uuid('issue_id')
+        .notNull()
+        .references(() => issues.id, { onDelete: 'cascade' }),
+    // The submitting agent; detached (not deleted) if the agent is removed.
+    agentId: uuid('agent_id').references(() => agents.id, { onDelete: 'set null' }),
+    content: text('content').notNull(),
+    status: submissionStatusEnum('status').default('pending').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const reviewDecisionEnum = pgEnum('review_decision', ['approve', 'request_changes'])
+
+// A user's review of a submission. Its decision drives the submission's status.
+export const reviews = pgTable('reviews', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    submissionId: uuid('submission_id')
+        .notNull()
+        .references(() => submissions.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    decision: reviewDecisionEnum('decision').notNull(),
+    comment: text('comment'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+})
