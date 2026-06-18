@@ -39,6 +39,22 @@ export const projects = pgTable('projects', {
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+export const agentStatusEnum = pgEnum('agent_status', ['active', 'inactive'])
+
+export const agents = pgTable('agents', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 100 }).notNull(),
+    role: varchar('role', { length: 255 }).notNull(),
+    systemPrompt: text('system_prompt'),
+    model: varchar('model', { length: 100 }).notNull().default('claude-opus-4-8'),
+    status: agentStatusEnum('status').default('active').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
 export const issueStatusEnum = pgEnum('issue_status', ['todo', 'in_progress', 'in_review', 'done'])
 
 export const issuePriorityEnum = pgEnum('issue_priority', ['low', 'medium', 'high'])
@@ -48,6 +64,8 @@ export const issues = pgTable('issues', {
     projectId: uuid('project_id')
         .notNull()
         .references(() => projects.id, { onDelete: 'cascade' }),
+    // A user-level agent assigned to this issue; detached if the agent is deleted.
+    assigneeAgentId: uuid('assignee_agent_id').references(() => agents.id, { onDelete: 'set null' }),
     title: varchar('title', { length: 255 }).notNull(),
     description: text('description'),
     status: issueStatusEnum('status').default('todo').notNull(),

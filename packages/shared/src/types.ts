@@ -39,6 +39,20 @@ export interface Project {
     updatedAt: string
 }
 
+export type AgentStatus = 'active' | 'inactive'
+
+export interface Agent {
+    id: string
+    userId: string
+    name: string
+    role: string
+    systemPrompt: string | null
+    model: string
+    status: AgentStatus
+    createdAt: string
+    updatedAt: string
+}
+
 export type IssueStatus = 'todo' | 'in_progress' | 'in_review' | 'done'
 
 export type IssuePriority = 'low' | 'medium' | 'high'
@@ -46,6 +60,7 @@ export type IssuePriority = 'low' | 'medium' | 'high'
 export interface Issue {
     id: string
     projectId: string
+    assigneeAgentId: string | null
     title: string
     description: string | null
     status: IssueStatus
