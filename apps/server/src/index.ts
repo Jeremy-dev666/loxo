@@ -8,6 +8,7 @@ import { projectRoutes } from './routes/projects'
 import { issueRoutes } from './routes/issues'
 import { agentRoutes } from './routes/agents'
 import { reviewRoutes } from './routes/reviews'
+import { skillRoutes } from './routes/skills'
 
 const app = Fastify({ logger: true })
 
@@ -25,6 +26,7 @@ await app.register(projectRoutes, { prefix: '/api/projects' })
 await app.register(issueRoutes, { prefix: '/api/issues' })
 await app.register(agentRoutes, { prefix: '/api/agents' })
 await app.register(reviewRoutes, { prefix: '/api' })
+await app.register(skillRoutes, { prefix: '/api' })
 
 app.get('/api/health', async () => ({
     status: 'ok',

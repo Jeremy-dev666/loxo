@@ -109,3 +109,18 @@ export const reviews = pgTable('reviews', {
     comment: text('comment'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 })
+
+// A reusable skill distilled from review feedback. Owned at the user level so it
+// can be reused across any of the user's agents.
+export const skills = pgTable('skills', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    // The review this skill was distilled from; detached (not deleted) if the review goes away.
+    sourceReviewId: uuid('source_review_id').references(() => reviews.id, { onDelete: 'set null' }),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})

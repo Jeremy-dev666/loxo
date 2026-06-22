@@ -91,3 +91,13 @@ export interface Review {
     comment: string | null
     createdAt: string
 }
+
+export interface Skill {
+    id: string
+    userId: string
+    sourceReviewId: string | null
+    title: string
+    content: string
+    createdAt: string
+    updatedAt: string
+}
