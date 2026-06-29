@@ -101,3 +101,27 @@ export interface Skill {
     createdAt: string
     updatedAt: string
 }
+
+export type ChannelType = 'dm' | 'project' | 'issue'
+
+export interface Channel {
+    id: string
+    userId: string
+    type: ChannelType
+    agentId: string | null
+    projectId: string | null
+    issueId: string | null
+    createdAt: string
+}
+
+export type MessageSenderType = 'user' | 'agent' | 'system'
+
+export interface Message {
+    id: string
+    channelId: string
+    senderType: MessageSenderType
+    senderId: string | null
+    content: string
+    replyTo: string | null
+    createdAt: string
+}

@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
@@ -5,6 +6,6 @@ export default defineConfig({
     out: './src/db/migrations',
     dialect: 'postgresql',
     dbCredentials: {
-      url: 'postgresql://postgres:postgres@localhost:5432/swarmdev',
+      url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5434/swarmdev',
     },
   });

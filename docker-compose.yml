@@ -7,7 +7,8 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: swarmdev
     ports:
-      - "5432:5432"
+      # Host 5434 avoids clashing with other local Postgres instances (5432/5433 taken).
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
