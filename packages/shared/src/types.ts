@@ -125,3 +125,30 @@ export interface Message {
     replyTo: string | null
     createdAt: string
 }
+
+// WebSocket protocol. Every frame over the socket is a typed envelope; `type`
+// routes the frame and `payload` carries its data. Event types are added as
+// the messaging layer grows.
+export interface WsEnvelope<T = unknown> {
+    type: string
+    payload?: T
+}
+
+// Server -> client on a successful authenticated handshake.
+export interface WsConnectionAckPayload {
+    userId: string
+}
+
+// Server -> client when a frame is rejected (bad JSON, unknown type, etc.).
+export interface WsErrorPayload {
+    message: string
+}
+
+export const WS_EVENTS = {
+    connectionAck: 'connection:ack',
+    ping: 'ping',
+    pong: 'pong',
+    error: 'error',
+} as const
+
+export type WsEventType = (typeof WS_EVENTS)[keyof typeof WS_EVENTS]

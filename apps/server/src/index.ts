@@ -10,6 +10,7 @@ import { agentRoutes } from './routes/agents'
 import { reviewRoutes } from './routes/reviews'
 import { skillRoutes } from './routes/skills'
 import { channelRoutes } from './routes/channels'
+import { setupWebSocket } from './ws/server'
 
 const app = Fastify({ logger: true })
 
@@ -36,6 +37,8 @@ app.get('/api/health', async () => ({
 }))
 
 const port = Number(process.env.PORT) || 4000
+
+setupWebSocket(app)
 
 try {
     await app.listen({ port, host: '0.0.0.0' })
