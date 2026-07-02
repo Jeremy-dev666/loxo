@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { config } from '../config';
 import { authRouter } from '../modules/auth/auth.routes';
+import { providersRouter } from '../modules/providers/providers.routes';
 import { HttpError } from './errors';
 
 export function createApp(): express.Express {
@@ -26,6 +27,7 @@ export function createApp(): express.Express {
   });
 
   app.use('/auth', authRouter);
+  app.use('/api/providers', providersRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'not_found', message: 'Route not found' });
