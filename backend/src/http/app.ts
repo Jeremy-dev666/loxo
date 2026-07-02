@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { config } from '../config';
+import { authRouter } from '../modules/auth/auth.routes';
 import { HttpError } from './errors';
 
 export function createApp(): express.Express {
@@ -23,6 +24,8 @@ export function createApp(): express.Express {
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
+
+  app.use('/auth', authRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'not_found', message: 'Route not found' });

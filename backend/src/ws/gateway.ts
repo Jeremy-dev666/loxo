@@ -1,6 +1,7 @@
 import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
+import { verifyToken } from '../modules/auth/tokens';
 
 export interface WsGateway {
   wss: WebSocketServer;
@@ -12,6 +13,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 
 interface TrackedSocket extends WebSocket {
   isAlive?: boolean;
+  userId?: string;
 }
 
 /**
@@ -27,7 +29,14 @@ export function attachWsGateway(server: Server): WsGateway {
       socket.destroy();
       return;
     }
+    const claims = verifyToken(url.searchParams.get('token') ?? '');
+    if (!claims) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+      socket.destroy();
+      return;
+    }
     wss.handleUpgrade(req, socket, head, (ws) => {
+      (ws as TrackedSocket).userId = claims.sub;
       wss.emit('connection', ws, req);
     });
   });
