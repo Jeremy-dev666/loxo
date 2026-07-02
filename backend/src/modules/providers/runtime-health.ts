@@ -85,6 +85,13 @@ export interface PlatformHealth {
   installHint: string;
 }
 
+/** Single-platform CLI probe; used by the health endpoint and agent diagnostics. */
+export async function checkCliForPlatform(platform: string): Promise<PlatformHealth['cli']> {
+  const spec = PLATFORM_SPECS.find((s) => s.platform === platform);
+  if (!spec) return { available: false, version: '', error: `Unknown platform: ${platform}` };
+  return checkCli(spec);
+}
+
 async function checkCli(spec: PlatformSpec): Promise<PlatformHealth['cli']> {
   try {
     const { stdout } = await execFileAsync(spec.command, spec.versionArgs, {
