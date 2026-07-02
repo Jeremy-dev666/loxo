@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth';
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/agents', label: 'Agents' },
+  { href: '/teams', label: 'Teams' },
   { href: '/settings/providers', label: 'Providers' },
 ];
 

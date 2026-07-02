@@ -30,6 +30,7 @@ export interface StorageLayout {
   userRoot: (userId: string) => string;
   agentPaths: (userId: string, agentId: string) => AgentPaths;
   projectWorkspace: (userId: string, projectId: string) => string;
+  teamDir: (userId: string, teamId: string) => string;
   teamRunDirs: (userId: string, teamId: string, runId: string) => { root: string; artifacts: string; logs: string };
   roundtableRuntime: (userId: string, agentId: string) => { workspace: string; state: string };
 }
@@ -59,6 +60,7 @@ export function createStorageLayout(rootInput: string): StorageLayout {
     },
     projectWorkspace: (userId, projectId) =>
       ensured(path.join(root, 'users', userId, 'projects', projectId, 'workspace')),
+    teamDir: (userId, teamId) => ensured(path.join(root, 'users', userId, 'teams', teamId)),
     teamRunDirs: (userId, teamId, runId) => {
       const runRoot = path.join(root, 'users', userId, 'teams', teamId, 'runs', runId);
       return {

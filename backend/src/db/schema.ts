@@ -118,3 +118,36 @@ export const messages = pgTable('messages', {
 });
 
 export type Message = typeof messages.$inferSelect;
+
+/**
+ * Team row is an index; the canvas graph and workflow DSL live in a JSON
+ * manifest file under the user's storage (deliberate design: complex graph
+ * structures stay out of the relational schema).
+ */
+export const teams = pgTable('teams', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Team = typeof teams.$inferSelect;
+
+/** Synced from the manifest on save; answers "which teams use this agent". */
+export const teamMembers = pgTable('team_members', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  teamId: uuid('team_id')
+    .notNull()
+    .references(() => teams.id, { onDelete: 'cascade' }),
+  agentId: uuid('agent_id')
+    .notNull()
+    .references(() => agents.id, { onDelete: 'cascade' }),
+  nodeId: text('node_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type TeamMember = typeof teamMembers.$inferSelect;
