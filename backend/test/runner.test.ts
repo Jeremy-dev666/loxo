@@ -1,0 +1,129 @@
+import { describe, expect, it } from 'vitest';
+import { execProcess } from '../src/modules/runner/process-exec';
+import {
+  extractPlainReply,
+  parseClaudeStreamLine,
+  redactDiagnostic,
+  type ClaudeStreamState,
+} from '../src/modules/runner/runner';
+
+describe('parseClaudeStreamLine', () => {
+  it('extracts assistant text chunks and the result session ref', () => {
+    const state: ClaudeStreamState = { chunks: [] };
+
+    const chunk = parseClaudeStreamLine(
+      JSON.stringify({
+        type: 'assistant',
+        message: { content: [{ type: 'text', text: 'Hello' }, { type: 'tool_use' }] },
+      }),
+      state
+    );
+    expect(chunk).toBe('Hello');
+
+    parseClaudeStreamLine(
+      JSON.stringify({ type: 'result', session_id: 'sess-1', result: 'Hello final' }),
+      state
+    );
+    expect(state.sessionRef).toBe('sess-1');
+    expect(state.resultText).toBe('Hello final');
+  });
+
+  it('flags error results and tolerates junk lines', () => {
+    const state: ClaudeStreamState = { chunks: [] };
+    expect(parseClaudeStreamLine('not json', state)).toBeNull();
+    parseClaudeStreamLine(JSON.stringify({ type: 'result', is_error: true, result: 'boom' }), state);
+    expect(state.isError).toBe(true);
+  });
+});
+
+describe('extractPlainReply', () => {
+  it('passes through plain text', () => {
+    expect(extractPlainReply('  hi there \n')).toBe('hi there');
+  });
+
+  it('unwraps common JSON reply shapes', () => {
+    expect(extractPlainReply(JSON.stringify({ result: 'from json' }))).toBe('from json');
+    expect(extractPlainReply(JSON.stringify({ text: 'alt key' }))).toBe('alt key');
+  });
+
+  it('falls back to raw output for unrecognized JSON', () => {
+    const raw = JSON.stringify({ unrelated: 1 });
+    expect(extractPlainReply(raw)).toBe(raw);
+  });
+});
+
+describe('redactDiagnostic', () => {
+  it('strips ANSI codes and API keys', () => {
+    const dirty = '\x1b[31merror\x1b[0m key sk-abcdefghijklmnop123456 leaked';
+    const clean = redactDiagnostic(dirty);
+    expect(clean).not.toContain('sk-abcdefghijklmnop');
+    expect(clean).not.toContain('\x1b');
+    expect(clean).toContain('[redacted]');
+  });
+});
+
+describe('execProcess', () => {
+  const node = process.execPath;
+
+  it('pipes stdin and captures stdout', async () => {
+    const result = await execProcess({
+      command: node,
+      args: ['-e', 'process.stdin.pipe(process.stdout)'],
+      cwd: process.cwd(),
+      env: {},
+      stdin: 'echo me',
+      timeoutMs: 10_000,
+    });
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe('echo me');
+  });
+
+  it('emits stdout line events including the unterminated tail', async () => {
+    const lines: string[] = [];
+    await execProcess({
+      command: node,
+      args: ['-e', "process.stdout.write('a\\nb\\nc')"],
+      cwd: process.cwd(),
+      env: {},
+      timeoutMs: 10_000,
+      onStdoutLine: (line) => lines.push(line),
+    });
+    expect(lines).toEqual(['a', 'b', 'c']);
+  });
+
+  it('kills the process on timeout', async () => {
+    const result = await execProcess({
+      command: node,
+      args: ['-e', 'setTimeout(() => {}, 60000)'],
+      cwd: process.cwd(),
+      env: {},
+      timeoutMs: 500,
+    });
+    expect(result.timedOut).toBe(true);
+  }, 15_000);
+
+  it('kills the process on abort', async () => {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 300);
+    const result = await execProcess({
+      command: node,
+      args: ['-e', 'setTimeout(() => {}, 60000)'],
+      cwd: process.cwd(),
+      env: {},
+      timeoutMs: 30_000,
+      signal: controller.signal,
+    });
+    expect(result.aborted).toBe(true);
+  }, 15_000);
+
+  it('passes custom env through', async () => {
+    const result = await execProcess({
+      command: node,
+      args: ['-e', 'process.stdout.write(process.env.SWARM_TEST_VAR || "missing")'],
+      cwd: process.cwd(),
+      env: { SWARM_TEST_VAR: 'present' },
+      timeoutMs: 10_000,
+    });
+    expect(result.stdout).toBe('present');
+  });
+});

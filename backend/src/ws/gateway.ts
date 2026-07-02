@@ -2,6 +2,7 @@ import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { verifyToken } from '../modules/auth/tokens';
+import { handleChatFrame } from './chat-channel';
 
 export interface WsGateway {
   wss: WebSocketServer;
@@ -47,7 +48,7 @@ export function attachWsGateway(server: Server): WsGateway {
       ws.isAlive = true;
     });
     ws.on('message', (raw) => {
-      let message: { type?: string };
+      let message: { type?: string; payload?: Record<string, unknown> };
       try {
         message = JSON.parse(raw.toString());
       } catch {
@@ -56,6 +57,10 @@ export function attachWsGateway(server: Server): WsGateway {
       }
       if (message.type === 'ping') {
         ws.send(JSON.stringify({ type: 'pong' }));
+        return;
+      }
+      if (typeof message.type === 'string' && message.type.startsWith('chat.')) {
+        void handleChatFrame(ws, ws.userId!, { type: message.type, payload: message.payload });
       }
     });
   });

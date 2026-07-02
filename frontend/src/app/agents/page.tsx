@@ -49,11 +49,17 @@ function AgentCard({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <Link href={`/agents/${agent.id}/settings`} className="font-medium hover:text-accent">
+          <Link href={`/agents/${agent.id}`} className="font-medium hover:text-accent">
             {agent.name}
           </Link>
           <p className="truncate text-xs text-slate-400">{agent.description || 'No description'}</p>
         </div>
+        <Link
+          href={`/agents/${agent.id}/settings`}
+          className="text-xs text-slate-500 hover:text-slate-300"
+        >
+          settings
+        </Link>
         <span className="rounded bg-slate-700/50 px-1.5 py-0.5 text-xs text-slate-300">
           {agent.runtime}
         </span>

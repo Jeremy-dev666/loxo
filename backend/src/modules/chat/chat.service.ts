@@ -1,0 +1,134 @@
+import { eq } from 'drizzle-orm';
+import { db } from '../../db/client';
+import { agents, type Message } from '../../db/schema';
+import { badRequest } from '../../http/errors';
+import { storage } from '../../storage/layout';
+import { getAgent } from '../agents/agents.service';
+import { getProviderCredentials } from '../providers/providers.service';
+import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
+import { buildDirectChatPrompt } from '../runner/turn-context';
+import type { CliRuntime } from '../agents/runtime-detect';
+import {
+  appendMessage,
+  getConversation,
+  listMessages,
+  setRunnerSessionRef,
+} from './conversations.service';
+
+export interface TurnEvents {
+  onChunk?: (text: string) => void;
+}
+
+export interface TurnOutcome {
+  userMessage: Message;
+  reply: Message;
+}
+
+/** Runtimes that resume CLI-side sessions; others get history injected. */
+const RESUMABLE: ReadonlySet<string> = new Set(['claude-code']);
+
+type TurnExecutor = (request: TurnRequest) => Promise<TurnResult>;
+let turnExecutor: TurnExecutor = runTurn;
+
+/** Test seam: swap the CLI executor without spawning real processes. */
+export function setTurnExecutorForTests(executor: TurnExecutor | null): void {
+  turnExecutor = executor ?? runTurn;
+}
+
+const inflight = new Map<string, AbortController>();
+
+export function stopTurn(conversationId: string): boolean {
+  const controller = inflight.get(conversationId);
+  if (!controller) return false;
+  controller.abort();
+  return true;
+}
+
+async function setAgentStatus(agentId: string, status: 'idle' | 'busy' | 'error'): Promise<void> {
+  await db
+    .update(agents)
+    .set({ status, lastActiveAt: new Date(), updatedAt: new Date() })
+    .where(eq(agents.id, agentId));
+}
+
+/**
+ * One chat turn: persist the user message, run the agent CLI, persist the
+ * reply (or a system error message). Exactly one turn per conversation may
+ * be in flight.
+ */
+export async function runChatTurn(
+  userId: string,
+  conversationId: string,
+  content: string,
+  events: TurnEvents = {}
+): Promise<TurnOutcome> {
+  const conversation = await getConversation(userId, conversationId);
+  const agent = await getAgent(userId, conversation.agentId);
+
+  if (agent.runtime === 'api') {
+    throw badRequest('unsupported_runtime', 'API-hosted agents are wired up in a later milestone');
+  }
+  if (inflight.has(conversationId)) {
+    throw badRequest('turn_in_flight', 'A turn is already running for this conversation');
+  }
+
+  const history = await listMessages(userId, conversationId);
+  const userMessage = await appendMessage(conversationId, 'user', content, { source: 'chat' });
+
+  const credentials = agent.providerId
+    ? await getProviderCredentials(userId, agent.providerId)
+    : null;
+  const paths = storage.agentPaths(userId, agent.id);
+  const resumable = RESUMABLE.has(agent.runtime);
+
+  const prompt = buildDirectChatPrompt({
+    agent,
+    workspace: paths.workspace,
+    userMessage: content,
+    conversationId,
+    history: resumable && conversation.runnerSessionRef ? undefined : history,
+  });
+
+  const controller = new AbortController();
+  inflight.set(conversationId, controller);
+  await setAgentStatus(agent.id, 'busy');
+
+  try {
+    const result = await turnExecutor({
+      runtime: agent.runtime as CliRuntime,
+      workspace: paths.workspace,
+      stateDir: paths.state,
+      prompt,
+      model: agent.model,
+      credentials: credentials ?? undefined,
+      sessionRef: resumable ? conversation.runnerSessionRef : null,
+      signal: controller.signal,
+      onChunk: events.onChunk,
+    });
+
+    if (resumable && result.sessionRef && result.sessionRef !== conversation.runnerSessionRef) {
+      await setRunnerSessionRef(conversationId, result.sessionRef);
+    }
+
+    const reply = await appendMessage(conversationId, 'assistant', result.text, {
+      runtime: agent.runtime,
+      durationMs: result.durationMs,
+    });
+    await setAgentStatus(agent.id, 'idle');
+    return { userMessage, reply };
+  } catch (error) {
+    await setAgentStatus(agent.id, 'error');
+    const detail =
+      error instanceof RunnerError ? error.message : 'Agent turn failed unexpectedly';
+    const reply = await appendMessage(conversationId, 'system', detail, {
+      runtime: agent.runtime,
+      error: true,
+    });
+    if (error instanceof RunnerError) {
+      return { userMessage, reply };
+    }
+    throw error;
+  } finally {
+    inflight.delete(conversationId);
+  }
+}

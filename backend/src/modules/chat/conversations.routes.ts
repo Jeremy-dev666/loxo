@@ -1,0 +1,83 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { badRequest } from '../../http/errors';
+import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
+import {
+  createConversation,
+  deleteConversation,
+  getConversation,
+  listConversations,
+  listMessages,
+  renameConversation,
+} from './conversations.service';
+
+export const conversationsRouter = Router();
+conversationsRouter.use(requireAuth);
+
+conversationsRouter.get('/', async (req: AuthedRequest, res, next) => {
+  try {
+    const agentId = typeof req.query.agentId === 'string' ? req.query.agentId : undefined;
+    res.json({ conversations: await listConversations(req.auth!.userId, agentId) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+conversationsRouter.post('/', async (req: AuthedRequest, res, next) => {
+  try {
+    const schema = z.object({ agentId: z.string().uuid(), title: z.string().max(120).optional() });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw badRequest('invalid_input', 'agentId is required');
+    const conversation = await createConversation(
+      req.auth!.userId,
+      parsed.data.agentId,
+      parsed.data.title
+    );
+    res.status(201).json({ conversation });
+  } catch (error) {
+    next(error);
+  }
+});
+
+conversationsRouter.patch('/:id', async (req: AuthedRequest, res, next) => {
+  try {
+    const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
+    if (!title || title.length > 120) {
+      throw badRequest('invalid_input', 'Title must be 1-120 characters');
+    }
+    res.json({
+      conversation: await renameConversation(req.auth!.userId, String(req.params.id), title),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+conversationsRouter.delete('/:id', async (req: AuthedRequest, res, next) => {
+  try {
+    await deleteConversation(req.auth!.userId, String(req.params.id));
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+conversationsRouter.get('/:id/messages', async (req: AuthedRequest, res, next) => {
+  try {
+    res.json({ messages: await listMessages(req.auth!.userId, String(req.params.id)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+conversationsRouter.get('/:id/export', async (req: AuthedRequest, res, next) => {
+  try {
+    const conversationId = String(req.params.id);
+    const conversation = await getConversation(req.auth!.userId, conversationId);
+    const messages = await listMessages(req.auth!.userId, conversationId);
+    res.setHeader('Content-Disposition', `attachment; filename="conversation-${conversationId}.json"`);
+    res.json({ conversation, messages, exportedAt: new Date().toISOString() });
+  } catch (error) {
+    next(error);
+  }
+});

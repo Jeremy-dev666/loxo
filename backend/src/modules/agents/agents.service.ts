@@ -108,9 +108,9 @@ export interface AgentConfigInput {
 
 /**
  * Validates provider vendor against the agent runtime and the model against
- * the provider's model list before persisting.
+ * the provider's model list before persisting. Credential or model changes
+ * invalidate stored CLI session refs so the next turn starts fresh.
  */
-// TODO(m5): clear conversation runner sessions when provider/model changes.
 export async function updateAgentConfig(
   userId: string,
   agentId: string,
@@ -145,6 +145,11 @@ export async function updateAgentConfig(
     .set({ providerId, model, updatedAt: new Date() })
     .where(eq(agents.id, agentId))
     .returning();
+
+  if (providerId !== agent.providerId || model !== agent.model) {
+    const { clearRunnerSessionsForAgent } = await import('../chat/conversations.service');
+    await clearRunnerSessionsForAgent(agentId);
+  }
   return updated!;
 }
 

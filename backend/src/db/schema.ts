@@ -80,3 +80,41 @@ export const agents = pgTable('agents', {
 });
 
 export type Agent = typeof agents.$inferSelect;
+
+export const conversations = pgTable('conversations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  agentId: uuid('agent_id')
+    .notNull()
+    .references(() => agents.id, { onDelete: 'cascade' }),
+  title: text('title').notNull().default('New conversation'),
+  /** CLI-side session id (e.g. claude-code --resume); cleared on provider/model change. */
+  runnerSessionRef: text('runner_session_ref'),
+  lastMessagePreview: text('last_message_preview').notNull().default(''),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Conversation = typeof conversations.$inferSelect;
+
+export interface MessageMeta {
+  runtime?: string;
+  durationMs?: number;
+  error?: boolean;
+  source?: string;
+}
+
+export const messages = pgTable('messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  conversationId: uuid('conversation_id')
+    .notNull()
+    .references(() => conversations.id, { onDelete: 'cascade' }),
+  role: text('role').notNull(), // user | assistant | system
+  content: text('content').notNull(),
+  meta: jsonb('meta').$type<MessageMeta>().notNull().default({}),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Message = typeof messages.$inferSelect;

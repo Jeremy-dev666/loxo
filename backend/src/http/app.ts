@@ -3,6 +3,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import { config } from '../config';
 import { agentsRouter, groupsRouter } from '../modules/agents/agents.routes';
 import { authRouter } from '../modules/auth/auth.routes';
+import { conversationsRouter } from '../modules/chat/conversations.routes';
 import { providersRouter } from '../modules/providers/providers.routes';
 import { HttpError } from './errors';
 
@@ -31,6 +32,7 @@ export function createApp(): express.Express {
   app.use('/api/providers', providersRouter);
   app.use('/api/agents', agentsRouter);
   app.use('/api/agent-groups', groupsRouter);
+  app.use('/api/conversations', conversationsRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'not_found', message: 'Route not found' });
