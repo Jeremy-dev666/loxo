@@ -1,10 +1,28 @@
+# Dependencies
 node_modules/
+
+# Builds
 dist/
 .next/
+out/
+
+# Environment
 .env
 .env.local
+.env*.local
+
+# Runtime data
+backend/data/
+
+# Logs
 *.log
+
+# OS
 .DS_Store
-ask/
+Thumbs.db
+
+# Local working files (not part of the published repository)
+CLAUDE.md
+docs-internal/
 DEV_LOG.md
 QA_LOG.md
