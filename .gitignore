@@ -26,3 +26,4 @@ CLAUDE.md
 docs-internal/
 DEV_LOG.md
 QA_LOG.md
+*.tsbuildinfo
