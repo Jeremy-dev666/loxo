@@ -12,13 +12,18 @@ import {
   type WorkflowNode,
 } from '../teams/workflow-dsl';
 import {
+  persistNodeOutput,
+  readArtifactPreview,
+  sanitizeFileName,
+  type NodeArtifact,
+} from './artifacts';
+import {
   addArtifacts,
   appendEvent,
   createExecution,
   getExecution,
   updateExecution,
   updateNodeState,
-  type AddArtifactInput,
   type ExecutionDetail,
 } from './execution-store';
 
@@ -52,6 +57,8 @@ interface NodeRuntime {
   status: WorkflowNodeStatus;
   runCount: number;
   output: string;
+  /** Artifacts of the latest run; used for downstream handoff previews. */
+  artifacts: NodeArtifact[];
   error?: string;
 }
 
@@ -131,7 +138,7 @@ export interface AgentNodeRequest {
 
 export interface AgentNodeResult {
   output: string;
-  artifacts: AddArtifactInput[];
+  artifacts: NodeArtifact[];
 }
 
 export type AgentNodeRunner = (request: AgentNodeRequest) => Promise<AgentNodeResult>;
@@ -263,7 +270,13 @@ export async function startExecution(input: StartExecutionInput): Promise<Execut
     nodes: new Map(
       input.workflow.nodes.map((node) => [
         node.id,
-        { node, status: 'pending' as WorkflowNodeStatus, runCount: 0, output: '' },
+        {
+          node,
+          status: 'pending' as WorkflowNodeStatus,
+          runCount: 0,
+          output: '',
+          artifacts: [] as NodeArtifact[],
+        },
       ])
     ),
     incoming: groupEdges(input.workflow.edges, (e) => e.to),
@@ -530,12 +543,14 @@ async function executeNode(live: LiveExecution, state: NodeRuntime): Promise<voi
   const input = buildNodeInput(live, node.id);
   if (live.dryRun) {
     await new Promise((resolve) => setTimeout(resolve, DRY_RUN_NODE_DELAY_MS));
-    const output = [
+    let output = [
       `Dry run: ${node.label} completed without invoking an agent.`,
       `Kind: ${node.kind}${node.role ? ` (${node.role})` : ''}`,
       `Task: ${live.task}`,
     ].join('\n');
-    await markNodeSucceeded(live, state, output);
+    const handoff = writeDryRunHandoff(live, state);
+    if (handoff) output += `\nHandoff file: ${handoff.path}`;
+    await markNodeSucceeded(live, state, output, handoff ? [handoff] : []);
     return;
   }
 
@@ -555,9 +570,6 @@ async function executeNode(live: LiveExecution, state: NodeRuntime): Promise<voi
     timeoutSec: Math.max(1, live.workflow.execution.timeoutSec),
     signal: live.abort.signal,
   });
-  if (result.artifacts.length > 0) {
-    await addArtifacts(live.id, result.artifacts);
-  }
   await markNodeSucceeded(live, state, result.output, result.artifacts);
 }
 
@@ -565,10 +577,29 @@ async function markNodeSucceeded(
   live: LiveExecution,
   state: NodeRuntime,
   output: string,
-  artifacts: AddArtifactInput[] = []
+  workspaceArtifacts: NodeArtifact[] = []
 ): Promise<void> {
+  // Persist output to disk before activating edges: downstream inputs may
+  // reference these files the moment the next node starts.
+  const outputArtifact = persistNodeOutput({
+    runRoot: live.paths.runRoot,
+    artifactsDir: live.paths.artifacts,
+    executionId: live.id,
+    workflowName: live.workflow.name,
+    nodeId: state.node.id,
+    nodeLabel: state.node.label,
+    runCount: state.runCount,
+    output,
+  });
+  const artifacts = [...workspaceArtifacts, outputArtifact];
+
   state.status = 'succeeded';
   state.output = output;
+  state.artifacts = artifacts;
+  await addArtifacts(
+    live.id,
+    artifacts.map(({ absolutePath: _abs, ...row }) => row)
+  );
   await updateNodeState(live.id, state.node.id, {
     status: 'succeeded',
     output,
@@ -652,19 +683,70 @@ async function activateOutgoingEdges(
   }
 }
 
+const HANDOFF_PREVIEW_BUDGET_CHARS = 24_000;
+
 function buildNodeInput(live: LiveExecution, nodeId: string): string {
   const activeIncoming = (live.incoming.get(nodeId) ?? []).filter((edge) =>
     live.activeEdges.has(edge.id)
   );
   if (activeIncoming.length === 0) return live.task;
 
+  let previewBudget = HANDOFF_PREVIEW_BUDGET_CHARS;
   const sections = activeIncoming.map((edge) => {
     const source = live.nodes.get(edge.from);
     const label = source?.node.label ?? edge.from;
     const output = source?.output.trim() || '(no output)';
-    return `## Upstream: ${label}\n\n${output}`;
+    const parts = [`## Upstream: ${label}`, output];
+
+    const files = (source?.artifacts ?? []).filter((a) => a.kind === 'workspace-file');
+    if (files.length > 0) {
+      const lines = ['### Handoff files'];
+      for (const file of files) {
+        lines.push(`- ${file.path} (${file.label}, ${file.size} bytes)`);
+        if (previewBudget <= 0) continue;
+        const preview = readArtifactPreview(file.absolutePath);
+        if (!preview) continue;
+        const text = preview.text.slice(0, previewBudget).replace(/```/g, '~~~');
+        previewBudget -= text.length;
+        lines.push('', '~~~', text + (preview.truncated ? '\n[preview truncated]' : ''), '~~~');
+      }
+      parts.push(lines.join('\n'));
+    }
+    return parts.join('\n\n');
   });
   return sections.join('\n\n');
+}
+
+/**
+ * Dry runs normally leave the workspace untouched; the env flag lets smoke
+ * tests exercise the handoff-file path without real agents.
+ */
+function writeDryRunHandoff(live: LiveExecution, state: NodeRuntime): NodeArtifact | null {
+  if (process.env.WORKFLOW_DRY_RUN_WRITE_HANDOFF !== '1') return null;
+  const dir = path.join(live.paths.workspace, 'handoff');
+  fs.mkdirSync(dir, { recursive: true });
+  const fileName = `${sanitizeFileName(state.node.id)}-run-${state.runCount}.md`;
+  const absolutePath = path.join(dir, fileName);
+  const content = [
+    `# Dry run handoff: ${state.node.label}`,
+    '',
+    `- Workflow: ${live.workflow.name}`,
+    `- Execution: ${live.id}`,
+    `- Run: ${state.runCount}`,
+    '',
+    live.task,
+    '',
+  ].join('\n');
+  fs.writeFileSync(absolutePath, content, 'utf8');
+  return {
+    nodeId: state.node.id,
+    runCount: state.runCount,
+    kind: 'workspace-file',
+    label: 'created',
+    path: `handoff/${fileName}`,
+    size: Buffer.byteLength(content),
+    absolutePath,
+  };
 }
 
 /**
