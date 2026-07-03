@@ -5,6 +5,7 @@ import { agentsRouter, groupsRouter } from '../modules/agents/agents.routes';
 import { authRouter } from '../modules/auth/auth.routes';
 import { conversationsRouter } from '../modules/chat/conversations.routes';
 import { teamsRouter } from '../modules/teams/teams.routes';
+import { workflowsRouter } from '../modules/workflows/workflows.routes';
 import { providersRouter } from '../modules/providers/providers.routes';
 import { HttpError } from './errors';
 
@@ -35,6 +36,7 @@ export function createApp(): express.Express {
   app.use('/api/agent-groups', groupsRouter);
   app.use('/api/conversations', conversationsRouter);
   app.use('/api/teams', teamsRouter);
+  app.use('/api/workflows', workflowsRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'not_found', message: 'Route not found' });
