@@ -1,4 +1,14 @@
-import { boolean, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
+import type { WorkflowDsl } from '../modules/teams/workflow-dsl';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -136,6 +146,107 @@ export const teams = pgTable('teams', {
 });
 
 export type Team = typeof teams.$inferSelect;
+
+export type WorkflowExecutionStatus =
+  | 'queued'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled'
+  | 'interrupted';
+
+export type WorkflowNodeStatus =
+  | 'pending'
+  | 'ready'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | 'skipped';
+
+/**
+ * Primary execution record. The DSL is snapshotted at start so history stays
+ * readable after the team manifest changes. `projectId` gains its FK when the
+ * projects table lands (M8).
+ */
+export const workflowExecutions = pgTable('workflow_executions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  teamId: uuid('team_id')
+    .notNull()
+    .references(() => teams.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id'),
+  task: text('task').notNull(),
+  status: text('status').$type<WorkflowExecutionStatus>().notNull().default('queued'),
+  mode: text('mode').notNull(), // dag | state-machine
+  dryRun: boolean('dry_run').notNull().default(false),
+  workflow: jsonb('workflow').$type<WorkflowDsl>().notNull(),
+  finalOutput: text('final_output'),
+  error: text('error'),
+  startedAt: timestamp('started_at', { withTimezone: true }),
+  finishedAt: timestamp('finished_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type WorkflowExecution = typeof workflowExecutions.$inferSelect;
+
+export const workflowNodeStates = pgTable(
+  'workflow_node_states',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    executionId: uuid('execution_id')
+      .notNull()
+      .references(() => workflowExecutions.id, { onDelete: 'cascade' }),
+    nodeId: text('node_id').notNull(),
+    status: text('status').$type<WorkflowNodeStatus>().notNull().default('pending'),
+    runCount: integer('run_count').notNull().default(0),
+    output: text('output').notNull().default(''),
+    error: text('error'),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('workflow_node_states_execution_node').on(t.executionId, t.nodeId)]
+);
+
+export type WorkflowNodeState = typeof workflowNodeStates.$inferSelect;
+
+/** Append-only event log; `seq` is assigned by the executor per execution. */
+export const workflowEvents = pgTable(
+  'workflow_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    executionId: uuid('execution_id')
+      .notNull()
+      .references(() => workflowExecutions.id, { onDelete: 'cascade' }),
+    seq: integer('seq').notNull(),
+    type: text('type').notNull(),
+    nodeId: text('node_id'),
+    message: text('message').notNull().default(''),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('workflow_events_execution_seq').on(t.executionId, t.seq)]
+);
+
+export type WorkflowEvent = typeof workflowEvents.$inferSelect;
+
+/** Files a node produced: workspace diffs and the per-run node-output log. */
+export const workflowArtifacts = pgTable('workflow_artifacts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  executionId: uuid('execution_id')
+    .notNull()
+    .references(() => workflowExecutions.id, { onDelete: 'cascade' }),
+  nodeId: text('node_id').notNull(),
+  runCount: integer('run_count').notNull().default(1),
+  kind: text('kind').notNull(), // workspace-file | node-output
+  label: text('label').notNull().default(''), // created | updated | output
+  path: text('path').notNull(), // relative to the run root
+  size: integer('size').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type WorkflowArtifact = typeof workflowArtifacts.$inferSelect;
 
 /** Synced from the manifest on save; answers "which teams use this agent". */
 export const teamMembers = pgTable('team_members', {
