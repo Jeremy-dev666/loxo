@@ -17,6 +17,7 @@ import {
   sanitizeFileName,
   type NodeArtifact,
 } from './artifacts';
+import { registerDeliverable } from './deliverables.service';
 import {
   addArtifacts,
   appendEvent,
@@ -613,6 +614,58 @@ async function markNodeSucceeded(
     message: `${state.node.label} completed`,
     payload: { output, runCount: state.runCount, artifacts: artifacts.map((a) => a.path) },
   });
+  await registerNodeDeliverables(live, state, workspaceArtifacts);
+}
+
+/** Scaffold files the agent runtime drops into fresh workspaces. */
+const SCAFFOLD_BASENAMES = new Set([
+  'AGENTS.md',
+  'BOOTSTRAP.md',
+  'HEARTBEAT.md',
+  'IDENTITY.md',
+  'SOUL.md',
+  'TOOLS.md',
+  'USER.md',
+]);
+
+function isDeliverableFile(relPath: string): boolean {
+  if (relPath.startsWith('handoff/') || relPath.startsWith('.swarmdev/')) return false;
+  const basename = relPath.split('/').pop() ?? '';
+  return !SCAFFOLD_BASENAMES.has(basename);
+}
+
+/**
+ * Project executions surface agent file output for review. Registration
+ * failures never fail the node — the work itself already succeeded.
+ */
+async function registerNodeDeliverables(
+  live: LiveExecution,
+  state: NodeRuntime,
+  workspaceArtifacts: NodeArtifact[]
+): Promise<void> {
+  if (!live.projectId || state.node.type !== 'agent') return;
+  const files = workspaceArtifacts.filter(
+    (a) => a.kind === 'workspace-file' && isDeliverableFile(a.path)
+  );
+  for (const file of files) {
+    try {
+      const deliverable = await registerDeliverable({
+        userId: live.userId,
+        projectId: live.projectId,
+        executionId: live.id,
+        nodeId: state.node.id,
+        agentId: state.node.agentId ?? null,
+        filePath: file.path,
+      });
+      await emitEvent(live, 'deliverable_created', {
+        nodeId: state.node.id,
+        message: `${file.path} was registered for review`,
+        payload: { deliverableId: deliverable.id, filePath: file.path },
+      });
+    } catch (error) {
+      console.error(`Failed to register deliverable ${file.path}:`, error);
+    }
+  }
 }
 
 async function markNodeFailed(

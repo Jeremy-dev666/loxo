@@ -248,6 +248,32 @@ export const workflowArtifacts = pgTable('workflow_artifacts', {
 
 export type WorkflowArtifact = typeof workflowArtifacts.$inferSelect;
 
+export type DeliverableStatus = 'pending' | 'accepted' | 'revision' | 'superseded';
+
+/**
+ * Reviewable file a project workflow produced. Registering a new deliverable
+ * for the same project+path supersedes the previous pending one. `projectId`
+ * gains its FK in M8.
+ */
+export const deliverables = pgTable('deliverables', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id').notNull(),
+  executionId: uuid('execution_id')
+    .notNull()
+    .references(() => workflowExecutions.id, { onDelete: 'cascade' }),
+  nodeId: text('node_id').notNull(),
+  agentId: uuid('agent_id').references(() => agents.id, { onDelete: 'set null' }),
+  filePath: text('file_path').notNull(),
+  status: text('status').$type<DeliverableStatus>().notNull().default('pending'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+});
+
+export type Deliverable = typeof deliverables.$inferSelect;
+
 /** Synced from the manifest on save; answers "which teams use this agent". */
 export const teamMembers = pgTable('team_members', {
   id: uuid('id').primaryKey().defaultRandom(),
