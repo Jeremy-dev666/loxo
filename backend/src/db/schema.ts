@@ -147,6 +147,58 @@ export const teams = pgTable('teams', {
 
 export type Team = typeof teams.$inferSelect;
 
+/**
+ * Project workspace: a durable directory agents collaborate in, bound to
+ * teams/agents via join tables (deliberate deviation from JSON-array
+ * columns). `updatedAt` is the recency key maintained by touchProject.
+ */
+export const projects = pgTable('projects', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Project = typeof projects.$inferSelect;
+
+export const projectTeams = pgTable(
+  'project_teams',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('project_teams_project_team').on(t.projectId, t.teamId)]
+);
+
+export type ProjectTeam = typeof projectTeams.$inferSelect;
+
+export const projectAgents = pgTable(
+  'project_agents',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    agentId: uuid('agent_id')
+      .notNull()
+      .references(() => agents.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('project_agents_project_agent').on(t.projectId, t.agentId)]
+);
+
+export type ProjectAgent = typeof projectAgents.$inferSelect;
+
 export type WorkflowExecutionStatus =
   | 'queued'
   | 'running'
@@ -165,8 +217,7 @@ export type WorkflowNodeStatus =
 
 /**
  * Primary execution record. The DSL is snapshotted at start so history stays
- * readable after the team manifest changes. `projectId` gains its FK when the
- * projects table lands (M8).
+ * readable after the team manifest changes.
  */
 export const workflowExecutions = pgTable('workflow_executions', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -176,7 +227,7 @@ export const workflowExecutions = pgTable('workflow_executions', {
   teamId: uuid('team_id')
     .notNull()
     .references(() => teams.id, { onDelete: 'cascade' }),
-  projectId: uuid('project_id'),
+  projectId: uuid('project_id').references(() => projects.id, { onDelete: 'cascade' }),
   task: text('task').notNull(),
   status: text('status').$type<WorkflowExecutionStatus>().notNull().default('queued'),
   mode: text('mode').notNull(), // dag | state-machine
@@ -252,15 +303,16 @@ export type DeliverableStatus = 'pending' | 'accepted' | 'revision' | 'supersede
 
 /**
  * Reviewable file a project workflow produced. Registering a new deliverable
- * for the same project+path supersedes the previous pending one. `projectId`
- * gains its FK in M8.
+ * for the same project+path supersedes the previous pending one.
  */
 export const deliverables = pgTable('deliverables', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  projectId: uuid('project_id').notNull(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
   executionId: uuid('execution_id')
     .notNull()
     .references(() => workflowExecutions.id, { onDelete: 'cascade' }),

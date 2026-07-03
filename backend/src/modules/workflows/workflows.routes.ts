@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { badRequest, notFound } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
+import { getProject, touchProject } from '../projects/projects.service';
 import { getTeam } from '../teams/teams.service';
 import './agent-node'; // installs the real agent runner
 import { getExecution, listEvents, listExecutions } from './execution-store';
@@ -24,6 +25,10 @@ workflowsRouter.post('/execute', async (req: AuthedRequest, res, next) => {
     }
 
     const team = await getTeam(req.auth!.userId, parsed.data.teamId);
+    if (parsed.data.projectId) {
+      await getProject(req.auth!.userId, parsed.data.projectId); // ownership check
+      await touchProject(req.auth!.userId, parsed.data.projectId);
+    }
     const execution = await startExecution({
       userId: req.auth!.userId,
       teamId: team.id,

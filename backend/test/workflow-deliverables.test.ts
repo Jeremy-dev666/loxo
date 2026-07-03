@@ -27,7 +27,7 @@ const app = createApp();
 let userId = '';
 let teamId = '';
 let agentId = '';
-const projectId = crypto.randomUUID();
+let projectId = '';
 
 beforeAll(async () => {
   await pool.query('TRUNCATE TABLE users CASCADE');
@@ -47,6 +47,11 @@ beforeAll(async () => {
     .set({ Authorization: `Bearer ${reg.body.token}` })
     .send({ name: 'Maker', runtime: 'api' });
   agentId = agent.body.agent.id;
+  const project = await request(app)
+    .post('/api/projects')
+    .set({ Authorization: `Bearer ${reg.body.token}` })
+    .send({ name: 'Deliverables project' });
+  projectId = project.body.project.id;
 });
 
 afterEach(() => {

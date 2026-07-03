@@ -43,6 +43,13 @@
       "when": 1783043726504,
       "tag": "0005_deliverables",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783046396442,
+      "tag": "0006_projects",
+      "breakpoints": true
     }
   ]
 }

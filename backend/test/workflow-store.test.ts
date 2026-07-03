@@ -16,6 +16,7 @@ import {
 import { normalizeDsl } from '../src/modules/teams/workflow-dsl';
 
 const app = createApp();
+let token = '';
 let userId = '';
 let teamId = '';
 
@@ -42,10 +43,11 @@ beforeAll(async () => {
     username: 'wfstore',
     password: 'a-strong-password',
   });
+  token = reg.body.token;
   userId = reg.body.user.id;
   const team = await request(app)
     .post('/api/teams')
-    .set({ Authorization: `Bearer ${reg.body.token}` })
+    .set({ Authorization: `Bearer ${token}` })
     .send({ name: 'Store test team' });
   teamId = team.body.team.id;
 });
@@ -139,7 +141,11 @@ describe('workflow execution store', () => {
   });
 
   it('filters listings by project and hides other users', async () => {
-    const projectId = crypto.randomUUID();
+    const project = await request(app)
+      .post('/api/projects')
+      .set({ Authorization: `Bearer ${token}` })
+      .send({ name: 'Store filter project' });
+    const projectId = project.body.project.id;
     await newExecution({ projectId, task: 'Project scoped' });
     const scoped = await listExecutions(userId, { projectId });
     expect(scoped).toHaveLength(1);
