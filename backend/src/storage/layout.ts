@@ -10,7 +10,7 @@ import { toHostPath } from './host-path';
  *     users/<userId>/
  *       agents/<agentId>/{workspace,baseline,snapshots,state}
  *       projects/<projectId>/workspace
- *       teams/<teamId>/runs/<runId>/{artifacts,logs}
+ *       teams/<teamId>/runs/<runId>/{workspace,artifacts,logs}
  *     runtime/roundtable/<userId>/<agentId>/{workspace,state}
  *
  * Agent runtime state lives beside the workspace, not inside it, so
@@ -31,7 +31,11 @@ export interface StorageLayout {
   agentPaths: (userId: string, agentId: string) => AgentPaths;
   projectWorkspace: (userId: string, projectId: string) => string;
   teamDir: (userId: string, teamId: string) => string;
-  teamRunDirs: (userId: string, teamId: string, runId: string) => { root: string; artifacts: string; logs: string };
+  teamRunDirs: (
+    userId: string,
+    teamId: string,
+    runId: string
+  ) => { root: string; workspace: string; artifacts: string; logs: string };
   roundtableRuntime: (userId: string, agentId: string) => { workspace: string; state: string };
 }
 
@@ -65,6 +69,7 @@ export function createStorageLayout(rootInput: string): StorageLayout {
       const runRoot = path.join(root, 'users', userId, 'teams', teamId, 'runs', runId);
       return {
         root: ensured(runRoot),
+        workspace: ensured(path.join(runRoot, 'workspace')),
         artifacts: ensured(path.join(runRoot, 'artifacts')),
         logs: ensured(path.join(runRoot, 'logs')),
       };
