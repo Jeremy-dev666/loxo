@@ -155,7 +155,17 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
     command: 'claude',
     streaming: true,
     buildArgs: (request) => {
-      const args = ['-p', '--output-format', 'stream-json', '--verbose'];
+      // Non-interactive runs cannot answer permission prompts; without
+      // acceptEdits every file write is auto-denied and agents cannot
+      // produce workspace output. Command execution stays gated.
+      const args = [
+        '-p',
+        '--output-format',
+        'stream-json',
+        '--verbose',
+        '--permission-mode',
+        'acceptEdits',
+      ];
       if (request.sessionRef) args.push('--resume', request.sessionRef);
       if (request.model) args.push('--model', request.model);
       return args;
