@@ -5,6 +5,7 @@ import { agentsRouter, groupsRouter } from '../modules/agents/agents.routes';
 import { authRouter } from '../modules/auth/auth.routes';
 import { conversationsRouter } from '../modules/chat/conversations.routes';
 import { marketRouter } from '../modules/market/market.routes';
+import { roundtableRouter } from '../modules/roundtable/roundtable.routes';
 import { projectsRouter } from '../modules/projects/projects.routes';
 import { teamsRouter } from '../modules/teams/teams.routes';
 import { workflowsRouter } from '../modules/workflows/workflows.routes';
@@ -38,6 +39,7 @@ export function createApp(): express.Express {
   app.use('/api/agent-groups', groupsRouter);
   app.use('/api/conversations', conversationsRouter);
   app.use('/api/market', marketRouter);
+  app.use('/api/roundtable', roundtableRouter);
   app.use('/api/teams', teamsRouter);
   app.use('/api/projects', projectsRouter);
   app.use('/api/workflows', workflowsRouter);
