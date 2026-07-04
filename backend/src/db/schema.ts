@@ -70,6 +70,11 @@ export interface AgentManifest {
     systemPrompt?: string;
     catalogId?: string;
   };
+  /** Team-template provenance; drives duplicate detection at adopt time. */
+  template?: {
+    id?: string;
+    roleCode?: string;
+  };
 }
 
 /**

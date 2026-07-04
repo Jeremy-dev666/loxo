@@ -15,6 +15,12 @@ import {
 } from './market.service';
 import { ADOPTION_RUNTIMES, adoptOfficialAgent, type AdoptionRuntime } from './official-listing';
 import { deployApiAgent, getApiAgentPreset, listApiAgentPresets } from './api-catalog';
+import {
+  adoptTeamTemplate,
+  findDuplicateTemplateAgents,
+  getTeamTemplate,
+  listTeamTemplates,
+} from './team-templates';
 import { describeRisks } from './publish-safety';
 
 export const marketRouter = Router();
@@ -149,6 +155,59 @@ marketRouter.post('/api-agents/:presetId/deploy', async (req: AuthedRequest, res
   try {
     const agent = await deployApiAgent(req.auth!.userId, String(req.params.presetId));
     res.status(201).json({ agent });
+  } catch (error) {
+    next(error);
+  }
+});
+
+marketRouter.get('/team-templates', (_req: AuthedRequest, res, next) => {
+  try {
+    res.json({ templates: listTeamTemplates() });
+  } catch (error) {
+    next(error);
+  }
+});
+
+marketRouter.get('/team-templates/:templateId', (req: AuthedRequest, res, next) => {
+  try {
+    res.json({ template: getTeamTemplate(String(req.params.templateId)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+marketRouter.get('/team-templates/:templateId/duplicates', async (req: AuthedRequest, res, next) => {
+  try {
+    res.json({
+      duplicates: await findDuplicateTemplateAgents(
+        req.auth!.userId,
+        String(req.params.templateId)
+      ),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const adoptTeamSchema = z.object({
+  teamName: z.string().min(1).max(80).optional(),
+  duplicateChoices: z
+    .array(
+      z.object({
+        roleCode: z.string().min(1).max(40),
+        existingAgentId: z.string().uuid(),
+        mode: z.enum(['clone', 'share-config']),
+      })
+    )
+    .max(16)
+    .optional(),
+});
+
+marketRouter.post('/team-templates/:templateId/adopt', async (req: AuthedRequest, res, next) => {
+  try {
+    const input = parseOr400(adoptTeamSchema, req.body);
+    const result = await adoptTeamTemplate(req.auth!.userId, String(req.params.templateId), input);
+    res.status(201).json(result);
   } catch (error) {
     next(error);
   }
