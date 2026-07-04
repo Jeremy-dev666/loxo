@@ -14,14 +14,17 @@ import {
   type Agent,
   type AgentGroup,
 } from '@/lib/agents';
+import { fetchMyListings, publishAgent, unpublishAgent } from '@/lib/market';
 
 function AgentCard({
   agent,
   groups,
+  published,
   onChanged,
 }: {
   agent: Agent;
   groups: AgentGroup[];
+  published: boolean;
   onChanged: () => void;
 }) {
   const avatar = avatarUrl(agent);
@@ -34,6 +37,28 @@ function AgentCard({
   const remove = async () => {
     if (!confirm(`Delete agent "${agent.name}"? Its workspace will be removed.`)) return;
     await deleteAgent(agent.id);
+    onChanged();
+  };
+
+  const publish = async () => {
+    if (
+      !confirm(
+        `Publish "${agent.name}" to the market? Sensitive files (.env, keys, credentials) are omitted and detected secrets are redacted in the published copy.`
+      )
+    )
+      return;
+    try {
+      const result = await publishAgent({ agentId: agent.id });
+      if (result.sanitization) alert(result.sanitization);
+      onChanged();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Publish failed');
+    }
+  };
+
+  const unpublish = async () => {
+    if (!confirm(`Remove "${agent.name}" from the market? Existing downloads keep working.`)) return;
+    await unpublishAgent(agent.id);
     onChanged();
   };
 
@@ -77,10 +102,24 @@ function AgentCard({
             </option>
           ))}
         </select>
-        <button onClick={remove} className="text-red-400 hover:text-red-300">
-          Delete
-        </button>
+        <div className="flex items-center gap-3">
+          {published ? (
+            <button onClick={unpublish} className="text-slate-400 hover:text-slate-200">
+              Unpublish
+            </button>
+          ) : (
+            <button onClick={publish} className="text-accent hover:opacity-80">
+              Publish
+            </button>
+          )}
+          <button onClick={remove} className="text-red-400 hover:text-red-300">
+            Delete
+          </button>
+        </div>
       </div>
+      {published && (
+        <p className="mt-2 text-xs text-slate-500">Published to the market.</p>
+      )}
     </div>
   );
 }
@@ -88,11 +127,23 @@ function AgentCard({
 function AgentsPageInner() {
   const [agentList, setAgentList] = useState<Agent[]>([]);
   const [groups, setGroups] = useState<AgentGroup[]>([]);
+  const [publishedAgentIds, setPublishedAgentIds] = useState<Set<string>>(new Set());
   const [newGroupName, setNewGroupName] = useState('');
 
   const reload = useCallback(() => {
     fetchAgents().then(setAgentList).catch(() => setAgentList([]));
     fetchGroups().then(setGroups).catch(() => setGroups([]));
+    fetchMyListings()
+      .then((listings) =>
+        setPublishedAgentIds(
+          new Set(
+            listings
+              .filter((l) => l.status === 'active' && l.sourceAgentId)
+              .map((l) => l.sourceAgentId!)
+          )
+        )
+      )
+      .catch(() => setPublishedAgentIds(new Set()));
   }, []);
 
   useEffect(reload, [reload]);
@@ -146,7 +197,7 @@ function AgentsPageInner() {
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {(sections.get(group.id) ?? []).map((agent) => (
-              <AgentCard key={agent.id} agent={agent} groups={groups} onChanged={reload} />
+              <AgentCard key={agent.id} agent={agent} groups={groups} published={publishedAgentIds.has(agent.id)} onChanged={reload} />
             ))}
           </div>
           {(sections.get(group.id) ?? []).length === 0 && (
@@ -159,7 +210,7 @@ function AgentsPageInner() {
         <h2 className="mb-3 font-medium">Ungrouped</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {(sections.get(null) ?? []).map((agent) => (
-            <AgentCard key={agent.id} agent={agent} groups={groups} onChanged={reload} />
+            <AgentCard key={agent.id} agent={agent} groups={groups} published={publishedAgentIds.has(agent.id)} onChanged={reload} />
           ))}
         </div>
         {(sections.get(null) ?? []).length === 0 && (

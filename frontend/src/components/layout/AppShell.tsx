@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: '/agents', label: 'Agents' },
   { href: '/teams', label: 'Teams' },
   { href: '/projects', label: 'Projects' },
+  { href: '/market', label: 'Market' },
   { href: '/settings/providers', label: 'Providers' },
 ];
 
