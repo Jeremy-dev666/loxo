@@ -1,16 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 type MobileTabKey = 'projects' | 'agents' | 'teams' | 'discover' | 'me';
 
 const MOBILE_TABS: Array<{ key: MobileTabKey; label: string; accent: string; href: string }> = [
-  { key: 'projects', label: 'Projects', accent: 'bg-pixel-blue', href: '/projects' },
-  { key: 'agents', label: 'Agents', accent: 'bg-pixel-green', href: '/agents' },
-  { key: 'teams', label: 'Teams', accent: 'bg-pixel-yellow', href: '/teams' },
-  { key: 'discover', label: 'Discover', accent: 'bg-pixel-red', href: '/market' },
-  { key: 'me', label: 'Me', accent: 'bg-pixel-gray', href: '/settings/providers' },
+  { key: 'projects', label: 'Projects', accent: 'bg-pixel-blue', href: '/?mobileTab=projects' },
+  { key: 'agents', label: 'Agents', accent: 'bg-pixel-green', href: '/?mobileTab=contacts' },
+  { key: 'teams', label: 'Teams', accent: 'bg-pixel-yellow', href: '/?mobileTab=teams' },
+  { key: 'discover', label: 'Discover', accent: 'bg-pixel-red', href: '/?mobileTab=discover' },
+  { key: 'me', label: 'Me', accent: 'bg-pixel-gray', href: '/?mobileTab=me' },
 ];
 
 function MobileNavIcon({ tab }: { tab: MobileTabKey }) {
@@ -50,7 +50,16 @@ function MobileNavIcon({ tab }: { tab: MobileTabKey }) {
   );
 }
 
-function activeTabForRoute(pathname: string): MobileTabKey {
+const TAB_QUERY_KEYS: Record<string, MobileTabKey> = {
+  projects: 'projects',
+  contacts: 'agents',
+  teams: 'teams',
+  discover: 'discover',
+  me: 'me',
+};
+
+function activeTabForRoute(pathname: string, searchTab: string | null): MobileTabKey {
+  if (pathname === '/' && searchTab && TAB_QUERY_KEYS[searchTab]) return TAB_QUERY_KEYS[searchTab]!;
   if (pathname.startsWith('/teams') || pathname.startsWith('/roundtable')) return 'teams';
   if (pathname.startsWith('/agents')) return 'agents';
   if (pathname.startsWith('/market') || pathname.startsWith('/community') || pathname.startsWith('/upload')) {
@@ -62,13 +71,14 @@ function activeTabForRoute(pathname: string): MobileTabKey {
 
 export function MobileAppNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Full-screen chat routes hide the tab bar.
   if (pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/agents/')) {
     return null;
   }
 
-  const activeKey = activeTabForRoute(pathname);
+  const activeKey = activeTabForRoute(pathname, searchParams.get('mobileTab'));
 
   return (
     <nav
