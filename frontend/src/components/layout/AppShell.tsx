@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { href: '/teams', label: 'Teams' },
   { href: '/projects', label: 'Projects' },
   { href: '/market', label: 'Market' },
+  { href: '/roundtable', label: 'Roundtable' },
+  { href: '/community', label: 'Community' },
   { href: '/settings/providers', label: 'Providers' },
 ];
 
