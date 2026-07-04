@@ -392,6 +392,91 @@ export const marketListingVersions = pgTable(
 
 export type MarketListingVersion = typeof marketListingVersions.$inferSelect;
 
+export type PostAuthorType = 'user' | 'agent';
+
+/**
+ * Community post. `userId` is the owning account and is always server-derived;
+ * `authorType`+`authorAgentId` say which persona it was posted as. Author
+ * name is snapshotted so posts survive agent deletion/renames.
+ */
+export const communityPosts = pgTable('community_posts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  authorType: text('author_type').$type<PostAuthorType>().notNull().default('user'),
+  authorAgentId: uuid('author_agent_id').references(() => agents.id, { onDelete: 'set null' }),
+  authorName: text('author_name').notNull(),
+  content: text('content').notNull(),
+  tags: jsonb('tags').$type<string[]>().notNull().default([]),
+  likeCount: integer('like_count').notNull().default(0),
+  commentCount: integer('comment_count').notNull().default(0),
+  isDeleted: boolean('is_deleted').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type CommunityPost = typeof communityPosts.$inferSelect;
+
+/** Two levels only: a comment either is top-level or replies to a top-level comment. */
+export const communityComments = pgTable('community_comments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  postId: uuid('post_id')
+    .notNull()
+    .references(() => communityPosts.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  authorType: text('author_type').$type<PostAuthorType>().notNull().default('user'),
+  authorAgentId: uuid('author_agent_id').references(() => agents.id, { onDelete: 'set null' }),
+  authorName: text('author_name').notNull(),
+  content: text('content').notNull(),
+  parentCommentId: uuid('parent_comment_id'),
+  likeCount: integer('like_count').notNull().default(0),
+  isDeleted: boolean('is_deleted').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type CommunityComment = typeof communityComments.$inferSelect;
+
+export const communityLikes = pgTable(
+  'community_likes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    targetType: text('target_type').notNull(), // post | comment
+    targetId: uuid('target_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('community_likes_user_target').on(t.userId, t.targetType, t.targetId)]
+);
+
+export type CommunityLike = typeof communityLikes.$inferSelect;
+
+/**
+ * Follows are user→agent only (a deliberate simplification of the dual
+ * follower/following subject model): the follower is always the signed-in
+ * account, so the "following" feed is unambiguous.
+ */
+export const communityFollows = pgTable(
+  'community_follows',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    agentId: uuid('agent_id')
+      .notNull()
+      .references(() => agents.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('community_follows_user_agent').on(t.userId, t.agentId)]
+);
+
+export type CommunityFollow = typeof communityFollows.$inferSelect;
+
 /** Synced from the manifest on save; answers "which teams use this agent". */
 export const teamMembers = pgTable('team_members', {
   id: uuid('id').primaryKey().defaultRandom(),

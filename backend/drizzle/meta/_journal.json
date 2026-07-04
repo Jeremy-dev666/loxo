@@ -57,6 +57,13 @@
       "when": 1783136304293,
       "tag": "0007_market",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783140702830,
+      "tag": "0008_community",
+      "breakpoints": true
     }
   ]
 }
