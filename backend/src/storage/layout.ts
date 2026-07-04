@@ -26,6 +26,8 @@ export interface AgentPaths {
 
 export interface StorageLayout {
   root: string;
+  marketplaceListingRoot: (listingId: string) => string;
+  marketplaceAvatarCache: () => string;
   marketplaceSource: (listingId: string, version: string) => string;
   userRoot: (userId: string) => string;
   agentPaths: (userId: string, agentId: string) => AgentPaths;
@@ -49,6 +51,9 @@ export function createStorageLayout(rootInput: string): StorageLayout {
 
   return {
     root,
+    // Not ensured: used for existence checks and recursive deletes.
+    marketplaceListingRoot: (listingId) => path.join(root, 'marketplace', 'agents', listingId),
+    marketplaceAvatarCache: () => ensured(path.join(root, 'marketplace', 'avatars')),
     marketplaceSource: (listingId, version) =>
       ensured(path.join(root, 'marketplace', 'agents', listingId, 'versions', version, 'source')),
     userRoot: (userId) => ensured(path.join(root, 'users', userId)),

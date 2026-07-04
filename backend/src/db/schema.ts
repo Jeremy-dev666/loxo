@@ -7,6 +7,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import type { WorkflowDsl } from '../modules/teams/workflow-dsl';
 
@@ -82,7 +83,9 @@ export const agents = pgTable('agents', {
   providerId: uuid('provider_id').references(() => providers.id, { onDelete: 'set null' }),
   model: text('model'),
   avatarFile: text('avatar_file'),
-  sourceListingId: uuid('source_listing_id'), // marketplace provenance, enforced in M9
+  sourceListingId: uuid('source_listing_id').references((): AnyPgColumn => marketListings.id, {
+    onDelete: 'set null',
+  }),
   status: text('status').notNull().default('idle'), // idle | busy | error | offline
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -325,6 +328,57 @@ export const deliverables = pgTable('deliverables', {
 });
 
 export type Deliverable = typeof deliverables.$inferSelect;
+
+export type MarketVisibility = 'public' | 'unlisted' | 'private';
+export type MarketListingStatus = 'active' | 'disabled';
+
+/**
+ * Marketplace listing. Files live under
+ * marketplace/agents/<listingId>/versions/<version>/source in storage.
+ * `sourceAgentId` is the provenance link that blocks duplicate publishes of
+ * the same agent; it survives as null if the source agent is deleted.
+ */
+export const marketListings = pgTable('market_listings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  ownerUserId: uuid('owner_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  sourceAgentId: uuid('source_agent_id').references(() => agents.id, { onDelete: 'set null' }),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  /** Runtime a downloaded clone is created with. */
+  runtime: text('runtime').notNull(),
+  latestVersion: text('latest_version').notNull().default('1.0.0'),
+  visibility: text('visibility').$type<MarketVisibility>().notNull().default('public'),
+  status: text('status').$type<MarketListingStatus>().notNull().default('active'),
+  tags: jsonb('tags').$type<string[]>().notNull().default([]),
+  /** Original avatar reference (data: URL, /api path, or http URL) used to (re)fill the cache. */
+  avatarSource: text('avatar_source').notNull().default(''),
+  isOfficial: boolean('is_official').notNull().default(false),
+  downloadCount: integer('download_count').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type MarketListing = typeof marketListings.$inferSelect;
+
+export const marketListingVersions = pgTable(
+  'market_listing_versions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    listingId: uuid('listing_id')
+      .notNull()
+      .references(() => marketListings.id, { onDelete: 'cascade' }),
+    version: text('version').notNull(),
+    checksum: text('checksum').notNull().default(''),
+    changelog: text('changelog').notNull().default(''),
+    sizeBytes: integer('size_bytes').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('market_listing_versions_listing_version').on(t.listingId, t.version)]
+);
+
+export type MarketListingVersion = typeof marketListingVersions.$inferSelect;
 
 /** Synced from the manifest on save; answers "which teams use this agent". */
 export const teamMembers = pgTable('team_members', {

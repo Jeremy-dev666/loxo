@@ -158,6 +158,10 @@ export async function deleteAgent(userId: string, agentId: string): Promise<void
   const { unlinkAgentFromTeams } = await import('../teams/teams.service');
   await unlinkAgentFromTeams(userId, agentId);
 
+  // Deleting an agent retracts its marketplace listing.
+  const { retractAgentPublication } = await import('../market/market.service');
+  await retractAgentPublication(userId, agentId);
+
   const deleted = await db
     .delete(agents)
     .where(and(eq(agents.id, agentId), eq(agents.userId, userId)))
