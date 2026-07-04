@@ -15,10 +15,6 @@ const config: Config = {
         'pixel-green': '#2D7D46',
         'pixel-blue': '#3A5BA0',
         'pixel-yellow': '#D4A533',
-        // Legacy dark-theme tokens; removed once every page is on the pixel system.
-        surface: '#0b1220',
-        panel: '#111a2e',
-        accent: '#38bdf8',
       },
       fontFamily: {
         pixel: ['VT323', 'monospace'],

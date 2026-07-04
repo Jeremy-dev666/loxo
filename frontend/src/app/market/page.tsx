@@ -37,7 +37,7 @@ function ListingAvatar({ listing }: { listing: MarketListing }) {
     return <img src={url} alt="" className="h-10 w-10 rounded-full object-cover" />;
   }
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pixel-gray text-sm">
       {listing.name.slice(0, 2).toUpperCase()}
     </div>
   );
@@ -63,13 +63,13 @@ function OfficialAdoptModal({ onClose, onDone }: { onClose: () => void; onDone: 
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-lg border border-slate-700 bg-panel p-6">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-pixel-black/70 p-4">
+      <form onSubmit={submit} className="w-full max-w-sm space-y-4 border-4 border-pixel-black bg-pixel-white shadow-pixel p-6">
         <h2 className="font-medium">Adopt the official starter agent</h2>
         <label className="block text-sm">
-          <span className="text-slate-400">Agent name</span>
+          <span className="text-pixel-black/60">Agent name</span>
           <input
-            className="mt-1 w-full rounded border border-slate-700 bg-surface px-3 py-2 outline-none focus:border-accent"
+            className="mt-1 w-full border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 outline-none focus:border-pixel-blue"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="My Starter Agent"
@@ -77,9 +77,9 @@ function OfficialAdoptModal({ onClose, onDone }: { onClose: () => void; onDone: 
           />
         </label>
         <label className="block text-sm">
-          <span className="text-slate-400">Runtime</span>
+          <span className="text-pixel-black/60">Runtime</span>
           <select
-            className="mt-1 w-full rounded border border-slate-700 bg-surface px-3 py-2"
+            className="mt-1 w-full border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2"
             value={runtime}
             onChange={(e) => setRuntime(e.target.value)}
           >
@@ -90,14 +90,14 @@ function OfficialAdoptModal({ onClose, onDone }: { onClose: () => void; onDone: 
             ))}
           </select>
         </label>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-pixel-red">{error}</p>}
         <div className="flex justify-end gap-2 text-sm">
-          <button type="button" onClick={onClose} className="rounded border border-slate-700 px-3 py-2 text-slate-300">
+          <button type="button" onClick={onClose} className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-pixel-black/70">
             Cancel
           </button>
           <button
             disabled={busy || !name.trim()}
-            className="rounded bg-accent px-3 py-2 font-medium text-slate-900 disabled:opacity-50"
+            className="border-2 border-pixel-black bg-pixel-red px-3 py-2 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {busy ? 'Adopting…' : 'Adopt'}
           </button>
@@ -141,36 +141,36 @@ function ListingsTab() {
         className="flex max-w-md gap-2"
       >
         <input
-          className="flex-1 rounded border border-slate-700 bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+          className="flex-1 border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
           placeholder="Search listings"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="rounded border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:border-slate-500">
+        <button className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-sm text-pixel-black/70 hover:bg-pixel-yellow/40">
           Search
         </button>
       </form>
 
-      {notice && <p className="text-sm text-accent">{notice}</p>}
+      {notice && <p className="text-sm text-pixel-blue">{notice}</p>}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {listings.map((listing) => (
-          <div key={listing.id} className="rounded-lg border border-slate-800 bg-panel p-4">
+          <div key={listing.id} className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
             <div className="flex items-start gap-3">
               <ListingAvatar listing={listing} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="truncate font-medium">{listing.name}</span>
                   {listing.isOfficial && (
-                    <span className="rounded bg-accent/20 px-1.5 py-0.5 text-xs text-accent">official</span>
+                    <span className="border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">OFFICIAL</span>
                   )}
                 </div>
-                <p className="mt-0.5 line-clamp-2 text-xs text-slate-400">
+                <p className="mt-0.5 line-clamp-2 text-xs text-pixel-black/60">
                   {listing.description || 'No description'}
                 </p>
               </div>
             </div>
-            <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+            <div className="mt-3 flex items-center justify-between text-xs text-pixel-black/50">
               <span>
                 {listing.runtime} · v{listing.latestVersion} · {formatSize(listing.sizeBytes)}
               </span>
@@ -183,7 +183,7 @@ function ListingsTab() {
               {listing.isOfficial ? (
                 <button
                   onClick={() => setAdopting(true)}
-                  className="rounded bg-accent px-3 py-1.5 font-medium text-slate-900 hover:opacity-90"
+                  className="border-2 border-pixel-black bg-pixel-green px-3 py-1.5 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-yellow hover:text-pixel-black"
                 >
                   Adopt
                 </button>
@@ -191,7 +191,7 @@ function ListingsTab() {
                 <button
                   onClick={() => download(listing)}
                   disabled={!listing.hasFiles}
-                  className="rounded bg-accent px-3 py-1.5 font-medium text-slate-900 hover:opacity-90 disabled:opacity-50"
+                  className="border-2 border-pixel-black bg-pixel-red px-3 py-1.5 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
                 >
                   Download
                 </button>
@@ -200,7 +200,7 @@ function ListingsTab() {
           </div>
         ))}
       </div>
-      {listings.length === 0 && <p className="text-sm text-slate-500">No listings found.</p>}
+      {listings.length === 0 && <p className="text-sm text-pixel-black/50">No listings found.</p>}
 
       {adopting && (
         <OfficialAdoptModal
@@ -236,22 +236,22 @@ function ApiAgentsTab() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-pixel-black/60">
         Hosted agents that run over your own OpenAI or Anthropic provider — no CLI runtime needed.
         Configure a provider after deploying.
       </p>
-      {notice && <p className="text-sm text-red-400">{notice}</p>}
+      {notice && <p className="text-sm text-pixel-red">{notice}</p>}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {presets.map((preset) => (
-          <div key={preset.id} className="rounded-lg border border-slate-800 bg-panel p-4">
+          <div key={preset.id} className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
             <div className="flex items-center gap-2">
               <span className="font-medium">{preset.name}</span>
               {preset.featured && (
-                <span className="rounded bg-accent/20 px-1.5 py-0.5 text-xs text-accent">featured</span>
+                <span className="bg-pixel-red/20 px-1.5 py-0.5 text-xs text-pixel-blue">featured</span>
               )}
             </div>
-            <p className="mt-1 line-clamp-3 text-xs text-slate-400">{preset.description}</p>
-            <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+            <p className="mt-1 line-clamp-3 text-xs text-pixel-black/60">{preset.description}</p>
+            <div className="mt-3 flex items-center justify-between text-xs text-pixel-black/50">
               <span>
                 {preset.protocol} · {preset.model}
               </span>
@@ -260,7 +260,7 @@ function ApiAgentsTab() {
             <div className="mt-3 flex justify-end">
               <button
                 onClick={() => deploy(preset)}
-                className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-slate-900 hover:opacity-90"
+                className="border-2 border-pixel-black bg-pixel-red px-3 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange"
               >
                 Deploy
               </button>
@@ -268,7 +268,7 @@ function ApiAgentsTab() {
           </div>
         ))}
       </div>
-      {presets.length === 0 && <p className="text-sm text-slate-500">No API agents configured.</p>}
+      {presets.length === 0 && <p className="text-sm text-pixel-black/50">No API agents configured.</p>}
     </div>
   );
 }
@@ -310,37 +310,37 @@ function TemplateAdoptModal({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-pixel-black/70 p-4">
       <form
         onSubmit={submit}
-        className="max-h-[85vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-lg border border-slate-700 bg-panel p-6"
+        className="max-h-[85vh] w-full max-w-lg space-y-4 overflow-y-auto border-4 border-pixel-black bg-pixel-white shadow-pixel p-6"
       >
         <h2 className="font-medium">Adopt “{template.name}”</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-pixel-black/60">
           Creates {template.memberCount} agents in a new group and a team wired as a pipeline.
         </p>
         <label className="block text-sm">
-          <span className="text-slate-400">Team name</span>
+          <span className="text-pixel-black/60">Team name</span>
           <input
-            className="mt-1 w-full rounded border border-slate-700 bg-surface px-3 py-2 outline-none focus:border-accent"
+            className="mt-1 w-full border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 outline-none focus:border-pixel-blue"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
           />
         </label>
 
         {duplicates.length > 0 && (
-          <div className="space-y-2 rounded border border-slate-700 p-3 text-sm">
-            <p className="text-slate-300">
+          <div className="space-y-2 border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm p-3 text-sm">
+            <p className="text-pixel-black/70">
               You already have agents from this template. Share their provider setup with the new
               agents?
             </p>
             {duplicates.map((d) => (
               <div key={d.roleCode} className="flex items-center justify-between gap-2">
-                <span className="truncate text-slate-400">
-                  {d.memberName} <span className="text-slate-600">({d.agentName})</span>
+                <span className="truncate text-pixel-black/60">
+                  {d.memberName} <span className="text-pixel-black/40">({d.agentName})</span>
                 </span>
                 <select
-                  className="rounded border border-slate-700 bg-surface px-2 py-1 text-xs"
+                  className="border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-2 py-1 text-xs"
                   value={modes[d.roleCode] ?? 'clone'}
                   onChange={(e) =>
                     setModes((prev) => ({
@@ -357,14 +357,14 @@ function TemplateAdoptModal({
           </div>
         )}
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-pixel-red">{error}</p>}
         <div className="flex justify-end gap-2 text-sm">
-          <button type="button" onClick={onClose} className="rounded border border-slate-700 px-3 py-2 text-slate-300">
+          <button type="button" onClick={onClose} className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-pixel-black/70">
             Cancel
           </button>
           <button
             disabled={busy || !teamName.trim()}
-            className="rounded bg-accent px-3 py-2 font-medium text-slate-900 disabled:opacity-50"
+            className="border-2 border-pixel-black bg-pixel-red px-3 py-2 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {busy ? 'Creating…' : 'Adopt team'}
           </button>
@@ -386,32 +386,32 @@ function TeamTemplatesTab() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {templates.map((template) => (
-          <div key={template.id} className="rounded-lg border border-slate-800 bg-panel p-4">
+          <div key={template.id} className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
             <div className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: template.color }} />
               <span className="font-medium">{template.name}</span>
-              <span className="rounded bg-slate-700/50 px-1.5 py-0.5 text-xs text-slate-300">
+              <span className="border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
                 {template.category}
               </span>
             </div>
-            <p className="mt-2 text-xs text-slate-400">{template.description}</p>
+            <p className="mt-2 text-xs text-pixel-black/60">{template.description}</p>
             <div className="mt-3 space-y-1">
               {template.members.map((member) => (
                 <div key={member.roleCode} className="flex items-center gap-2 text-xs">
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: member.color }} />
-                  <span className="text-slate-300">{member.name}</span>
-                  <span className="text-slate-600">
+                  <span className="text-pixel-black/70">{member.name}</span>
+                  <span className="text-pixel-black/40">
                     {member.roleCode} · {member.runtime ?? template.defaultRuntime} ·{' '}
                     {member.skills.length} skills
                   </span>
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-xs text-slate-500">{template.workflowSummary}</p>
+            <p className="mt-3 text-xs text-pixel-black/50">{template.workflowSummary}</p>
             <div className="mt-3 flex justify-end">
               <button
                 onClick={() => setAdopting(template)}
-                className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-slate-900 hover:opacity-90"
+                className="border-2 border-pixel-black bg-pixel-red px-3 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange"
               >
                 Adopt team
               </button>
@@ -419,7 +419,7 @@ function TeamTemplatesTab() {
           </div>
         ))}
       </div>
-      {templates.length === 0 && <p className="text-sm text-slate-500">No templates available.</p>}
+      {templates.length === 0 && <p className="text-sm text-pixel-black/50">No templates available.</p>}
 
       {adopting && <TemplateAdoptModal template={adopting} onClose={() => setAdopting(null)} />}
     </div>
@@ -435,15 +435,15 @@ function MarketPageInner() {
         <h1 className="text-2xl font-semibold">Market</h1>
       </div>
 
-      <div className="flex gap-1 border-b border-slate-800 text-sm">
+      <div className="flex gap-1 border-b-4 border-pixel-black text-sm">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={
               tab === t.id
-                ? 'border-b-2 border-accent px-4 py-2 text-slate-100'
-                : 'px-4 py-2 text-slate-400 hover:text-slate-200'
+                ? 'border-b-4 border-pixel-red bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
+                : 'px-4 py-2 font-pixel text-pixel-black/55 hover:text-pixel-black'
             }
           >
             {t.label}

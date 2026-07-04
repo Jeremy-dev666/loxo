@@ -90,10 +90,10 @@ export function FilesPanel({
           {node.path && (
             <button
               onClick={() => toggleDir(node.path)}
-              className="flex w-full items-center gap-1 rounded px-1 py-0.5 text-left text-xs text-slate-300 hover:bg-slate-800"
+              className="flex w-full items-center gap-1 px-1 py-0.5 text-left text-xs text-pixel-black/70 hover:bg-pixel-cream"
               style={{ paddingLeft: `${depth * 12}px` }}
             >
-              <span className="text-slate-500">{isCollapsed ? '▸' : '▾'}</span>
+              <span className="text-pixel-black/50">{isCollapsed ? '▸' : '▾'}</span>
               {node.name}
             </button>
           )}
@@ -105,12 +105,12 @@ export function FilesPanel({
     return (
       <div
         key={node.path}
-        className="group flex items-center justify-between rounded px-1 py-0.5 hover:bg-slate-800"
+        className="group flex items-center justify-between px-1 py-0.5 hover:bg-pixel-cream"
         style={{ paddingLeft: `${depth * 12 + 14}px` }}
       >
         <button
           onClick={() => onPreview(node.path)}
-          className="min-w-0 flex-1 truncate text-left text-xs text-slate-400 hover:text-slate-100"
+          className="min-w-0 flex-1 truncate text-left text-xs text-pixel-black/60 hover:text-pixel-black"
           title={`${node.path} · ${formatSize(node.size)}`}
         >
           {node.name}
@@ -118,14 +118,14 @@ export function FilesPanel({
         <span className="hidden shrink-0 gap-1 group-hover:flex">
           <button
             onClick={() => rename(node)}
-            className="px-1 text-[10px] text-slate-500 hover:text-slate-200"
+            className="px-1 text-[10px] text-pixel-black/50 hover:text-pixel-black"
             title="Rename"
           >
             R
           </button>
           <button
             onClick={() => remove(node)}
-            className="px-1 text-[10px] text-slate-500 hover:text-red-400"
+            className="px-1 text-[10px] text-pixel-black/50 hover:text-pixel-red"
             title="Delete"
           >
             ×
@@ -137,19 +137,19 @@ export function FilesPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
-        <span className="text-xs font-medium text-slate-300">Files</span>
+      <div className="flex items-center justify-between border-b border-pixel-black px-3 py-2">
+        <span className="text-xs font-medium text-pixel-black/70">Files</span>
         <div className="flex gap-2">
           <button
             onClick={reload}
-            className="text-[11px] text-slate-500 hover:text-slate-200"
+            className="text-[11px] text-pixel-black/50 hover:text-pixel-black"
             title="Refresh"
           >
             refresh
           </button>
           <button
             onClick={() => downloadProjectArchive(projectId, projectName).catch(() => {})}
-            className="text-[11px] text-slate-500 hover:text-slate-200"
+            className="text-[11px] text-pixel-black/50 hover:text-pixel-black"
             title="Download workspace as zip"
           >
             zip
@@ -157,13 +157,13 @@ export function FilesPanel({
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
-        {error && <p className="px-1 text-xs text-red-400">{error}</p>}
+        {error && <p className="px-1 text-xs text-pixel-red">{error}</p>}
         {tree && tree.root.children?.length === 0 && (
-          <p className="px-1 text-xs text-slate-500">Workspace is empty.</p>
+          <p className="px-1 text-xs text-pixel-black/50">Workspace is empty.</p>
         )}
         {tree?.root.children?.map((child) => renderNode(child, 0))}
         {tree?.truncated && (
-          <p className="mt-2 px-1 text-[11px] text-amber-400">
+          <p className="mt-2 px-1 text-[11px] text-pixel-black">
             Listing truncated ({tree.totalEntries} entries shown).
           </p>
         )}
@@ -191,16 +191,16 @@ export function FilePreviewModal({ projectId, path, onClose }: FilePreviewModalP
   }, [projectId, path]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-pixel-black/70 p-4" onClick={onClose}>
       <div
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-lg border border-slate-700 bg-panel"
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col border-4 border-pixel-black bg-pixel-white shadow-pixel"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2">
+        <div className="flex items-center justify-between border-b border-pixel-black px-4 py-2">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{path}</p>
             {preview && (
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-pixel-black/50">
                 {formatSize(preview.size)}
                 {preview.truncated ? ' · preview truncated' : ''}
               </p>
@@ -209,25 +209,25 @@ export function FilePreviewModal({ projectId, path, onClose }: FilePreviewModalP
           <div className="flex shrink-0 items-center gap-3">
             <button
               onClick={() => downloadProjectFile(projectId, path).catch(() => {})}
-              className="text-xs text-slate-400 hover:text-slate-100"
+              className="text-xs text-pixel-black/60 hover:text-pixel-black"
             >
               download
             </button>
-            <button onClick={onClose} className="text-xs text-slate-400 hover:text-slate-100">
+            <button onClick={onClose} className="text-xs text-pixel-black/60 hover:text-pixel-black">
               close
             </button>
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-auto p-4">
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {!preview && !error && <p className="text-sm text-slate-500">Loading…</p>}
+          {error && <p className="text-sm text-pixel-red">{error}</p>}
+          {!preview && !error && <p className="text-sm text-pixel-black/50">Loading…</p>}
           {preview?.binary && (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-pixel-black/60">
               Binary file — not previewable. Use download instead.
             </p>
           )}
           {preview && !preview.binary && (
-            <pre className="whitespace-pre-wrap break-words font-mono text-xs text-slate-300">
+            <pre className="whitespace-pre-wrap break-words font-mono text-xs text-pixel-black/70">
               {preview.content || '(empty file)'}
             </pre>
           )}

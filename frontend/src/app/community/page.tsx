@@ -58,46 +58,46 @@ function PostCard({
   };
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-panel p-4">
+    <div className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
       <div className="flex items-center gap-2 text-sm">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-xs">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pixel-gray text-xs">
           {post.authorName.slice(0, 2).toUpperCase()}
         </span>
         <div className="min-w-0 flex-1">
           <span className="font-medium">{post.authorName}</span>
-          <span className="ml-2 rounded bg-slate-700/50 px-1.5 py-0.5 text-xs text-slate-400">
+          <span className="ml-2 bg-pixel-cream px-1.5 py-0.5 text-xs text-pixel-black/60">
             {post.authorType}
           </span>
-          <span className="ml-2 text-xs text-slate-500">{timeAgo(post.createdAt)}</span>
+          <span className="ml-2 text-xs text-pixel-black/50">{timeAgo(post.createdAt)}</span>
         </div>
         {post.authorType === 'agent' && post.authorAgentId && !ownPost && (
-          <button onClick={follow} className="text-xs text-accent hover:opacity-80">
+          <button onClick={follow} className="text-xs text-pixel-blue hover:opacity-80">
             {followedAgentIds.has(post.authorAgentId) ? 'Unfollow' : 'Follow'}
           </button>
         )}
         {ownPost && (
-          <button onClick={remove} className="text-xs text-red-400 hover:text-red-300">
+          <button onClick={remove} className="text-xs text-pixel-red hover:text-pixel-red">
             Delete
           </button>
         )}
       </div>
       <Link href={`/community/${post.id}`} className="mt-3 block">
-        <p className="whitespace-pre-wrap text-sm text-slate-200">{post.content}</p>
+        <p className="whitespace-pre-wrap text-sm text-pixel-black">{post.content}</p>
       </Link>
       {post.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {post.tags.map((tag) => (
-            <span key={tag} className="rounded bg-slate-700/40 px-1.5 py-0.5 text-xs text-slate-400">
+            <span key={tag} className="border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
               #{tag}
             </span>
           ))}
         </div>
       )}
-      <div className="mt-3 flex gap-4 text-xs text-slate-500">
-        <button onClick={like} className={liked ? 'text-accent' : 'hover:text-slate-300'}>
+      <div className="mt-3 flex gap-4 text-xs text-pixel-black/50">
+        <button onClick={like} className={liked ? 'text-pixel-blue' : 'hover:text-pixel-black'}>
           ♥ {likeCount}
         </button>
-        <Link href={`/community/${post.id}`} className="hover:text-slate-300">
+        <Link href={`/community/${post.id}`} className="hover:text-pixel-black">
           💬 {post.commentCount}
         </Link>
       </div>
@@ -151,16 +151,16 @@ function CommunityPageInner() {
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="text-2xl font-semibold">Community</h1>
 
-      <form onSubmit={submit} className="space-y-2 rounded-lg border border-slate-800 bg-panel p-4">
+      <form onSubmit={submit} className="space-y-2 border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
         <textarea
-          className="h-20 w-full resize-none rounded border border-slate-700 bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+          className="h-20 w-full resize-none border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
           placeholder="Share something with the community…"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
         />
         <div className="flex items-center justify-between">
           <select
-            className="rounded border border-slate-700 bg-surface px-2 py-1.5 text-xs"
+            className="border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-2 py-1.5 text-xs"
             value={persona}
             onChange={(e) => setPersona(e.target.value)}
           >
@@ -173,23 +173,23 @@ function CommunityPageInner() {
           </select>
           <button
             disabled={!draft.trim()}
-            className="rounded bg-accent px-4 py-1.5 text-sm font-medium text-slate-900 disabled:opacity-50"
+            className="border-2 border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             Post
           </button>
         </div>
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-pixel-red">{error}</p>}
       </form>
 
-      <div className="flex gap-1 border-b border-slate-800 text-sm">
+      <div className="flex gap-1 border-b-4 border-pixel-black text-sm">
         {FEED_VIEWS.map((item) => (
           <button
             key={item.id}
             onClick={() => setView(item.id)}
             className={
               view === item.id
-                ? 'border-b-2 border-accent px-4 py-2 text-slate-100'
-                : 'px-4 py-2 text-slate-400 hover:text-slate-200'
+                ? 'border-b-4 border-pixel-red bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
+                : 'px-4 py-2 font-pixel text-pixel-black/55 hover:text-pixel-black'
             }
           >
             {item.label}
@@ -208,7 +208,7 @@ function CommunityPageInner() {
           />
         ))}
         {posts.length === 0 && (
-          <p className="py-8 text-center text-sm text-slate-500">
+          <p className="py-8 text-center text-sm text-pixel-black/50">
             {view === 'following'
               ? 'Follow some agents to fill this feed.'
               : 'Nothing here yet — be the first to post.'}

@@ -16,7 +16,7 @@ import {
 } from '@/lib/providers';
 
 const inputClass =
-  'w-full rounded border border-slate-700 bg-surface px-3 py-2 text-sm outline-none focus:border-accent';
+  'w-full border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
 
 function ProviderForm({ onCreated }: { onCreated: () => void }) {
   const [name, setName] = useState('');
@@ -55,7 +55,7 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-lg border border-slate-800 bg-panel p-4">
+    <form onSubmit={submit} className="space-y-3 border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
       <h2 className="font-medium">Add provider</h2>
       <div className="grid grid-cols-2 gap-3">
         <input
@@ -100,11 +100,11 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
           onChange={(e) => setModels(e.target.value)}
         />
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-pixel-red">{error}</p>}
       <button
         type="submit"
         disabled={saving}
-        className="rounded bg-accent px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-60"
+        className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white disabled:opacity-60"
       >
         {saving ? 'Saving…' : 'Save provider'}
       </button>
@@ -114,25 +114,25 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
 
 function HealthBadge({ platform }: { platform: PlatformHealth }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-panel p-3">
+    <div className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-3">
       <div className="flex items-center justify-between">
         <span className="font-medium">{platform.label}</span>
         <span
           className={
             platform.ready
-              ? 'rounded bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-400'
-              : 'rounded bg-amber-500/15 px-2 py-0.5 text-xs text-amber-400'
+              ? 'bg-emerald-500/15 px-2 py-0.5 text-xs text-pixel-green'
+              : 'bg-amber-500/15 px-2 py-0.5 text-xs text-pixel-black'
           }
         >
           {platform.ready ? 'Ready' : 'Not ready'}
         </span>
       </div>
-      <p className="mt-1 text-xs text-slate-400">
+      <p className="mt-1 text-xs text-pixel-black/60">
         {platform.cli.available
           ? `CLI ${platform.cli.version}`
           : platform.cli.error ?? 'CLI unavailable'}
       </p>
-      {!platform.ready && <p className="mt-1 text-xs text-slate-500">{platform.installHint}</p>}
+      {!platform.ready && <p className="mt-1 text-xs text-pixel-black/50">{platform.installHint}</p>}
     </div>
   );
 }
@@ -168,30 +168,30 @@ function ProvidersPageInner() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Providers</h1>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-pixel-red">{error}</p>}
 
       <section className="space-y-3">
         {items.length === 0 && (
-          <p className="text-sm text-slate-400">No providers yet. Add one below.</p>
+          <p className="text-sm text-pixel-black/60">No providers yet. Add one below.</p>
         )}
         {items.map((provider) => (
           <div
             key={provider.id}
-            className="flex items-center justify-between rounded-lg border border-slate-800 bg-panel px-4 py-3"
+            className="flex items-center justify-between border-4 border-pixel-black bg-pixel-white shadow-pixel px-4 py-3"
           >
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-medium">{provider.name}</span>
-                <span className="rounded bg-slate-700/50 px-1.5 py-0.5 text-xs text-slate-300">
+                <span className="border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
                   {provider.vendor}
                 </span>
                 {provider.isDefault && (
-                  <span className="rounded bg-accent/15 px-1.5 py-0.5 text-xs text-accent">
+                  <span className="bg-pixel-red/15 px-1.5 py-0.5 text-xs text-pixel-blue">
                     default
                   </span>
                 )}
               </div>
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-pixel-black/60">
                 {provider.apiKeyPrefix}
                 {provider.models.length > 0 && ` · ${provider.models.join(', ')}`}
               </p>
@@ -200,14 +200,14 @@ function ProvidersPageInner() {
               {!provider.isDefault && (
                 <button
                   onClick={() => setDefault(provider)}
-                  className="rounded border border-slate-700 px-2 py-1 text-slate-300 hover:border-slate-500"
+                  className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-yellow/40"
                 >
                   Make default
                 </button>
               )}
               <button
                 onClick={() => remove(provider)}
-                className="rounded border border-red-900 px-2 py-1 text-red-400 hover:border-red-700"
+                className="border border-red-900 px-2 py-1 text-pixel-red hover:border-pixel-red"
               >
                 Delete
               </button>
@@ -227,7 +227,7 @@ function ProvidersPageInner() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-400">Checking local CLI runtimes…</p>
+          <p className="text-sm text-pixel-black/60">Checking local CLI runtimes…</p>
         )}
       </section>
     </div>

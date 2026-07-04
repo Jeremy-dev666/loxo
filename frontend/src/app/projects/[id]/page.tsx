@@ -100,10 +100,10 @@ function BindingsDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-lg border border-slate-700 bg-panel p-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-pixel-black/70 p-4">
+      <div className="w-full max-w-md border-4 border-pixel-black bg-pixel-white shadow-pixel p-5">
         <h2 className="text-lg font-semibold">Bound teams</h2>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-pixel-black/50">
           Teams that can run workflows inside this project.
         </p>
         <div className="mt-4 space-y-2">
@@ -123,20 +123,20 @@ function BindingsDialog({
               {team.name}
             </label>
           ))}
-          {teams.length === 0 && <p className="text-xs text-slate-500">Create a team first.</p>}
+          {teams.length === 0 && <p className="text-xs text-pixel-black/50">Create a team first.</p>}
         </div>
-        {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+        {error && <p className="mt-2 text-xs text-pixel-red">{error}</p>}
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="rounded border border-slate-700 px-4 py-2 text-sm text-slate-300"
+            className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70"
           >
             Cancel
           </button>
           <button
             onClick={save}
             disabled={saving}
-            className="rounded bg-accent px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
+            className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white disabled:opacity-50"
           >
             Save
           </button>
@@ -358,7 +358,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
   const pendingCount = deliverables.filter((d) => d.status === 'pending').length;
 
   if (!project) {
-    return <p className="text-sm text-slate-500">Loading project…</p>;
+    return <p className="text-sm text-pixel-black/50">Loading project…</p>;
   }
 
   return (
@@ -366,7 +366,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">{project.name}</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-pixel-black/50">
             {project.description || 'No description yet'}
           </p>
         </div>
@@ -374,7 +374,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
           <select
             value={activeTeamId}
             onChange={(e) => setActiveTeamId(e.target.value)}
-            className="rounded border border-slate-700 bg-surface px-2 py-1.5 text-sm outline-none focus:border-accent"
+            className="border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-2 py-1.5 text-sm outline-none focus:border-pixel-blue"
           >
             {boundTeams.length === 0 && <option value="">No team bound</option>}
             {boundTeams.map((team) => (
@@ -385,13 +385,13 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
           </select>
           <button
             onClick={() => setShowBindings(true)}
-            className="rounded border border-slate-700 px-3 py-1.5 text-sm text-slate-300 hover:border-slate-500"
+            className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-sm text-pixel-black/70 hover:bg-pixel-yellow/40"
           >
             Manage bindings
           </button>
           <span
-            className={`rounded border px-2 py-1 text-xs ${
-              connected ? 'border-emerald-400/40 text-emerald-400' : 'border-slate-700 text-slate-500'
+            className={`border px-2 py-1 text-xs ${
+              connected ? 'border-emerald-400/40 text-pixel-green' : 'border-pixel-black text-pixel-black/50'
             }`}
             title={connected ? 'Live updates connected' : 'Live updates offline; polling instead'}
           >
@@ -401,7 +401,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr_300px]">
-        <div className="h-[70vh] overflow-hidden rounded-lg border border-slate-800 bg-panel">
+        <div className="h-[70vh] overflow-hidden border-4 border-pixel-black bg-pixel-white shadow-pixel">
           <FilesPanel
             projectId={projectId}
             projectName={project.name}
@@ -413,10 +413,10 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
           />
         </div>
 
-        <div className="flex h-[70vh] flex-col rounded-lg border border-slate-800 bg-panel">
+        <div className="flex h-[70vh] flex-col border-4 border-pixel-black bg-pixel-white shadow-pixel">
           <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-3">
             {feed.length === 0 && (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-pixel-black/50">
                 Activity from workflow runs will appear here.
               </p>
             )}
@@ -425,10 +425,10 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
                 <span
                   className={
                     item.type.includes('failed')
-                      ? 'text-red-400'
+                      ? 'text-pixel-red'
                       : item.type === 'execution_completed'
-                        ? 'text-emerald-400'
-                        : 'text-slate-400'
+                        ? 'text-pixel-green'
+                        : 'text-pixel-black/60'
                   }
                 >
                   {item.message}
@@ -436,24 +436,24 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
               </p>
             ))}
           </div>
-          <div className="border-t border-slate-800 p-3">
-            {notice && <p className="mb-2 text-xs text-amber-400">{notice}</p>}
+          <div className="border-t border-pixel-black p-3">
+            {notice && <p className="mb-2 text-xs text-pixel-black">{notice}</p>}
             <textarea
               rows={3}
               value={task}
               onChange={(e) => setTask(e.target.value)}
               placeholder="Describe the task for the team. Agents work inside this project's workspace only."
-              className="w-full resize-none rounded border border-slate-700 bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+              className="w-full resize-none border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             />
             <div className="mt-2 flex items-center justify-between">
-              <p className="text-[11px] text-slate-600">
+              <p className="text-[11px] text-pixel-black/40">
                 Agents are sandboxed to this workspace; destructive operations are out of bounds.
               </p>
               <div className="flex gap-2">
                 {running && (
                   <button
                     onClick={cancel}
-                    className="rounded border border-red-400/50 px-3 py-1.5 text-sm text-red-400"
+                    className="border border-red-400/50 px-3 py-1.5 text-sm text-pixel-red"
                   >
                     Cancel run
                   </button>
@@ -461,7 +461,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
                 <button
                   onClick={submit}
                   disabled={submitting || !task.trim() || running}
-                  className="rounded bg-accent px-4 py-1.5 text-sm font-medium text-slate-900 disabled:opacity-50"
+                  className="border-2 border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
                 >
                   {running ? 'Running…' : submitting ? 'Submitting…' : 'Submit task'}
                 </button>
@@ -470,17 +470,17 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
           </div>
         </div>
 
-        <div className="flex h-[70vh] flex-col overflow-hidden rounded-lg border border-slate-800 bg-panel">
-          <div className="flex border-b border-slate-800 text-xs">
+        <div className="flex h-[70vh] flex-col overflow-hidden border-4 border-pixel-black bg-pixel-white shadow-pixel">
+          <div className="flex border-b border-pixel-black text-xs">
             <button
               onClick={() => setTab('board')}
-              className={`flex-1 px-3 py-2 ${tab === 'board' ? 'text-slate-100' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 px-3 py-2 ${tab === 'board' ? 'text-pixel-black' : 'text-pixel-black/50 hover:text-pixel-black'}`}
             >
               Task board
             </button>
             <button
               onClick={() => setTab('deliverables')}
-              className={`flex-1 px-3 py-2 ${tab === 'deliverables' ? 'text-slate-100' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 px-3 py-2 ${tab === 'deliverables' ? 'text-pixel-black' : 'text-pixel-black/50 hover:text-pixel-black'}`}
             >
               Deliverables{pendingCount > 0 ? ` (${pendingCount})` : ''}
             </button>

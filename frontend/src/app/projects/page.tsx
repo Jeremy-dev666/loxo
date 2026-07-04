@@ -54,75 +54,75 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-lg rounded-lg border border-slate-700 bg-panel p-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-pixel-black/70 p-4">
+      <div className="w-full max-w-lg border-4 border-pixel-black bg-pixel-white shadow-pixel p-5">
         <h2 className="text-lg font-semibold">New project</h2>
         <div className="mt-4 space-y-3">
           <input
             autoFocus
-            className="w-full rounded border border-slate-700 bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-full border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             placeholder="Project name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <textarea
-            className="w-full rounded border border-slate-700 bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-full border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             placeholder="What is this project about? (optional)"
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-400">Teams</p>
+            <p className="mb-1 text-xs font-medium text-pixel-black/60">Teams</p>
             <div className="flex flex-wrap gap-2">
               {teams.map((team) => (
                 <button
                   key={team.id}
                   onClick={() => toggle(teamIds, team.id, setTeamIds)}
-                  className={`rounded border px-2 py-1 text-xs ${
+                  className={`border px-2 py-1 text-xs ${
                     teamIds.includes(team.id)
-                      ? 'border-accent text-accent'
-                      : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                      ? 'border-pixel-red bg-pixel-yellow/30 font-bold text-pixel-black'
+                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-yellow/40'
                   }`}
                 >
                   {team.name}
                 </button>
               ))}
-              {teams.length === 0 && <p className="text-xs text-slate-500">No teams yet.</p>}
+              {teams.length === 0 && <p className="text-xs text-pixel-black/50">No teams yet.</p>}
             </div>
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-400">Agents</p>
+            <p className="mb-1 text-xs font-medium text-pixel-black/60">Agents</p>
             <div className="flex flex-wrap gap-2">
               {agents.map((agent) => (
                 <button
                   key={agent.id}
                   onClick={() => toggle(agentIds, agent.id, setAgentIds)}
-                  className={`rounded border px-2 py-1 text-xs ${
+                  className={`border px-2 py-1 text-xs ${
                     agentIds.includes(agent.id)
-                      ? 'border-accent text-accent'
-                      : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                      ? 'border-pixel-red bg-pixel-yellow/30 font-bold text-pixel-black'
+                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-yellow/40'
                   }`}
                 >
                   {agent.name}
                 </button>
               ))}
-              {agents.length === 0 && <p className="text-xs text-slate-500">No agents yet.</p>}
+              {agents.length === 0 && <p className="text-xs text-pixel-black/50">No agents yet.</p>}
             </div>
           </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-pixel-red">{error}</p>}
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="rounded border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+            className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70 hover:bg-pixel-yellow/40"
           >
             Cancel
           </button>
           <button
             onClick={save}
             disabled={!name.trim() || saving}
-            className="rounded bg-accent px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
+            className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white disabled:opacity-50"
           >
             {saving ? 'Creating…' : 'Create'}
           </button>
@@ -159,11 +159,11 @@ function ProjectsPageInner() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Projects</h1>
-          <p className="text-sm text-slate-500">{projects.length} workspaces</p>
+          <p className="text-sm text-pixel-black/50">{projects.length} workspaces</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="rounded bg-accent px-4 py-2 text-sm font-medium text-slate-900"
+          className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white"
         >
           New project
         </button>
@@ -171,28 +171,28 @@ function ProjectsPageInner() {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
-          <div key={project.id} className="rounded-lg border border-slate-800 bg-panel p-4">
+          <div key={project.id} className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
             <div className="flex items-start justify-between">
-              <Link href={`/projects/${project.id}`} className="font-medium hover:text-accent">
+              <Link href={`/projects/${project.id}`} className="font-medium hover:text-pixel-blue">
                 {project.name}
               </Link>
               <button
                 onClick={() => remove(project)}
-                className="text-xs text-slate-500 hover:text-red-400"
+                className="text-xs text-pixel-black/50 hover:text-pixel-red"
               >
                 delete
               </button>
             </div>
-            <p className="mt-1 truncate text-xs text-slate-400">
+            <p className="mt-1 truncate text-xs text-pixel-black/60">
               {project.teamIds.length} teams · {project.agentIds.length} agents ·{' '}
               {project.description || 'No description yet'}
             </p>
-            <p className="mt-1 text-xs text-slate-500">Last active {formatRecency(project.updatedAt)}</p>
+            <p className="mt-1 text-xs text-pixel-black/50">Last active {formatRecency(project.updatedAt)}</p>
           </div>
         ))}
       </div>
       {projects.length === 0 && (
-        <p className="text-sm text-slate-500">No projects yet. Create one to give your agents a shared workspace.</p>
+        <p className="text-sm text-pixel-black/50">No projects yet. Create one to give your agents a shared workspace.</p>
       )}
 
       {showCreate && (
