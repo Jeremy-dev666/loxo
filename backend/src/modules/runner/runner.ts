@@ -29,7 +29,7 @@ export interface TurnResult {
 export class RunnerError extends Error {
   constructor(
     message: string,
-    public readonly kind: 'timeout' | 'aborted' | 'cli_failed' | 'bad_output'
+    public readonly kind: 'timeout' | 'aborted' | 'cli_failed' | 'api_failed' | 'bad_output'
   ) {
     super(message);
     this.name = 'RunnerError';

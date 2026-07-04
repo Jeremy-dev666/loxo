@@ -14,6 +14,7 @@ import {
   unpublishListing,
 } from './market.service';
 import { ADOPTION_RUNTIMES, adoptOfficialAgent, type AdoptionRuntime } from './official-listing';
+import { deployApiAgent, getApiAgentPreset, listApiAgentPresets } from './api-catalog';
 import { describeRisks } from './publish-safety';
 
 export const marketRouter = Router();
@@ -113,6 +114,40 @@ marketRouter.post('/official/adopt', async (req: AuthedRequest, res, next) => {
       input.name,
       input.runtime as AdoptionRuntime | undefined
     );
+    res.status(201).json({ agent });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const catalogQuerySchema = z.object({
+  search: z.string().max(120).optional(),
+  category: z.string().max(60).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+marketRouter.get('/api-agents', (req: AuthedRequest, res, next) => {
+  try {
+    const query = parseOr400(catalogQuerySchema, req.query);
+    res.json({ presets: listApiAgentPresets(query) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+marketRouter.get('/api-agents/:presetId', (req: AuthedRequest, res, next) => {
+  try {
+    const preset = getApiAgentPreset(String(req.params.presetId));
+    if (!preset) throw notFound('API agent preset not found');
+    res.json({ preset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+marketRouter.post('/api-agents/:presetId/deploy', async (req: AuthedRequest, res, next) => {
+  try {
+    const agent = await deployApiAgent(req.auth!.userId, String(req.params.presetId));
     res.status(201).json({ agent });
   } catch (error) {
     next(error);

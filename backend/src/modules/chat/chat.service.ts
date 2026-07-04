@@ -6,8 +6,10 @@ import { storage } from '../../storage/layout';
 import { getAgent } from '../agents/agents.service';
 import { getProviderCredentials } from '../providers/providers.service';
 import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
+import { executeApiTurn, type ApiChatMessage, type ApiProtocol } from '../runner/api-turn';
 import { buildDirectChatPrompt } from '../runner/turn-context';
 import type { CliRuntime } from '../agents/runtime-detect';
+import type { Agent } from '../../db/schema';
 import {
   appendMessage,
   getConversation,
@@ -37,6 +39,62 @@ export function setTurnExecutorForTests(executor: TurnExecutor | null): void {
 
 const inflight = new Map<string, AbortController>();
 
+const API_HISTORY_LIMIT = 18;
+
+function buildApiMessages(history: Message[], content: string): ApiChatMessage[] {
+  const mapped: ApiChatMessage[] = history
+    .filter((m) => (m.role === 'user' || m.role === 'assistant') && !m.meta.error)
+    .slice(-API_HISTORY_LIMIT)
+    .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+  mapped.push({ role: 'user', content });
+  return mapped;
+}
+
+interface Credentials {
+  vendor: string;
+  apiKey: string;
+  baseUrl: string | null;
+}
+
+/**
+ * One turn against a hosted model API. Configuration gaps surface as
+ * RunnerError so they land in the conversation as system messages, the same
+ * way CLI provider problems do.
+ */
+async function runApiAgentTurn(
+  agent: Agent,
+  credentials: Credentials | null,
+  history: Message[],
+  content: string,
+  signal: AbortSignal,
+  events: TurnEvents
+): Promise<TurnResult> {
+  if (!credentials) {
+    throw new RunnerError(
+      'Configure an OpenAI or Anthropic provider for this agent first',
+      'api_failed'
+    );
+  }
+  const model = agent.model ?? agent.manifest.api?.model;
+  if (!model) {
+    throw new RunnerError('Select a model for this agent first', 'api_failed');
+  }
+
+  const system =
+    agent.manifest.api?.systemPrompt ?? `You are ${agent.name}. ${agent.description}`.trim();
+
+  return executeApiTurn({
+    protocol: credentials.vendor as ApiProtocol,
+    apiKey: credentials.apiKey,
+    baseUrl: credentials.baseUrl,
+    model,
+    system,
+    messages: buildApiMessages(history, content),
+    signal,
+    onChunk: events.onChunk,
+  });
+}
+
 export function stopTurn(conversationId: string): boolean {
   const controller = inflight.get(conversationId);
   if (!controller) return false;
@@ -65,9 +123,6 @@ export async function runChatTurn(
   const conversation = await getConversation(userId, conversationId);
   const agent = await getAgent(userId, conversation.agentId);
 
-  if (agent.runtime === 'api') {
-    throw badRequest('unsupported_runtime', 'API-hosted agents are wired up in a later milestone');
-  }
   if (inflight.has(conversationId)) {
     throw badRequest('turn_in_flight', 'A turn is already running for this conversation');
   }
@@ -81,33 +136,38 @@ export async function runChatTurn(
   const paths = storage.agentPaths(userId, agent.id);
   const resumable = RESUMABLE.has(agent.runtime);
 
-  const prompt = buildDirectChatPrompt({
-    agent,
-    workspace: paths.workspace,
-    userMessage: content,
-    conversationId,
-    history: resumable && conversation.runnerSessionRef ? undefined : history,
-  });
-
   const controller = new AbortController();
   inflight.set(conversationId, controller);
   await setAgentStatus(agent.id, 'busy');
 
   try {
-    const result = await turnExecutor({
-      runtime: agent.runtime as CliRuntime,
-      workspace: paths.workspace,
-      stateDir: paths.state,
-      prompt,
-      model: agent.model,
-      credentials: credentials ?? undefined,
-      sessionRef: resumable ? conversation.runnerSessionRef : null,
-      signal: controller.signal,
-      onChunk: events.onChunk,
-    });
+    let result: TurnResult;
+    if (agent.runtime === 'api') {
+      result = await runApiAgentTurn(agent, credentials, history, content, controller.signal, events);
+    } else {
+      const prompt = buildDirectChatPrompt({
+        agent,
+        workspace: paths.workspace,
+        userMessage: content,
+        conversationId,
+        history: resumable && conversation.runnerSessionRef ? undefined : history,
+      });
 
-    if (resumable && result.sessionRef && result.sessionRef !== conversation.runnerSessionRef) {
-      await setRunnerSessionRef(conversationId, result.sessionRef);
+      result = await turnExecutor({
+        runtime: agent.runtime as CliRuntime,
+        workspace: paths.workspace,
+        stateDir: paths.state,
+        prompt,
+        model: agent.model,
+        credentials: credentials ?? undefined,
+        sessionRef: resumable ? conversation.runnerSessionRef : null,
+        signal: controller.signal,
+        onChunk: events.onChunk,
+      });
+
+      if (resumable && result.sessionRef && result.sessionRef !== conversation.runnerSessionRef) {
+        await setRunnerSessionRef(conversationId, result.sessionRef);
+      }
     }
 
     const reply = await appendMessage(conversationId, 'assistant', result.text, {

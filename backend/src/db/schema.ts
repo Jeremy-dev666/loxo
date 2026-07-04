@@ -63,6 +63,13 @@ export interface AgentManifest {
   version?: string;
   description?: string;
   capabilities?: string[];
+  /** API-hosted agents: protocol and defaults recorded at deploy time. */
+  api?: {
+    protocol?: 'openai' | 'anthropic';
+    model?: string;
+    systemPrompt?: string;
+    catalogId?: string;
+  };
 }
 
 /**

@@ -3,8 +3,10 @@ import path from 'node:path';
 import { getAgent } from '../agents/agents.service';
 import type { CliRuntime } from '../agents/runtime-detect';
 import { getProviderCredentials } from '../providers/providers.service';
-import { runTurn, type TurnRequest, type TurnResult } from '../runner/runner';
+import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
+import { executeApiTurn, type ApiProtocol } from '../runner/api-turn';
 import { buildWorkflowNodePrompt } from '../runner/turn-context';
+import type { Agent } from '../../db/schema';
 import { storage } from '../../storage/layout';
 import { diffWorkspaceSnapshots, snapshotWorkspace } from './artifacts';
 import {
@@ -56,15 +58,60 @@ function prepareStateDir(
   return stateDir;
 }
 
+/**
+ * API-hosted agents cannot touch the run workspace; they contribute text
+ * output only, which the executor hands to downstream nodes.
+ */
+async function runApiNode(
+  request: AgentNodeRequest,
+  agent: Agent,
+  credentials: { vendor: string; apiKey: string; baseUrl: string | null } | null
+): Promise<AgentNodeResult> {
+  if (!credentials) {
+    throw new RunnerError(
+      `Agent "${agent.name}" needs an OpenAI or Anthropic provider configured`,
+      'api_failed'
+    );
+  }
+  const model = agent.model ?? agent.manifest.api?.model;
+  if (!model) {
+    throw new RunnerError(`Agent "${agent.name}" has no model configured`, 'api_failed');
+  }
+
+  const task = [
+    `You are acting as node "${request.node.label ?? request.node.id}" in the workflow "${request.workflowName}".`,
+    request.node.role ? `Role: ${request.node.role}` : null,
+    `Task: ${request.task}`,
+    request.input ? `Input from previous steps:\n${request.input}` : null,
+    'Respond with your complete contribution as plain text; downstream steps receive exactly what you write.',
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  const result = await executeApiTurn({
+    protocol: credentials.vendor as ApiProtocol,
+    apiKey: credentials.apiKey,
+    baseUrl: credentials.baseUrl,
+    model,
+    system: agent.manifest.api?.systemPrompt ?? `You are ${agent.name}. ${agent.description}`.trim(),
+    messages: [{ role: 'user', content: task }],
+    timeoutMs: request.timeoutSec * 1000,
+    signal: request.signal,
+  });
+
+  return { output: result.text, artifacts: [] };
+}
+
 async function runAgentNode(request: AgentNodeRequest): Promise<AgentNodeResult> {
   const agent = await getAgent(request.userId, request.node.agentId!);
-  if (agent.runtime === 'api') {
-    throw new Error('API-hosted agents cannot run workflow nodes yet');
-  }
 
   const credentials = agent.providerId
     ? await getProviderCredentials(request.userId, agent.providerId)
     : null;
+
+  if (agent.runtime === 'api') {
+    return runApiNode(request, agent, credentials);
+  }
   const stateDir = prepareStateDir(request, agent.id, agent.runtime);
 
   const prompt = buildWorkflowNodePrompt({
