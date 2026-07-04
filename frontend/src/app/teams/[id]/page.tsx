@@ -149,24 +149,24 @@ function EditorInner() {
     }
   };
 
-  if (!team) return <p className="text-slate-400">{message ?? 'Loading…'}</p>;
+  if (!team) return <p className="font-pixel text-pixel-black/50">{message ?? 'Loading…'}</p>;
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="mr-2 text-xl font-semibold">{team.name}</h1>
-        <span className="rounded bg-slate-700/50 px-1.5 py-0.5 text-xs text-slate-300">
+        <h1 className="mr-2 font-pixel text-xl font-bold text-pixel-black">{team.name}</h1>
+        <span className="border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
           {team.workflow.execution.mode}
         </span>
         <button
           onClick={() => addNode('agent')}
-          className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500"
+          className="border-2 border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow" style={{ boxShadow: '2px 2px 0 #101010' }}
         >
           + Agent node
         </button>
         <button
           onClick={() => addNode('condition')}
-          className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500"
+          className="border-2 border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow" style={{ boxShadow: '2px 2px 0 #101010' }}
         >
           + Condition
         </button>
@@ -174,14 +174,14 @@ function EditorInner() {
           <button
             onClick={() => save(true)}
             disabled={saving}
-            className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500 disabled:opacity-50"
+            className="border-2 border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow disabled:opacity-50" style={{ boxShadow: '2px 2px 0 #101010' }}
           >
             Save draft
           </button>
           <button
             onClick={() => save(false)}
             disabled={saving}
-            className="rounded bg-accent px-4 py-1.5 text-xs font-medium text-slate-900 disabled:opacity-50"
+            className="border-2 border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 #101010' }}
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -190,7 +190,7 @@ function EditorInner() {
 
       <div className="flex gap-2">
         <input
-          className="flex-1 rounded border border-slate-700 bg-panel px-3 py-2 text-sm outline-none focus:border-accent"
+          className="flex-1 border-4 border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue" style={{ boxShadow: 'inset 2px 2px 0 #101010' }}
           placeholder='Describe the workflow, e.g. "research the topic, review quality, then write a summary"'
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -199,20 +199,20 @@ function EditorInner() {
         <button
           onClick={generate}
           disabled={generating || !prompt.trim()}
-          className="rounded border border-violet-700 px-4 py-2 text-xs text-violet-300 hover:border-violet-500 disabled:opacity-50"
+          className="border-2 border-pixel-black bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-green disabled:opacity-50" style={{ boxShadow: '2px 2px 0 #101010' }}
         >
-          {generating ? 'Generating…' : 'Generate'}
+          {generating ? '✨ Generating…' : '✨ Generate'}
         </button>
       </div>
 
-      {message && <p className="text-xs text-amber-400">{message}</p>}
+      {message && <p className="border-2 border-pixel-yellow bg-pixel-yellow/15 px-2 py-1 font-pixel text-xs text-pixel-black">{message}</p>}
       {team.warnings.length > 0 && (
-        <p className="text-xs text-slate-500">
+        <p className="font-pixel text-xs text-pixel-black/55">
           {team.warnings.map((w) => w.message).join(' · ')}
         </p>
       )}
 
-      <div className="min-h-0 flex-1 rounded-lg border border-slate-800">
+      <div className="min-h-0 flex-1 border-4 border-pixel-black bg-pixel-white" style={{ boxShadow: '5px 5px 0 #101010' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -221,7 +221,7 @@ function EditorInner() {
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           fitView
-          colorMode="dark"
+          colorMode="light"
           deleteKeyCode={['Backspace', 'Delete']}
         >
           <Background gap={16} />
