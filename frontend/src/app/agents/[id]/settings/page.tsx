@@ -28,7 +28,11 @@ const VENDORS_FOR_RUNTIME: Record<string, string[]> = {
 };
 
 const inputClass =
-  'w-full rounded border border-slate-700 bg-surface px-3 py-2 text-sm outline-none focus:border-accent';
+  'w-full border-4 border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none focus:border-pixel-blue';
+const sectionClass = 'space-y-3 border-4 border-pixel-black bg-pixel-white p-4';
+const sectionStyle = { boxShadow: '5px 5px 0 #101010' } as const;
+const chipButtonClass =
+  'cursor-pointer border-2 border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow';
 
 function SettingsInner() {
   const params = useParams<{ id: string }>();
@@ -72,7 +76,7 @@ function SettingsInner() {
     [providers, agent]
   );
 
-  if (!agent) return <p className="text-slate-400">Loading…</p>;
+  if (!agent) return <p className="font-pixel text-pixel-black/50">Loading…</p>;
 
   const saveProfile = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -124,23 +128,23 @@ function SettingsInner() {
   const avatar = avatarUrl(agent);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
+    <div className="mx-auto max-w-2xl space-y-8 pb-16">
       <div className="flex items-center gap-4">
         {avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt="" className="h-14 w-14 rounded-full object-cover" />
+          <img src={avatar} alt="" className="h-14 w-14 border-4 border-pixel-black object-cover pixelated" />
         ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-700">
+          <div className="flex h-14 w-14 items-center justify-center border-4 border-pixel-black bg-pixel-blue font-pixel text-pixel-white">
             {agent.name.slice(0, 2).toUpperCase()}
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-semibold">{agent.name}</h1>
-          <span className="rounded bg-slate-700/50 px-1.5 py-0.5 text-xs text-slate-300">
+          <h1 className="font-pixel text-2xl font-bold text-pixel-black">{agent.name}</h1>
+          <span className="border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
             {agent.runtime}
           </span>
         </div>
-        <label className="ml-auto cursor-pointer rounded border border-slate-700 px-3 py-1.5 text-sm text-slate-300 hover:border-slate-500">
+        <label className={`ml-auto ${chipButtonClass}`} style={{ boxShadow: '2px 2px 0 #101010' }}>
           Change avatar
           <input
             type="file"
@@ -151,10 +155,10 @@ function SettingsInner() {
         </label>
       </div>
 
-      {message && <p className="text-sm text-amber-400">{message}</p>}
+      {message && <p className="border-2 border-pixel-yellow bg-pixel-yellow/15 p-2 font-pixel text-sm text-pixel-black">{message}</p>}
 
-      <form onSubmit={saveProfile} className="space-y-3 rounded-lg border border-slate-800 bg-panel p-4">
-        <h2 className="font-medium">Profile</h2>
+      <form onSubmit={saveProfile} className={sectionClass} style={sectionStyle}>
+        <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Profile</h2>
         <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} required />
         <textarea
           className={inputClass}
@@ -165,14 +169,14 @@ function SettingsInner() {
         />
         <button
           disabled={saving}
-          className="rounded bg-accent px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-60"
+          className="border-4 border-pixel-brown bg-pixel-red px-4 py-2 font-pixel text-sm text-pixel-white hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 #101010' }}
         >
           Save
         </button>
       </form>
 
-      <section className="space-y-3 rounded-lg border border-slate-800 bg-panel p-4">
-        <h2 className="font-medium">Model provider</h2>
+      <section className={sectionClass} style={sectionStyle}>
+        <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Model provider</h2>
         <select
           className={inputClass}
           value={agent.providerId ?? ''}
@@ -200,16 +204,16 @@ function SettingsInner() {
           </select>
         )}
         {eligibleProviders.length === 0 && (
-          <p className="text-xs text-slate-500">
+          <p className="font-pixel text-xs text-pixel-black/55">
             No provider matches this runtime. Add one under Settings → Providers.
           </p>
         )}
       </section>
 
-      <section className="space-y-3 rounded-lg border border-slate-800 bg-panel p-4">
+      <section className={sectionClass} style={sectionStyle}>
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">Skills</h2>
-          <label className="cursor-pointer rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500">
+          <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Skills</h2>
+          <label className={chipButtonClass} style={{ boxShadow: '2px 2px 0 #101010' }}>
             Upload skill (.md / .zip)
             <input
               type="file"
@@ -220,48 +224,48 @@ function SettingsInner() {
           </label>
         </div>
         {skills.length === 0 ? (
-          <p className="text-xs text-slate-500">No skills installed.</p>
+          <p className="font-pixel text-xs text-pixel-black/55">No skills installed.</p>
         ) : (
           <ul className="space-y-2">
             {skills.map((skill) => (
-              <li key={skill.id} className="rounded border border-slate-800 px-3 py-2">
-                <span className="text-sm font-medium">{skill.name}</span>
-                <p className="text-xs text-slate-400">{skill.description}</p>
+              <li key={skill.id} className="border-2 border-pixel-black px-3 py-2" style={{ boxShadow: '2px 2px 0 #101010' }}>
+                <span className="font-pixel text-sm font-bold text-pixel-black">{skill.name}</span>
+                <p className="font-pixel text-xs text-pixel-black/60">{skill.description}</p>
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section className="space-y-3 rounded-lg border border-slate-800 bg-panel p-4">
+      <section className={sectionClass} style={sectionStyle}>
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">Diagnostics</h2>
+          <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Diagnostics</h2>
           <button
             onClick={runDiagnostics}
-            className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500"
+            className={chipButtonClass} style={{ boxShadow: '2px 2px 0 #101010' }}
           >
             Run check
           </button>
         </div>
         {diagnostics && (
-          <div className="space-y-1 text-sm">
+          <div className="space-y-1 font-pixel text-sm text-pixel-black">
             <p>
               CLI:{' '}
               {diagnostics.cli.available ? (
-                <span className="text-emerald-400">{diagnostics.cli.version}</span>
+                <span className="text-pixel-green">{diagnostics.cli.version}</span>
               ) : (
-                <span className="text-red-400">{diagnostics.cli.error}</span>
+                <span className="text-pixel-red">{diagnostics.cli.error}</span>
               )}
             </p>
             <p>
               Provider:{' '}
               {diagnostics.provider ? (
-                <span className={diagnostics.provider.vendorMatch ? 'text-emerald-400' : 'text-red-400'}>
+                <span className={diagnostics.provider.vendorMatch ? 'text-pixel-green' : 'text-pixel-red'}>
                   {diagnostics.provider.vendor}
                   {diagnostics.provider.vendorMatch ? '' : ' (vendor mismatch)'}
                 </span>
               ) : (
-                <span className="text-slate-400">not configured</span>
+                <span className="text-pixel-black/50">not configured</span>
               )}
             </p>
           </div>
