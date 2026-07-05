@@ -35,20 +35,23 @@ export function PixelDialog({ isOpen, onClose, title, children }: PixelDialogPro
             onClick={onClose}
           >
             <motion.div
-              initial={{ scale: 0.8, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 20 }}
+              initial={{ scale: 0.97, y: 8, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.97, y: 8, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="my-auto w-full max-w-lg border-4 border-pixel-black bg-pixel-white"
-              style={{ boxShadow: '8px 8px 0px 0px #101010' }}
+              className="my-auto w-full max-w-lg border border-pixel-black bg-pixel-white"
+              style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
             >
               {title && (
-                <div className="flex items-center justify-between border-b-4 border-pixel-black bg-pixel-green p-3 font-pixel text-xl text-pixel-white">
-                  <span>{title}</span>
+                <div className="flex items-center justify-between border-b border-pixel-black bg-pixel-cream px-3 py-2">
+                  <span className="flex items-center gap-2 font-pixel text-sm uppercase tracking-wide text-pixel-black">
+                    <span className="h-3 w-1 bg-pixel-yellow" aria-hidden />
+                    {title}
+                  </span>
                   <button
                     onClick={onClose}
-                    className="flex h-8 w-8 items-center justify-center border-2 border-pixel-black bg-pixel-red text-pixel-white hover:bg-pixel-orange"
-                    style={{ boxShadow: '2px 2px 0px 0px #101010' }}
+                    className="flex h-6 w-6 items-center justify-center border border-pixel-black bg-pixel-white text-xs text-pixel-black hover:bg-pixel-red hover:text-pixel-white"
+                    style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
                   >
                     X
                   </button>

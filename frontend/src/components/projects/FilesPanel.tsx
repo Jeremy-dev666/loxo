@@ -193,7 +193,7 @@ export function FilePreviewModal({ projectId, path, onClose }: FilePreviewModalP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-pixel-black/70 p-4" onClick={onClose}>
       <div
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col border-4 border-pixel-black bg-pixel-white shadow-pixel"
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col border border-pixel-black bg-pixel-white shadow-pixel"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-pixel-black px-4 py-2">

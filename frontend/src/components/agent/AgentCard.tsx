@@ -112,7 +112,7 @@ export function AgentCard({
       }`}
     >
       {published && !silhouette && (
-        <div className="absolute left-1.5 top-1.5 z-20 border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-[10px] font-bold leading-none text-pixel-black md:text-[9px]">
+        <div className="absolute left-1.5 top-1.5 z-20 border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-[10px] font-bold leading-none text-pixel-black md:text-[9px]">
           LISTED
         </div>
       )}
@@ -140,8 +140,8 @@ export function AgentCard({
 
           {menuOpen && (
             <div
-              className="absolute right-0 mt-2 w-72 border-2 border-pixel-black bg-pixel-white py-1 md:w-56"
-              style={{ boxShadow: '4px 4px 0px 0px #101010' }}
+              className="absolute right-0 mt-2 w-72 border border-pixel-black bg-pixel-white py-1 md:w-56"
+              style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
               onClick={(event) => event.stopPropagation()}
             >
               <button
@@ -195,7 +195,7 @@ export function AgentCard({
             providerConfigured={providerConfigured}
           />
           {!silhouette && (
-            <div className="pointer-events-none absolute -left-2 bottom-0 z-20 border-2 border-pixel-black bg-pixel-white px-1 py-0.5 font-pixel text-[9px] leading-none text-pixel-black">
+            <div className="pointer-events-none absolute -left-2 bottom-0 z-20 border border-pixel-black bg-pixel-white px-1 py-0.5 font-pixel text-[9px] leading-none text-pixel-black">
               {RUNTIME_LABELS[agent.runtime] ?? agent.runtime}
             </div>
           )}

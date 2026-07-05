@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { motion } from 'framer-motion';
 
 interface PixelCardProps {
   children: ReactNode;
@@ -19,20 +18,20 @@ export function PixelCard({
   hoverable = true,
 }: PixelCardProps) {
   return (
-    <motion.div
-      whileHover={hoverable ? { scale: 1.02 } : {}}
+    <div
       onClick={onClick}
-      className={`flex min-h-0 flex-col border-4 border-pixel-black bg-pixel-white ${
+      className={`flex min-h-0 flex-col border border-pixel-black bg-pixel-white transition-colors duration-100 ${
         onClick ? 'cursor-pointer' : ''
-      } ${className}`}
-      style={{ boxShadow: '6px 6px 0px 0px #101010' }}
+      } ${hoverable ? 'hover:border-pixel-yellow' : ''} ${className}`}
+      style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
     >
       {title && (
-        <div className="border-b-4 border-pixel-black bg-pixel-blue p-2 font-pixel text-lg text-pixel-white">
-          {title}
+        <div className="flex items-center gap-2 border-b border-pixel-black bg-pixel-cream px-3 py-1.5">
+          <span className="h-3 w-1 bg-pixel-yellow" aria-hidden />
+          <span className="font-pixel text-xs uppercase tracking-wide text-pixel-black">{title}</span>
         </div>
       )}
-      <div className="flex min-h-0 flex-1 flex-col p-4">{children}</div>
-    </motion.div>
+      <div className="flex min-h-0 flex-1 flex-col p-3">{children}</div>
+    </div>
   );
 }

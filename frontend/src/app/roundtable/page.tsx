@@ -71,7 +71,7 @@ function Whiteboard({
   };
 
   return (
-    <div className="border-4 border-pixel-black bg-pixel-white shadow-pixel">
+    <div className="border border-pixel-black bg-pixel-white shadow-pixel">
       <div className="flex items-center gap-3 border-b border-pixel-black px-4 py-2 text-xs">
         <span className="font-medium text-pixel-black/70">Whiteboard</span>
         {Object.entries(COLUMN_STYLES).map(([key, style]) => (
@@ -223,7 +223,7 @@ function RoundtablePageInner() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold">Roundtable</h1>
           {state?.active && (
-            <span className="border-2 border-pixel-black bg-pixel-green px-2 py-0.5 font-pixel text-xs text-pixel-white">
+            <span className="border border-pixel-black bg-pixel-green px-2 py-0.5 font-pixel text-xs text-pixel-white">
               live · round {state.round}
             </span>
           )}
@@ -239,14 +239,14 @@ function RoundtablePageInner() {
           )}
           <button
             onClick={newSession}
-            className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-pixel-black/70 hover:bg-pixel-yellow/40"
+            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-pixel-black/70 hover:bg-pixel-yellow/40"
           >
             New session
           </button>
         </div>
       </div>
 
-      <section className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-3">
+      <section className="border border-pixel-black bg-pixel-white shadow-pixel p-3">
         <p className="mb-2 text-xs text-pixel-black/60">
           Members ({members.length}) — click to invite or remove. Say “stop this topic” to end a
           discussion.
@@ -271,7 +271,7 @@ function RoundtablePageInner() {
       </section>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <section className="flex h-[520px] flex-col border-4 border-pixel-black bg-pixel-white shadow-pixel">
+        <section className="flex h-[520px] flex-col border border-pixel-black bg-pixel-white shadow-pixel">
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {(state?.messages ?? []).map((message) => (
               <div key={message.id} className={message.senderId === 'user' ? 'text-right' : ''}>
@@ -279,8 +279,8 @@ function RoundtablePageInner() {
                 <div
                   className={
                     message.senderId === 'user'
-                      ? 'inline-block max-w-[85%] border-2 border-pixel-black bg-pixel-blue px-3 py-2 font-pixel text-sm text-pixel-white shadow-pixel-sm'
-                      : 'inline-block max-w-[85%] border-2 border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black shadow-pixel-sm'
+                      ? 'inline-block max-w-[85%] border border-pixel-black bg-pixel-blue px-3 py-2 font-pixel text-sm text-pixel-white shadow-pixel-sm'
+                      : 'inline-block max-w-[85%] border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black shadow-pixel-sm'
                   }
                 >
                   <p className="whitespace-pre-wrap text-left">{message.content}</p>
@@ -296,12 +296,12 @@ function RoundtablePageInner() {
           </div>
           <form onSubmit={send} className="flex gap-2 border-t border-pixel-black p-3">
             <input
-              className="flex-1 border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+              className="flex-1 border border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
               placeholder="Say something to the table…"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
             />
-            <button className="border-2 border-pixel-black bg-pixel-red px-4 py-2 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange">
+            <button className="border border-pixel-black bg-pixel-red px-4 py-2 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange">
               Send
             </button>
           </form>
@@ -311,7 +311,7 @@ function RoundtablePageInner() {
         <div className="space-y-4">
           <Whiteboard sessionId={sessionId} notes={state?.notes ?? []} onNoteMoved={onNoteMoved} />
 
-          <section className="border-4 border-pixel-black bg-pixel-white shadow-pixel">
+          <section className="border border-pixel-black bg-pixel-white shadow-pixel">
             <p className="border-b border-pixel-black px-4 py-2 text-xs font-medium text-pixel-black/70">
               Run log
             </p>

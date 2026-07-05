@@ -16,9 +16,9 @@ function SectionShell({
   children?: ReactNode;
 }) {
   return (
-    <div className="border-4 border-pixel-black bg-pixel-white p-4" style={{ boxShadow: '6px 6px 0px 0px #101010' }}>
+    <div className="border border-pixel-black bg-pixel-white p-4" style={{ boxShadow: '2px 2px 0px 0px #26221B' }}>
       <div className="mb-4 flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center border-4 border-pixel-black ${tone}`}>
+        <div className={`flex h-10 w-10 items-center justify-center border border-pixel-black ${tone}`}>
           {icon}
         </div>
         <h2 className="font-pixel text-xl text-pixel-black">{title}</h2>
@@ -89,11 +89,11 @@ export function MenuCard({ href, icon, title, description, color, delay = 0 }: M
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay }}
-        whileHover={{ scale: 1.02, x: 4 }}
-        className={`${color} group flex cursor-pointer items-center gap-4 border-4 border-pixel-black p-4`}
-        style={{ boxShadow: '4px 4px 0px 0px #101010' }}
+        whileHover={{ x: 2 }}
+        className={`${color} group flex cursor-pointer items-center gap-4 border border-pixel-black p-4`}
+        style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
       >
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center border-2 border-pixel-black bg-pixel-white">
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center border border-pixel-black bg-pixel-white">
           {icon}
         </div>
         <div>

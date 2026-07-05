@@ -5,25 +5,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'pixel-black': '#101010',
-        'pixel-white': '#F8F8F8',
-        'pixel-cream': '#F3EAD9',
-        'pixel-gray': '#6B6B6B',
-        'pixel-red': '#A83232',
-        'pixel-orange': '#C4692B',
-        'pixel-brown': '#5C3B24',
-        'pixel-green': '#2D7D46',
-        'pixel-blue': '#3A5BA0',
-        'pixel-yellow': '#D4A533',
+        'pixel-black': '#26221B',
+        'pixel-white': '#FDFAF3',
+        'pixel-cream': '#F5F0E6',
+        'pixel-gray': '#7A7265',
+        'pixel-red': '#A3402E',
+        'pixel-orange': '#A8661A',
+        'pixel-brown': '#5C4A33',
+        'pixel-green': '#4A7A3D',
+        'pixel-blue': '#4A5D7E',
+        'pixel-yellow': '#C77B1E',
       },
       fontFamily: {
-        pixel: ['VT323', 'monospace'],
+        pixel: ['"Departure Mono"', 'VT323', 'monospace'],
       },
       boxShadow: {
-        pixel: '4px 4px 0px 0px #101010',
-        'pixel-inset': 'inset 4px 4px 0px 0px #101010',
-        'pixel-sm': '2px 2px 0px 0px #101010',
-        'pixel-lg': '6px 6px 0px 0px #101010',
+        pixel: '2px 2px 0px 0px #26221B',
+        'pixel-inset': 'inset 2px 2px 0px 0px #26221B',
+        'pixel-sm': '1px 1px 0px 0px #26221B',
+        'pixel-lg': '3px 3px 0px 0px #26221B',
       },
       animation: {
         shake: 'shake 0.3s ease-in-out infinite',
@@ -33,16 +33,16 @@ const config: Config = {
       keyframes: {
         shake: {
           '0%, 100%': { transform: 'translateX(0)' },
-          '25%': { transform: 'translateX(-2px)' },
-          '75%': { transform: 'translateX(2px)' },
+          '25%': { transform: 'translateX(-1px)' },
+          '75%': { transform: 'translateX(1px)' },
         },
         'bounce-pixel': {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-8px)' },
+          '50%': { transform: 'translateY(-4px)' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-4px)' },
+          '50%': { transform: 'translateY(-2px)' },
         },
       },
     },

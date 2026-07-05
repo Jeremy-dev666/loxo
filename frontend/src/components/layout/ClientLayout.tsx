@@ -94,25 +94,25 @@ function TraditionalSidebar({
     <>
       <aside
         aria-hidden={!open}
-        className="fixed left-0 top-0 z-[40] hidden h-screen flex-col border-r-4 border-pixel-black bg-pixel-black text-pixel-white transition-[left,opacity] duration-300 ease-out md:flex"
+        className="fixed left-0 top-0 z-[40] hidden h-screen flex-col border-r border-pixel-black bg-pixel-black text-pixel-white transition-[left,opacity] duration-300 ease-out md:flex"
         style={{
           width,
           left: open ? 0 : -width,
-          boxShadow: '6px 0 0 #101010',
+          boxShadow: '6px 0 0 #26221B',
           opacity: open ? 1 : 0,
           pointerEvents: open ? 'auto' : 'none',
         }}
       >
-        <div className="border-b-4 border-pixel-gray/50 px-4 py-4">
+        <div className="border-b border-pixel-gray/50 px-4 py-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border-4 border-pixel-white bg-pixel-red text-pixel-white">
-                <BrandMark className="h-6 w-6" />
+              <span className="pixel-notch-sm flex h-9 w-9 shrink-0 items-center justify-center bg-pixel-yellow text-pixel-black">
+                <BrandMark className="h-5 w-5" />
               </span>
               <span className="min-w-0">
                 <span className="brand-large block truncate text-pixel-white">SwarmDev</span>
-                <span className="block truncate font-pixel text-xs leading-none text-pixel-white/65">
-                  AGENT TEAM PLATFORM
+                <span className="block truncate font-pixel text-xs uppercase tracking-widest leading-none text-pixel-white/65">
+                  Agent team platform
                 </span>
               </span>
             </Link>
@@ -123,8 +123,8 @@ function TraditionalSidebar({
               onClick={onToggle}
               whileHover={{ x: -1 }}
               whileTap={{ x: -2, scale: 0.96 }}
-              className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-pixel-white bg-pixel-black text-pixel-white transition-colors hover:border-pixel-yellow hover:text-pixel-yellow"
-              style={{ boxShadow: '2px 2px 0px 0px #101010' }}
+              className="flex h-10 w-10 shrink-0 items-center justify-center border border-pixel-white bg-pixel-black text-pixel-white transition-colors hover:border-pixel-yellow hover:text-pixel-yellow"
+              style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
             >
               <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true" shapeRendering="crispEdges">
                 <path fill="currentColor" d="M14 5 7 12l7 7v-5h7v-4h-7V5Z" />
@@ -145,14 +145,14 @@ function TraditionalSidebar({
               >
                 <Link
                   href={item.href}
-                  className={`flex min-h-[56px] items-center gap-3 border-2 px-3 font-pixel text-base no-underline transition-colors ${
+                  className={`flex min-h-[56px] items-center gap-3 border px-3 font-pixel text-base no-underline transition-colors ${
                     active
                       ? 'border-pixel-gray bg-pixel-white/10 text-pixel-white'
                       : 'border-transparent text-pixel-white/70 hover:border-pixel-gray hover:bg-pixel-white/10 hover:text-pixel-white'
                   }`}
                 >
                   <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 border-pixel-black ${item.tone} ${
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center border border-pixel-black ${item.tone} ${
                       item.icon === 'market' ? 'text-pixel-black' : 'text-pixel-white'
                     }`}
                   >
@@ -182,14 +182,14 @@ function TraditionalSidebar({
                       <div className="group/sidebar-project relative">
                         <Link
                           href={href}
-                          className={`flex min-h-[48px] items-center gap-2 border-2 px-2 pl-9 font-pixel text-sm no-underline transition-colors ${
+                          className={`flex min-h-[48px] items-center gap-2 border px-2 pl-9 font-pixel text-sm no-underline transition-colors ${
                             active
                               ? 'border-pixel-gray bg-pixel-white/15 text-pixel-white'
                               : 'border-transparent text-pixel-white/65 hover:border-pixel-gray hover:bg-pixel-white/10 hover:text-pixel-white'
                           }`}
                           title={project.name}
                         >
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-pixel-black bg-pixel-gray text-pixel-white">
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-pixel-black bg-pixel-gray text-pixel-white">
                             <SidebarIconGlyph icon="projects" className="h-4 w-4" />
                           </span>
                           <span className="min-w-0 flex-1">
@@ -206,8 +206,8 @@ function TraditionalSidebar({
                             event.stopPropagation();
                             onDeleteProject(project);
                           }}
-                          className="pointer-events-none absolute left-1 top-1 flex h-7 w-7 items-center justify-center border-2 border-pixel-black bg-pixel-red font-pixel text-xs font-bold leading-none text-pixel-white opacity-0 transition-opacity hover:brightness-95 group-hover/sidebar-project:pointer-events-auto group-hover/sidebar-project:opacity-100"
-                          style={{ boxShadow: '2px 2px 0 #101010' }}
+                          className="pointer-events-none absolute left-1 top-1 flex h-7 w-7 items-center justify-center border border-pixel-black bg-pixel-red font-pixel text-xs font-bold leading-none text-pixel-white opacity-0 transition-opacity hover:brightness-95 group-hover/sidebar-project:pointer-events-auto group-hover/sidebar-project:opacity-100"
+                          style={{ boxShadow: '2px 2px 0 #26221B' }}
                           aria-label={`Delete project ${project.name}`}
                           title="Delete project"
                         >
@@ -222,7 +222,7 @@ function TraditionalSidebar({
           )}
         </nav>
 
-        <div className="border-t-4 border-pixel-gray/50 p-3">
+        <div className="border-t border-pixel-gray/50 p-3">
           <p className="font-pixel text-xs leading-tight text-pixel-white/45">v0.1.0 · SwarmDev Labs</p>
         </div>
 
@@ -232,7 +232,7 @@ function TraditionalSidebar({
           aria-label="Resize sidebar"
           title="Drag to resize"
           onPointerDown={handleResizePointerDown}
-          className="absolute right-[-8px] top-0 h-full w-4 cursor-col-resize border-x-2 border-pixel-black bg-pixel-yellow/80 opacity-0 transition-opacity hover:opacity-100"
+          className="absolute right-[-8px] top-0 h-full w-4 cursor-col-resize border-x border-pixel-black bg-pixel-yellow/80 opacity-0 transition-opacity hover:opacity-100"
         />
       </aside>
 
@@ -246,8 +246,8 @@ function TraditionalSidebar({
           animate={{ x: 0, opacity: 1 }}
           whileHover={{ x: 2 }}
           whileTap={{ x: 0, scale: 0.96 }}
-          className="fixed left-0 top-[96px] z-[45] hidden h-16 w-9 items-center justify-center border-y-4 border-r-4 border-pixel-black bg-pixel-yellow text-pixel-black transition-colors hover:bg-pixel-green md:flex"
-          style={{ boxShadow: '3px 3px 0px 0px #101010' }}
+          className="fixed left-0 top-[96px] z-[45] hidden h-16 w-9 items-center justify-center border-y border-r border-pixel-black bg-pixel-yellow text-pixel-black transition-colors hover:bg-pixel-green md:flex"
+          style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
         >
           <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true" shapeRendering="crispEdges">
             <path fill="currentColor" d="M10 5v5H3v4h7v5l7-7-7-7Z" />
@@ -383,12 +383,12 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           children
         )}
       </main>
-      <footer className="hidden border-t-4 border-pixel-red bg-pixel-black py-4 transition-[padding] duration-300 ease-out md:block" style={effectiveSidebarOpen ? { paddingLeft: sidebarOffset } : undefined}>
+      <footer className="hidden border-t border-pixel-black bg-pixel-white py-3 transition-[padding] duration-300 ease-out md:block" style={effectiveSidebarOpen ? { paddingLeft: sidebarOffset } : undefined}>
         <div
-          className={`${isTraditionalMode ? 'mx-0 w-full max-w-none px-8 xl:px-10 2xl:px-12' : 'mx-auto max-w-7xl'} text-center font-pixel text-xs !text-pixel-white`}
+          className={`${isTraditionalMode ? 'mx-0 w-full max-w-none px-8 xl:px-10 2xl:px-12' : 'mx-auto max-w-7xl'} text-center font-pixel text-xs text-pixel-gray`}
         >
-          <p className="!text-pixel-white">SwarmDev — Efficient AI Team Collaboration</p>
-          <p className="mt-1 !text-pixel-red">READY.</p>
+          <p>SwarmDev — Efficient AI Team Collaboration</p>
+          <p className="mt-1 uppercase tracking-widest text-pixel-yellow">Ready.</p>
         </div>
       </footer>
       <Suspense fallback={null}>

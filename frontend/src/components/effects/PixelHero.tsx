@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BrandMark } from '@/components/layout/Header';
 
-const NODE_COLORS = ['#3A5BA0', '#2D7D46', '#A83232', '#D4A533', '#6B6B6B'];
+const NODE_COLORS = ['#4A5D7E', '#4A7A3D', '#A3402E', '#C77B1E', '#7A7265'];
 
 /** Animated agent-network backdrop: nodes, edges, pulses, drifting particles. */
 function NetworkGraph() {
@@ -29,7 +29,7 @@ function NetworkGraph() {
       for (let j = 0; j < connections; j++) {
         const target = (i + 1 + Math.floor(Math.random() * (nodes.length - 1))) % nodes.length;
         if (!edgeList.some((e) => (e.from === i && e.to === target) || (e.from === target && e.to === i))) {
-          edgeList.push({ from: i, to: target, delay: Math.random() * 2, color: Math.random() > 0.5 ? '#3A5BA0' : '#2D7D46' });
+          edgeList.push({ from: i, to: target, delay: Math.random() * 2, color: Math.random() > 0.5 ? '#4A5D7E' : '#4A7A3D' });
         }
       }
     }
@@ -50,18 +50,18 @@ function NetworkGraph() {
       <svg className="absolute inset-0 h-full w-full" style={{ opacity: 0.2 }}>
         <defs>
           <linearGradient id="edgeGradientBlue" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#3A5BA0" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#3A5BA0" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#4A5D7E" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#4A5D7E" stopOpacity="0.2" />
           </linearGradient>
           <linearGradient id="edgeGradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#2D7D46" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#2D7D46" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#4A7A3D" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#4A7A3D" stopOpacity="0.2" />
           </linearGradient>
         </defs>
         {edges.map((edge, i) => {
           const from = nodes[edge.from]!;
           const to = nodes[edge.to]!;
-          const gradientId = edge.color === '#3A5BA0' ? 'edgeGradientBlue' : 'edgeGradientGreen';
+          const gradientId = edge.color === '#4A5D7E' ? 'edgeGradientBlue' : 'edgeGradientGreen';
           return (
             <motion.line
               key={i}
@@ -164,8 +164,8 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           <div
-            className="mx-auto flex h-[120px] w-[120px] items-center justify-center border-4 border-pixel-black bg-pixel-red"
-            style={{ boxShadow: '6px 6px 0 #101010' }}
+            className="mx-auto flex h-[120px] w-[120px] items-center justify-center border border-pixel-black bg-pixel-red"
+            style={{ boxShadow: '6px 6px 0 #26221B' }}
           >
             <BrandMark className="h-16 w-16 text-pixel-white" />
           </div>
@@ -196,7 +196,7 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          <div className="relative h-2.5 w-44 overflow-hidden border-2 border-pixel-blue/25 bg-pixel-white">
+          <div className="relative h-2.5 w-44 overflow-hidden border border-pixel-blue/25 bg-pixel-white">
             <motion.div
               className="h-full bg-pixel-green"
               initial={{ width: 0 }}
@@ -210,11 +210,11 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
         {showButton && (
           <motion.button
             onClick={onEnter}
-            className="pointer-events-auto mt-5 border-4 border-pixel-black bg-pixel-blue px-5 py-2.5 font-pixel text-base text-pixel-white transition-all duration-150 hover:bg-pixel-yellow hover:text-pixel-black"
+            className="pointer-events-auto mt-5 border border-pixel-black bg-pixel-blue px-5 py-2.5 font-pixel text-base text-pixel-white transition-all duration-150 hover:bg-pixel-yellow hover:text-pixel-black"
             style={{ boxShadow: '4px 4px 0px rgba(16,16,16,0.12)' }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ y: -1 }}
             whileTap={{ scale: 0.95 }}
           >
             <motion.span animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1.2, repeat: Infinity }}>

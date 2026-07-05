@@ -12,14 +12,14 @@ import {
 } from '@/lib/integrations';
 
 const inputClass =
-  'w-full border-4 border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue';
+  'w-full border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue';
 const chipButtonClass =
-  'cursor-pointer border-2 border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow disabled:opacity-50';
+  'cursor-pointer border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow disabled:opacity-50';
 
 function StatusChip({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span
-      className={`border-2 border-pixel-black px-1.5 py-0.5 font-pixel text-xs ${
+      className={`border border-pixel-black px-1.5 py-0.5 font-pixel text-xs ${
         ok ? 'bg-pixel-green text-pixel-white' : 'bg-pixel-white text-pixel-black/55'
       }`}
     >
@@ -117,7 +117,7 @@ export function SlackIntegrationCard({
             type="button"
             onClick={copyUrl}
             className={chipButtonClass}
-            style={{ boxShadow: '2px 2px 0 #101010' }}
+            style={{ boxShadow: '2px 2px 0 #26221B' }}
           >
             {copied ? 'Copied!' : 'Copy'}
           </button>
@@ -130,7 +130,7 @@ export function SlackIntegrationCard({
       </div>
 
       {config && (
-        <div className="flex items-center justify-between border-2 border-pixel-black bg-pixel-green/10 px-3 py-2">
+        <div className="flex items-center justify-between border border-pixel-black bg-pixel-green/10 px-3 py-2">
           <p className="font-pixel text-xs text-pixel-black">
             Connected · token {config.botTokenMasked} · secret {config.signingSecretMasked}
             {config.channelId ? ` · channel ${config.channelId}` : ''}
@@ -139,7 +139,7 @@ export function SlackIntegrationCard({
             type="button"
             onClick={disconnect}
             className={chipButtonClass}
-            style={{ boxShadow: '2px 2px 0 #101010' }}
+            style={{ boxShadow: '2px 2px 0 #26221B' }}
           >
             Disconnect
           </button>
@@ -169,15 +169,15 @@ export function SlackIntegrationCard({
         />
         <button
           disabled={saving || !botToken.trim() || !signingSecret.trim()}
-          className="border-4 border-pixel-brown bg-pixel-red px-4 py-2 font-pixel text-sm text-pixel-white hover:bg-pixel-orange disabled:opacity-60"
-          style={{ boxShadow: '3px 3px 0 #101010' }}
+          className="border border-pixel-brown bg-pixel-red px-4 py-2 font-pixel text-sm text-pixel-white hover:bg-pixel-orange disabled:opacity-60"
+          style={{ boxShadow: '3px 3px 0 #26221B' }}
         >
           {saving ? 'Saving…' : config ? 'Update credentials' : 'Connect Slack'}
         </button>
       </form>
 
       {message && (
-        <p className="border-2 border-pixel-yellow bg-pixel-yellow/15 p-2 font-pixel text-xs text-pixel-black">
+        <p className="border border-pixel-yellow bg-pixel-yellow/15 p-2 font-pixel text-xs text-pixel-black">
           {message}
         </p>
       )}

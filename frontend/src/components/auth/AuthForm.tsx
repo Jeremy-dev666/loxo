@@ -13,12 +13,12 @@ import { useAuthStore } from '@/store/auth';
 function PixelStar({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg viewBox="0 0 16 16" className={className} style={style} xmlns="http://www.w3.org/2000/svg">
-      <rect x="7" y="0" width="2" height="16" fill="#D4A533" />
-      <rect x="0" y="7" width="16" height="2" fill="#D4A533" />
-      <rect x="2" y="2" width="2" height="2" fill="#D4A533" />
-      <rect x="12" y="2" width="2" height="2" fill="#D4A533" />
-      <rect x="2" y="12" width="2" height="2" fill="#D4A533" />
-      <rect x="12" y="12" width="2" height="2" fill="#D4A533" />
+      <rect x="7" y="0" width="2" height="16" fill="#C77B1E" />
+      <rect x="0" y="7" width="16" height="2" fill="#C77B1E" />
+      <rect x="2" y="2" width="2" height="2" fill="#C77B1E" />
+      <rect x="12" y="2" width="2" height="2" fill="#C77B1E" />
+      <rect x="2" y="12" width="2" height="2" fill="#C77B1E" />
+      <rect x="12" y="12" width="2" height="2" fill="#C77B1E" />
     </svg>
   );
 }
@@ -43,7 +43,7 @@ function FloatingMark({
       animate={{ y: [0, -10, 0], opacity: [0.35, 0.6, 0.35] }}
       transition={{ duration: 3.5, repeat: Infinity, delay, ease: 'easeInOut' }}
     >
-      <span className={`flex h-9 w-9 items-center justify-center border-2 border-pixel-black ${tone}`}>
+      <span className={`flex h-9 w-9 items-center justify-center border border-pixel-black ${tone}`}>
         <BrandMark className="h-5 w-5 text-pixel-white" />
       </span>
     </motion.div>
@@ -136,9 +136,9 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-md"
       >
-        <div className="border-4 border-pixel-black bg-pixel-white" style={{ boxShadow: '8px 8px 0px 0px #101010' }}>
+        <div className="border border-pixel-black bg-pixel-white" style={{ boxShadow: '3px 3px 0px 0px #26221B' }}>
           <div
-            className={`flex items-center justify-center gap-3 border-b-4 border-pixel-black p-3 text-center font-pixel text-xl text-pixel-white ${
+            className={`flex items-center justify-center gap-3 border-b border-pixel-black p-3 text-center font-pixel text-xl text-pixel-white ${
               isRegister ? 'bg-pixel-green' : 'bg-pixel-red'
             }`}
           >
@@ -157,8 +157,8 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
               <div
-                className="flex h-20 w-20 items-center justify-center border-4 border-pixel-black bg-pixel-red"
-                style={{ filter: 'drop-shadow(4px 4px 0px #101010)' }}
+                className="flex h-20 w-20 items-center justify-center border border-pixel-black bg-pixel-red"
+                style={{ filter: 'drop-shadow(4px 4px 0px #26221B)' }}
               >
                 <BrandMark className="h-11 w-11 text-pixel-white" />
               </div>
@@ -173,7 +173,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="mx-4 mb-4 border-4 border-pixel-red bg-pixel-red/10 p-3"
+              className="mx-4 mb-4 border border-pixel-red bg-pixel-red/10 p-3"
             >
               <p className="font-pixel text-sm text-pixel-red">{error}</p>
             </motion.div>
@@ -203,7 +203,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
                   <motion.span
                     animate={{ rotate: 360 }}
                     transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                    className="inline-block h-4 w-4 rounded-full border-2 border-pixel-white border-t-transparent"
+                    className="inline-block h-4 w-4 rounded-full border border-pixel-white border-t-transparent"
                   />
                   {isRegister ? 'Signing up…' : 'Signing in…'}
                 </span>

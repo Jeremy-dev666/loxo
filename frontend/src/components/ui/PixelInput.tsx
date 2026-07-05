@@ -32,8 +32,8 @@ export const PixelInput = forwardRef<HTMLInputElement | HTMLTextAreaElement, Pix
     ref
   ) => {
     const baseClassName =
-      'w-full bg-pixel-white border-4 border-pixel-black font-pixel text-pixel-black px-4 py-2 placeholder:text-pixel-black/50 focus:outline-none focus:border-pixel-blue disabled:opacity-50 disabled:cursor-not-allowed';
-    const sharedStyle = { boxShadow: 'inset 2px 2px 0px 0px #101010' } as const;
+      'w-full bg-pixel-white border border-pixel-black font-pixel text-pixel-black px-3 py-1.5 placeholder:text-pixel-gray focus:outline-none focus:border-pixel-yellow disabled:opacity-50 disabled:cursor-not-allowed';
+    const sharedStyle = { boxShadow: 'inset 1px 1px 0px 0px #26221B' } as const;
 
     if (multiline) {
       const multilineClassName = compactMultiline

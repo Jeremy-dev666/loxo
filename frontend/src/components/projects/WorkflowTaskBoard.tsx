@@ -74,7 +74,7 @@ export function TaskBoard({ execution }: { execution: TrackedExecution | null })
           const state = execution.nodeStates[node.id];
           const badge = NODE_BADGES[state?.status ?? 'pending'];
           return (
-            <div key={node.id} className="border-2 border-pixel-black bg-pixel-white p-2">
+            <div key={node.id} className="border border-pixel-black bg-pixel-white p-2">
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-sm">{state?.label ?? node.label}</span>
                 <span className={`shrink-0 border px-1.5 py-0.5 text-[11px] ${badge.className}`}>
@@ -139,7 +139,7 @@ export function DeliverablesPanel({
         const badge = DELIVERABLE_BADGES[deliverable.status] ?? DELIVERABLE_BADGES.pending!;
         const busy = reviewing.has(deliverable.id);
         return (
-          <div key={deliverable.id} className="border-2 border-pixel-black bg-pixel-white p-2">
+          <div key={deliverable.id} className="border border-pixel-black bg-pixel-white p-2">
             <div className="flex items-center justify-between gap-2">
               <button
                 onClick={() => onOpenFile(deliverable.filePath)}

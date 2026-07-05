@@ -117,8 +117,8 @@ function OfficialAdoptPrompt({
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-h-[calc(100dvh-2rem)] w-full max-w-[680px] overflow-y-auto border-4 border-pixel-black bg-white p-4 md:p-5"
-          style={{ boxShadow: '6px 6px 0 #101010' }}
+          className="max-h-[calc(100dvh-2rem)] w-full max-w-[680px] overflow-y-auto border border-pixel-black bg-white p-4 md:p-5"
+          style={{ boxShadow: '6px 6px 0 #26221B' }}
         >
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
@@ -132,18 +132,18 @@ function OfficialAdoptPrompt({
             <button
               type="button"
               onClick={dismiss}
-              className="shrink-0 border-2 border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-sm leading-none text-pixel-black"
+              className="shrink-0 border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-sm leading-none text-pixel-black"
               aria-label="Close adopt dialog"
             >
               ×
             </button>
           </div>
 
-          <div className="mb-4 grid items-center gap-4 border-4 border-pixel-black bg-white p-3 sm:grid-cols-[140px_1fr] md:p-4">
+          <div className="mb-4 grid items-center gap-4 border border-pixel-black bg-white p-3 sm:grid-cols-[140px_1fr] md:p-4">
             <motion.div
               animate={{ scale: [1, 1.06, 1] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-              className="mx-auto flex h-28 w-28 shrink-0 items-center justify-center border-4 border-pixel-black bg-pixel-green sm:h-32 sm:w-32"
+              className="mx-auto flex h-28 w-28 shrink-0 items-center justify-center border border-pixel-black bg-pixel-green sm:h-32 sm:w-32"
             >
               <span className="font-pixel text-4xl text-pixel-white">SW</span>
             </motion.div>
@@ -153,14 +153,14 @@ function OfficialAdoptPrompt({
                 value={adoptName}
                 onChange={(event) => setAdoptName(event.target.value)}
                 disabled={isAdopting}
-                className="w-full border-4 border-pixel-black bg-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none disabled:opacity-50 md:text-base"
-                style={{ boxShadow: 'inset 2px 2px 0 #101010' }}
+                className="w-full border border-pixel-black bg-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none disabled:opacity-50 md:text-base"
+                style={{ boxShadow: 'inset 2px 2px 0 #26221B' }}
               />
             </div>
           </div>
 
           {adoptError && (
-            <div className="mb-3 border-4 border-pixel-red bg-pixel-red/10 p-2">
+            <div className="mb-3 border border-pixel-red bg-pixel-red/10 p-2">
               <p className="font-pixel text-xs text-pixel-red">{adoptError}</p>
             </div>
           )}
@@ -170,8 +170,8 @@ function OfficialAdoptPrompt({
               type="button"
               onClick={dismiss}
               disabled={isAdopting}
-              className="border-4 border-pixel-black bg-pixel-white px-3 py-3 font-pixel text-sm text-pixel-black disabled:opacity-50 md:text-base"
-              style={{ boxShadow: '3px 3px 0 #101010' }}
+              className="border border-pixel-black bg-pixel-white px-3 py-3 font-pixel text-sm text-pixel-black disabled:opacity-50 md:text-base"
+              style={{ boxShadow: '3px 3px 0 #26221B' }}
             >
               Later
             </button>
@@ -179,8 +179,8 @@ function OfficialAdoptPrompt({
               type="button"
               onClick={() => void handleAdopt()}
               disabled={isAdopting}
-              className="border-4 border-pixel-black bg-pixel-green px-3 py-3 font-pixel text-sm text-pixel-white disabled:opacity-50 md:text-base"
-              style={{ boxShadow: '3px 3px 0 #101010' }}
+              className="border border-pixel-black bg-pixel-green px-3 py-3 font-pixel text-sm text-pixel-white disabled:opacity-50 md:text-base"
+              style={{ boxShadow: '3px 3px 0 #26221B' }}
             >
               {isAdopting ? 'Adopting…' : 'Adopt'}
             </button>
@@ -197,8 +197,8 @@ function OfficialAdoptPrompt({
 function MobilePanel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <section
-      className={`overflow-hidden border-4 border-pixel-black bg-pixel-white ${className}`}
-      style={{ boxShadow: '5px 5px 0 #101010' }}
+      className={`overflow-hidden border border-pixel-black bg-pixel-white ${className}`}
+      style={{ boxShadow: '5px 5px 0 #26221B' }}
     >
       {children}
     </section>
@@ -223,10 +223,10 @@ function MobileLinkRow({
   return (
     <Link
       href={href}
-      className="flex min-h-[72px] items-center justify-between gap-2 border-b-2 border-pixel-black/10 bg-pixel-white px-3 py-2.5 last:border-b-0 active:bg-pixel-yellow/40"
+      className="flex min-h-[72px] items-center justify-between gap-2 border-b border-pixel-black/10 bg-pixel-white px-3 py-2.5 last:border-b-0 active:bg-pixel-yellow/40"
     >
       <span className="relative shrink-0">
-        <span className={`relative flex h-12 w-12 shrink-0 items-center justify-center border-2 border-pixel-black ${accent}`}>
+        <span className={`relative flex h-12 w-12 shrink-0 items-center justify-center border border-pixel-black ${accent}`}>
           <span className="absolute inset-0.5 border border-pixel-black bg-pixel-white" />
           <span className="relative z-10 flex h-full w-full items-center justify-center">{icon}</span>
         </span>
@@ -244,7 +244,7 @@ function MobileLinkRow({
           </span>
         )}
       </span>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-pixel-black bg-pixel-white font-pixel text-xl leading-none text-pixel-black/65">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-pixel-black bg-pixel-white font-pixel text-xl leading-none text-pixel-black/65">
         ›
       </span>
     </Link>
@@ -256,7 +256,7 @@ function MobileAgentRow({ agent }: { agent: Agent }) {
   return (
     <Link
       href={`/agents/${agent.id}`}
-      className="flex min-h-[72px] items-center gap-2 border-b-2 border-pixel-black/10 bg-pixel-white px-3 py-2.5 last:border-b-0 active:bg-pixel-yellow/40"
+      className="flex min-h-[72px] items-center gap-2 border-b border-pixel-black/10 bg-pixel-white px-3 py-2.5 last:border-b-0 active:bg-pixel-yellow/40"
     >
       <AgentSprite agent={agent} size="sm" showProviderStatus providerConfigured={hasProvider} />
       <div className="min-w-0 flex-1">
@@ -265,7 +265,7 @@ function MobileAgentRow({ agent }: { agent: Agent }) {
           {agent.description || (hasProvider ? 'Provider configured' : 'Provider not configured')}
         </p>
       </div>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-pixel-black bg-pixel-white font-pixel text-xl leading-none text-pixel-black/65">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-pixel-black bg-pixel-white font-pixel text-xl leading-none text-pixel-black/65">
         ›
       </span>
     </Link>
@@ -308,7 +308,7 @@ function MobileHome({
   return (
     <div className="-mx-4 bg-pixel-white px-4 md:hidden">
       <div className="min-h-[calc(100vh-70px)] pb-24">
-        <div className="sticky top-0 z-20 -mx-4 border-b-4 border-pixel-black bg-pixel-white px-4 py-1.5">
+        <div className="sticky top-0 z-20 -mx-4 border-b border-pixel-black bg-pixel-white px-4 py-1.5">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <h1 className="truncate font-pixel text-[1.25rem] font-bold leading-none text-pixel-black">
@@ -319,8 +319,8 @@ function MobileHome({
               </p>
             </div>
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center border-2 border-pixel-black ${activeTabMeta.accent} text-pixel-white`}
-              style={{ boxShadow: '2px 2px 0 #101010' }}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center border border-pixel-black ${activeTabMeta.accent} text-pixel-white`}
+              style={{ boxShadow: '2px 2px 0 #26221B' }}
             >
               <FolderGlyph className="h-5 w-5" />
             </div>
@@ -330,7 +330,7 @@ function MobileHome({
         <main className="mt-2 space-y-2.5">
           {activeTab === 'projects' && (
             <MobilePanel>
-              <div className="flex items-center justify-between border-b-4 border-pixel-black bg-pixel-blue px-3 py-2 text-pixel-white">
+              <div className="flex items-center justify-between border-b border-pixel-black bg-pixel-blue px-3 py-2 text-pixel-white">
                 <div>
                   <p className="font-pixel text-base font-bold leading-tight">Recent projects</p>
                   <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
@@ -339,7 +339,7 @@ function MobileHome({
                 </div>
                 <Link
                   href="/projects"
-                  className="border-2 border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs leading-none text-pixel-black"
+                  className="border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs leading-none text-pixel-black"
                 >
                   Manage
                 </Link>
@@ -370,7 +370,7 @@ function MobileHome({
 
           {activeTab === 'contacts' && (
             <MobilePanel>
-              <div className="border-b-4 border-pixel-black bg-pixel-green px-3 py-2 text-pixel-white">
+              <div className="border-b border-pixel-black bg-pixel-green px-3 py-2 text-pixel-white">
                 <p className="font-pixel text-base font-bold leading-tight">Agent contacts</p>
                 <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
                   {configuredCount}/{agents.length} providers configured
@@ -392,7 +392,7 @@ function MobileHome({
           {activeTab === 'teams' && (
             <>
               <MobilePanel>
-                <div className="border-b-4 border-pixel-black bg-pixel-yellow px-3 py-2 text-pixel-black">
+                <div className="border-b border-pixel-black bg-pixel-yellow px-3 py-2 text-pixel-black">
                   <p className="font-pixel text-base font-bold leading-tight">Team workbench</p>
                   <p className="mt-1 font-pixel text-xs leading-tight text-pixel-black/65">
                     Create teams, manage them, join group chats
@@ -413,7 +413,7 @@ function MobileHome({
                 />
               </MobilePanel>
               <MobilePanel>
-                <div className="border-b-4 border-pixel-black bg-pixel-yellow px-3 py-2 text-pixel-black">
+                <div className="border-b border-pixel-black bg-pixel-yellow px-3 py-2 text-pixel-black">
                   <p className="font-pixel text-base font-bold leading-tight">Roundtable</p>
                   <p className="mt-1 font-pixel text-xs leading-tight text-pixel-black/65">
                     Drop into your agent group chats
@@ -431,7 +431,7 @@ function MobileHome({
 
           {activeTab === 'discover' && (
             <MobilePanel>
-              <div className="border-b-4 border-pixel-black bg-pixel-red px-3 py-2 text-pixel-white">
+              <div className="border-b border-pixel-black bg-pixel-red px-3 py-2 text-pixel-white">
                 <p className="font-pixel text-base font-bold leading-tight">Discover</p>
                 <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
                   Agent market and hosted API agents
@@ -460,7 +460,7 @@ function MobileHome({
 
           {activeTab === 'me' && (
             <MobilePanel>
-              <div className={`border-b-4 border-pixel-black ${isLoggedIn ? 'bg-pixel-blue' : 'bg-pixel-gray'} px-3 py-2 text-pixel-white`}>
+              <div className={`border-b border-pixel-black ${isLoggedIn ? 'bg-pixel-blue' : 'bg-pixel-gray'} px-3 py-2 text-pixel-white`}>
                 <p className="font-pixel text-base font-bold leading-tight">
                   {isLoggedIn ? 'Signed in' : 'Signed out'}
                 </p>
@@ -470,7 +470,7 @@ function MobileHome({
                     : 'Sign in to sync agents, teams, and projects'}
                 </p>
               </div>
-              <div className="space-y-2 border-b-2 border-pixel-black/10 bg-pixel-white p-3">
+              <div className="space-y-2 border-b border-pixel-black/10 bg-pixel-white p-3">
                 {isLoggedIn ? (
                   <button
                     type="button"
@@ -478,8 +478,8 @@ function MobileHome({
                       logout();
                       router.replace('/?mobileTab=me');
                     }}
-                    className="flex min-h-[48px] w-full items-center justify-center border-4 border-pixel-black bg-pixel-red px-3 font-pixel text-base font-bold leading-none text-pixel-white"
-                    style={{ boxShadow: '3px 3px 0 #101010' }}
+                    className="flex min-h-[48px] w-full items-center justify-center border border-pixel-black bg-pixel-red px-3 font-pixel text-base font-bold leading-none text-pixel-white"
+                    style={{ boxShadow: '3px 3px 0 #26221B' }}
                   >
                     Sign out
                   </button>
@@ -487,15 +487,15 @@ function MobileHome({
                   <div className="grid grid-cols-2 gap-2">
                     <Link
                       href="/login"
-                      className="flex min-h-[48px] items-center justify-center border-4 border-pixel-black bg-pixel-blue px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
-                      style={{ boxShadow: '3px 3px 0 #101010' }}
+                      className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-blue px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
+                      style={{ boxShadow: '3px 3px 0 #26221B' }}
                     >
                       Sign in
                     </Link>
                     <Link
                       href="/register"
-                      className="flex min-h-[48px] items-center justify-center border-4 border-pixel-black bg-pixel-green px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
-                      style={{ boxShadow: '3px 3px 0 #101010' }}
+                      className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-green px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
+                      style={{ boxShadow: '3px 3px 0 #26221B' }}
                     >
                       Sign up
                     </Link>
@@ -545,8 +545,8 @@ function ProjectCard({
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06 }}
-      className="group/project-card relative min-h-[148px] border-4 border-pixel-black bg-pixel-white p-3"
-      style={{ boxShadow: '4px 4px 0px 0px #101010' }}
+      className="group/project-card relative min-h-[148px] border border-pixel-black bg-pixel-white p-3"
+      style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
     >
       {onDelete && (
         <button
@@ -556,8 +556,8 @@ function ProjectCard({
             event.stopPropagation();
             onDelete(project);
           }}
-          className="pointer-events-none absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center border-2 border-pixel-black bg-pixel-red font-pixel text-base font-bold leading-none text-pixel-white opacity-0 transition-opacity hover:brightness-95 group-hover/project-card:pointer-events-auto group-hover/project-card:opacity-100"
-          style={{ boxShadow: '2px 2px 0 #101010' }}
+          className="pointer-events-none absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center border border-pixel-black bg-pixel-red font-pixel text-base font-bold leading-none text-pixel-white opacity-0 transition-opacity hover:brightness-95 group-hover/project-card:pointer-events-auto group-hover/project-card:opacity-100"
+          style={{ boxShadow: '2px 2px 0 #26221B' }}
           aria-label={`Delete project ${project.name}`}
           title="Delete project"
         >
@@ -576,17 +576,17 @@ function ProjectCard({
         </div>
         <div>
           <div className="mb-2 flex flex-wrap gap-1">
-            <span className="border-2 border-pixel-black bg-pixel-blue px-2 py-0.5 font-pixel text-xs text-pixel-white">
+            <span className="border border-pixel-black bg-pixel-blue px-2 py-0.5 font-pixel text-xs text-pixel-white">
               {project.teamIds.length} TEAM
             </span>
-            <span className="border-2 border-pixel-black bg-pixel-yellow px-2 py-0.5 font-pixel text-xs text-pixel-black">
+            <span className="border border-pixel-black bg-pixel-yellow px-2 py-0.5 font-pixel text-xs text-pixel-black">
               {project.agentIds.length} AGENT
             </span>
           </div>
           <Link
             href={`/projects/${project.id}`}
-            className="inline-block border-2 border-pixel-black bg-pixel-blue px-3 py-1 font-pixel text-xs text-pixel-white hover:bg-pixel-gray"
-            style={{ boxShadow: '2px 2px 0px 0px #101010' }}
+            className="inline-block border border-pixel-black bg-pixel-blue px-3 py-1 font-pixel text-xs text-pixel-white hover:bg-pixel-gray"
+            style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
           >
             Open project
           </Link>
@@ -701,7 +701,7 @@ function StatCard({
     <motion.div
       layout
       className={`border-[3px] border-t-[5px] border-pixel-black ${styles.border} bg-pixel-white p-3`}
-      style={{ boxShadow: '3px 3px 0px 0px #101010' }}
+      style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
     >
       <p className="font-pixel text-xs uppercase text-pixel-black/55">{label}</p>
       <p className="mt-1 font-pixel text-3xl font-bold leading-none text-pixel-black">{value}</p>
@@ -729,9 +729,9 @@ function ActionTile({ action, index }: { action: ActionItem; index: number }) {
         whileHover={{ y: -4, x: 2 }}
         whileTap={{ y: 1, scale: 0.99 }}
         className={`group flex h-full min-h-[150px] flex-col border-[3px] border-pixel-black ${styles.bg} p-4 2xl:min-h-[162px]`}
-        style={{ boxShadow: '3px 3px 0px 0px #101010' }}
+        style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
       >
-        <span className={`mb-3 flex h-10 w-10 items-center justify-center border-2 border-pixel-black bg-pixel-white ${styles.text}`}>
+        <span className={`mb-3 flex h-10 w-10 items-center justify-center border border-pixel-black bg-pixel-white ${styles.text}`}>
           <FolderGlyph className="h-6 w-6" />
         </span>
         <h3 className={`font-pixel text-lg font-bold leading-tight transition-colors ${titleClassName}`}>
@@ -767,11 +767,11 @@ function ActionGroup({
   return (
     <section
       className="relative border-[3px] border-pixel-black bg-pixel-white p-4 pt-7"
-      style={{ boxShadow: '3px 3px 0px 0px #101010' }}
+      style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
     >
       <div
         className="absolute -top-[18px] left-4 border-[3px] border-pixel-black bg-pixel-yellow px-4 py-1 font-pixel text-sm uppercase leading-none text-pixel-black"
-        style={{ boxShadow: '2px 2px 0px 0px #101010' }}
+        style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
       >
         {label}
       </div>
@@ -800,7 +800,7 @@ function Panel({
   return (
     <section
       className={`border-[3px] border-pixel-black bg-pixel-white p-3 ${className}`}
-      style={{ boxShadow: '3px 3px 0px 0px #101010' }}
+      style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="font-pixel text-lg font-bold text-pixel-black">■ {title}</h2>
@@ -856,7 +856,7 @@ function TraditionalDesktopHome({
         <div className="space-y-5">
           <section
             className="border-[3px] border-pixel-black bg-pixel-white p-5"
-            style={{ boxShadow: '3px 3px 0px 0px #101010' }}
+            style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
           >
             <p className="font-pixel text-lg text-pixel-blue">WELCOME TO AGENT WORLD</p>
             <h1 className="brand-large mt-2 text-pixel-black">Welcome to the Agent World</h1>
@@ -1130,7 +1130,7 @@ function HomePageInner() {
                       ))}
                     </div>
                   ) : (
-                    <div className="border-4 border-pixel-black bg-pixel-white/50 p-4 text-center">
+                    <div className="border border-pixel-black bg-pixel-white/50 p-4 text-center">
                       <p className="font-pixel text-sm text-pixel-black/50">
                         {isLoggedIn ? 'No recent agents' : 'Sign in to see recent agents'}
                       </p>
@@ -1202,7 +1202,7 @@ function HomePageInner() {
                       ))}
                     </div>
                   ) : (
-                    <Link href="/projects" className="block border-4 border-pixel-black bg-pixel-white/50 p-4 text-center">
+                    <Link href="/projects" className="block border border-pixel-black bg-pixel-white/50 p-4 text-center">
                       <p className="font-pixel text-sm text-pixel-black/50">
                         No recent projects — create a server workspace
                       </p>

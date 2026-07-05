@@ -3,9 +3,9 @@
 import { avatarUrl, type Agent } from '@/lib/agents';
 
 const SIZE_STYLES = {
-  sm: { box: 'h-12 w-12 border-2', text: 'text-lg', dot: 'h-3 w-3 border' },
+  sm: { box: 'h-12 w-12 border', text: 'text-lg', dot: 'h-3 w-3 border' },
   md: { box: 'h-16 w-16 border-3', text: 'text-2xl', dot: 'h-3.5 w-3.5 border' },
-  lg: { box: 'h-24 w-24 border-4', text: 'text-4xl', dot: 'h-4 w-4 border-2' },
+  lg: { box: 'h-24 w-24 border', text: 'text-4xl', dot: 'h-4 w-4 border' },
 };
 
 /** Deterministic tone per agent so placeholder portraits stay recognizable. */

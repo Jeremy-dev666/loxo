@@ -83,7 +83,7 @@ export function MobileAppNav() {
   return (
     <nav
       data-mobile-app-nav="true"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t-4 border-pixel-black bg-pixel-white shadow-[0_-4px_0_0_#101010] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-pixel-black bg-pixel-white shadow-[0_-4px_0_0_#26221B] md:hidden"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       {MOBILE_TABS.map((tab) => {
@@ -92,7 +92,7 @@ export function MobileAppNav() {
           <Link
             key={tab.key}
             href={tab.href}
-            className={`relative flex min-h-[62px] flex-col items-center justify-center gap-0.5 border-r-2 border-pixel-black/10 px-0 pb-1 pt-1.5 font-pixel text-[0.66rem] last:border-r-0 ${
+            className={`relative flex min-h-[62px] flex-col items-center justify-center gap-0.5 border-r border-pixel-black/10 px-0 pb-1 pt-1.5 font-pixel text-[0.66rem] last:border-r-0 ${
               active ? 'bg-pixel-black text-pixel-white' : 'text-pixel-black/70'
             }`}
           >
@@ -101,10 +101,10 @@ export function MobileAppNav() {
             )}
             <span
               data-mobile-nav-icon="true"
-              className={`flex h-[28px] w-[28px] items-center justify-center border-2 border-pixel-black ${
+              className={`flex h-[28px] w-[28px] items-center justify-center border border-pixel-black ${
                 active ? tab.accent : 'bg-pixel-white'
               }`}
-              style={{ boxShadow: active ? '2px 2px 0 #101010' : '1px 1px 0 rgba(16,16,16,0.35)' }}
+              style={{ boxShadow: active ? '2px 2px 0 #26221B' : '1px 1px 0 rgba(16,16,16,0.35)' }}
             >
               <MobileNavIcon tab={tab.key} />
             </span>

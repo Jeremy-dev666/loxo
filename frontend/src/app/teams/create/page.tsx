@@ -42,7 +42,7 @@ function CreateTeamInner() {
         </p>
       </motion.div>
 
-      <div className="space-y-5 border-4 border-pixel-black bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 #101010' }}>
+      <div className="space-y-5 border border-pixel-black bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 #26221B' }}>
         <div>
           <label className="mb-1 block font-pixel text-sm text-pixel-black">Team name</label>
           <PixelInput value={name} onChange={setName} placeholder="Product delivery squad" />
@@ -59,7 +59,7 @@ function CreateTeamInner() {
         </div>
 
         {error && (
-          <div className="border-4 border-pixel-red bg-pixel-red/10 p-3">
+          <div className="border border-pixel-red bg-pixel-red/10 p-3">
             <p className="font-pixel text-sm text-pixel-red">{error}</p>
           </div>
         )}

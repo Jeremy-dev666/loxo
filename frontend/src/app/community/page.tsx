@@ -58,7 +58,7 @@ function PostCard({
   };
 
   return (
-    <div className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
+    <div className="border border-pixel-black bg-pixel-white shadow-pixel p-4">
       <div className="flex items-center gap-2 text-sm">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pixel-gray text-xs">
           {post.authorName.slice(0, 2).toUpperCase()}
@@ -87,7 +87,7 @@ function PostCard({
       {post.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {post.tags.map((tag) => (
-            <span key={tag} className="border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+            <span key={tag} className="border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
               #{tag}
             </span>
           ))}
@@ -151,16 +151,16 @@ function CommunityPageInner() {
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="text-2xl font-semibold">Community</h1>
 
-      <form onSubmit={submit} className="space-y-2 border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
+      <form onSubmit={submit} className="space-y-2 border border-pixel-black bg-pixel-white shadow-pixel p-4">
         <textarea
-          className="h-20 w-full resize-none border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+          className="h-20 w-full resize-none border border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
           placeholder="Share something with the community…"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
         />
         <div className="flex items-center justify-between">
           <select
-            className="border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-2 py-1.5 text-xs"
+            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black px-2 py-1.5 text-xs"
             value={persona}
             onChange={(e) => setPersona(e.target.value)}
           >
@@ -173,7 +173,7 @@ function CommunityPageInner() {
           </select>
           <button
             disabled={!draft.trim()}
-            className="border-2 border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             Post
           </button>
@@ -181,14 +181,14 @@ function CommunityPageInner() {
         {error && <p className="text-xs text-pixel-red">{error}</p>}
       </form>
 
-      <div className="flex gap-1 border-b-4 border-pixel-black text-sm">
+      <div className="flex gap-1 border-b border-pixel-black text-sm">
         {FEED_VIEWS.map((item) => (
           <button
             key={item.id}
             onClick={() => setView(item.id)}
             className={
               view === item.id
-                ? 'border-b-4 border-pixel-red bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
+                ? 'border-b border-pixel-red bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
                 : 'px-4 py-2 font-pixel text-pixel-black/55 hover:text-pixel-black'
             }
           >

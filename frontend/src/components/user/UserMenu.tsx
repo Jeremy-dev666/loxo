@@ -24,12 +24,12 @@ export function UserMenu({ onClose }: UserMenuProps) {
 
   return (
     <div
-      className="w-72 border-4 border-pixel-black bg-pixel-white"
-      style={{ boxShadow: '6px 6px 0px 0px #101010' }}
+      className="w-72 border border-pixel-black bg-pixel-white"
+      style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
     >
-      <div className="border-b-4 border-pixel-black bg-pixel-cream p-4">
+      <div className="border-b border-pixel-black bg-pixel-cream p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border-4 border-pixel-black bg-pixel-yellow font-pixel text-xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-pixel-black bg-pixel-yellow font-pixel text-xl">
             {user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div>

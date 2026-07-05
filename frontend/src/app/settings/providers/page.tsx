@@ -16,7 +16,7 @@ import {
 } from '@/lib/providers';
 
 const inputClass =
-  'w-full border-4 border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
+  'w-full border border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
 
 function ProviderForm({ onCreated }: { onCreated: () => void }) {
   const [name, setName] = useState('');
@@ -55,7 +55,7 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3 border-4 border-pixel-black bg-pixel-white shadow-pixel p-4">
+    <form onSubmit={submit} className="space-y-3 border border-pixel-black bg-pixel-white shadow-pixel p-4">
       <h2 className="font-medium">Add provider</h2>
       <div className="grid grid-cols-2 gap-3">
         <input
@@ -114,7 +114,7 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
 
 function HealthBadge({ platform }: { platform: PlatformHealth }) {
   return (
-    <div className="border-4 border-pixel-black bg-pixel-white shadow-pixel p-3">
+    <div className="border border-pixel-black bg-pixel-white shadow-pixel p-3">
       <div className="flex items-center justify-between">
         <span className="font-medium">{platform.label}</span>
         <span
@@ -177,12 +177,12 @@ function ProvidersPageInner() {
         {items.map((provider) => (
           <div
             key={provider.id}
-            className="flex items-center justify-between border-4 border-pixel-black bg-pixel-white shadow-pixel px-4 py-3"
+            className="flex items-center justify-between border border-pixel-black bg-pixel-white shadow-pixel px-4 py-3"
           >
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-medium">{provider.name}</span>
-                <span className="border-2 border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+                <span className="border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
                   {provider.vendor}
                 </span>
                 {provider.isDefault && (
@@ -200,7 +200,7 @@ function ProvidersPageInner() {
               {!provider.isDefault && (
                 <button
                   onClick={() => setDefault(provider)}
-                  className="border-2 border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-yellow/40"
+                  className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-yellow/40"
                 >
                   Make default
                 </button>

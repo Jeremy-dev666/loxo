@@ -1,18 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --pixel-black: #101010;
-  --pixel-white: #f8f8f8;
-  --pixel-gray: #6b6b6b;
-  --pixel-blue: #3a5ba0;
-  --pixel-green: #2d7d46;
-  --pixel-yellow: #d4a533;
-  --pixel-red: #a83232;
-  --font-main: 'VT323', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --pixel-ink: #26221b;
+  --pixel-paper: #f5f0e6;
+  --pixel-panel: #fdfaf3;
+  --pixel-gray: #7a7265;
+  --pixel-blue: #4a5d7e;
+  --pixel-green: #4a7a3d;
+  --pixel-amber: #c77b1e;
+  --pixel-red: #a3402e;
+  --font-main: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 * {
@@ -21,10 +28,10 @@
 
 body {
   font-family: var(--font-main);
-  font-size: 20px;
-  line-height: 1.4;
-  background-color: #e8e8e8;
-  color: #101010;
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: var(--pixel-paper);
+  color: var(--pixel-ink);
   overflow-x: hidden;
 }
 
@@ -35,126 +42,161 @@ body {
 
 .brand-large {
   font-family: var(--font-main);
-  font-size: 1.8em;
-  letter-spacing: 0;
-  line-height: 1.08;
+  font-size: 1.5em;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
 }
 
 /* Pixel-font-friendly text scale */
-.text-xs { font-size: 14px !important; }
-.text-sm { font-size: 16px !important; }
-.text-base { font-size: 18px !important; }
-.text-lg { font-size: 20px !important; }
-.text-xl { font-size: 24px !important; }
-.text-2xl { font-size: 28px !important; }
-.text-3xl { font-size: 32px !important; }
-.text-4xl { font-size: 40px !important; }
+.text-xs { font-size: 11px !important; }
+.text-sm { font-size: 12px !important; }
+.text-base { font-size: 14px !important; }
+.text-lg { font-size: 16px !important; }
+.text-xl { font-size: 18px !important; }
+.text-2xl { font-size: 22px !important; }
+.text-3xl { font-size: 26px !important; }
+.text-4xl { font-size: 32px !important; }
 
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-color: #e8e8e8;
+  background-color: var(--pixel-paper);
   z-index: -1;
 }
 
 body[data-traditional-desktop-mode='true'],
 body[data-traditional-desktop-mode='true']::before,
 body[data-traditional-desktop-mode='true'] main[data-app-main='true'] {
-  background-color: #f8f8f8 !important;
+  background-color: #fdfaf3 !important;
   background-image: none !important;
 }
 
-/* RPG dialog box */
+/* Chamfered corners: the pixel signature. Wrap in .pixel-notch-frame (ink
+   backing acts as a 1px border that follows the cut) when an outline is needed. */
+.pixel-notch {
+  clip-path: polygon(
+    6px 0, calc(100% - 6px) 0, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 6px) 100%,
+    6px 100%, 0 calc(100% - 6px), 0 6px
+  );
+}
+
+.pixel-notch-sm {
+  clip-path: polygon(
+    4px 0, calc(100% - 4px) 0, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 4px) 100%,
+    4px 100%, 0 calc(100% - 4px), 0 4px
+  );
+}
+
+.pixel-notch-frame {
+  background-color: var(--pixel-ink);
+  padding: 1px;
+  filter: drop-shadow(2px 2px 0 var(--pixel-ink));
+}
+
+.pixel-notch-frame > .pixel-notch,
+.pixel-notch-frame > .pixel-notch-sm {
+  height: 100%;
+}
+
+/* Bayer-style dither for section backdrops */
+.pixel-dither {
+  background-image:
+    linear-gradient(45deg, rgba(38, 34, 27, 0.05) 25%, transparent 25%, transparent 75%, rgba(38, 34, 27, 0.05) 75%),
+    linear-gradient(45deg, rgba(38, 34, 27, 0.05) 25%, transparent 25%, transparent 75%, rgba(38, 34, 27, 0.05) 75%);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+}
+
+/* Panel dialog (legacy class name kept; visual is now a quiet 1px frame) */
 .rpg-dialog {
-  background: #f8f8f8;
-  border: 4px solid #101010;
-  box-shadow:
-    inset 0 0 0 2px #f8f8f8,
-    0 0 0 4px #101010,
-    8px 8px 0 0 #101010;
+  background: var(--pixel-panel);
+  border: 1px solid var(--pixel-ink);
+  box-shadow: 2px 2px 0 0 var(--pixel-ink);
 }
 
 ::selection {
-  background-color: #3a5ba0;
-  color: #f8f8f8;
+  background-color: var(--pixel-amber);
+  color: var(--pixel-panel);
 }
 
 ::-webkit-scrollbar {
-  width: 14px;
+  width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #d8d8d8;
-  border: 2px solid #101010;
+  background: var(--pixel-paper);
+  border-left: 1px solid rgba(38, 34, 27, 0.25);
 }
 ::-webkit-scrollbar-thumb {
-  background: #6b6b6b;
-  border: 2px solid #101010;
+  background: #c9bfa9;
+  border: 1px solid var(--pixel-ink);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a5ba0;
+  background: var(--pixel-amber);
 }
 
 *:focus {
-  outline: 3px solid #3a5ba0;
-  outline-offset: 2px;
+  outline: 2px solid var(--pixel-amber);
+  outline-offset: 1px;
 }
 
 header {
-  background-color: #101010 !important;
-  border-bottom: 4px solid #a83232 !important;
+  background-color: var(--pixel-panel) !important;
+  border-bottom: 1px solid var(--pixel-ink) !important;
 }
 
 footer {
-  background-color: #101010 !important;
-  border-top: 4px solid #a83232 !important;
+  background-color: var(--pixel-panel) !important;
+  border-top: 1px solid var(--pixel-ink) !important;
 }
 
 @media (max-width: 767px) {
   body {
-    font-size: 16px;
-    line-height: 1.35;
-    background-color: #f8f8f8;
+    font-size: 13px;
+    line-height: 1.45;
+    background-color: var(--pixel-panel);
   }
 
   body::before {
-    background-color: #f8f8f8;
+    background-color: var(--pixel-panel);
     background-image:
-      linear-gradient(rgba(16, 16, 16, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(16, 16, 16, 0.035) 1px, transparent 1px);
-    background-size: 18px 18px;
+      linear-gradient(rgba(38, 34, 27, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(38, 34, 27, 0.03) 1px, transparent 1px);
+    background-size: 16px 16px;
   }
 
-  .text-xs { font-size: 12px !important; }
-  .text-sm { font-size: 14px !important; }
-  .text-base { font-size: 15px !important; }
-  .text-lg { font-size: 16px !important; }
-  .text-xl { font-size: 18px !important; }
-  .text-2xl { font-size: 22px !important; }
-  .text-3xl { font-size: 26px !important; }
-  .text-4xl { font-size: 32px !important; }
+  .text-xs { font-size: 10px !important; }
+  .text-sm { font-size: 11px !important; }
+  .text-base { font-size: 13px !important; }
+  .text-lg { font-size: 14px !important; }
+  .text-xl { font-size: 16px !important; }
+  .text-2xl { font-size: 20px !important; }
+  .text-3xl { font-size: 24px !important; }
+  .text-4xl { font-size: 28px !important; }
 
   button,
   a,
   input,
   textarea,
   select {
-    -webkit-tap-highlight-color: rgba(212, 165, 51, 0.35);
+    -webkit-tap-highlight-color: rgba(199, 123, 30, 0.3);
   }
 
   input,
   textarea,
   select {
-    min-height: 44px;
-    font-size: 15px;
+    min-height: 40px;
+    font-size: 13px;
   }
 
   button {
-    min-height: 44px;
+    min-height: 40px;
   }
 
   [data-mobile-app-nav='true'] {
-    min-height: 62px;
+    min-height: 58px;
     position: fixed;
     left: 0;
     right: 0;
@@ -162,22 +204,22 @@ footer {
     z-index: 40;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    border-top: 4px solid #101010;
-    background: #f8f8f8;
-    box-shadow: 0 -4px 0 0 #101010;
+    border-top: 1px solid var(--pixel-ink);
+    background: var(--pixel-panel);
+    box-shadow: 0 -2px 0 0 var(--pixel-ink);
   }
 
   [data-mobile-app-nav='true'] a {
     position: relative;
     display: flex;
-    min-height: 62px;
+    min-height: 58px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 2px;
     padding: 6px 0 4px;
-    border-right: 2px solid rgba(16, 16, 16, 0.1);
-    font-size: 0.66rem;
+    border-right: 1px solid rgba(38, 34, 27, 0.12);
+    font-size: 0.62rem;
     line-height: 1;
     text-align: center;
   }
@@ -188,8 +230,8 @@ footer {
 
   [data-mobile-nav-icon='true'] {
     display: flex;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     align-items: center;
     justify-content: center;
   }

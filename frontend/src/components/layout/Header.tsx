@@ -40,8 +40,8 @@ function DisplayModeToggle() {
       onClick={() => setDisplayMode(nextMode)}
       whileHover={{ y: -1 }}
       whileTap={{ y: 1, scale: 0.96 }}
-      className="hidden h-10 w-10 items-center justify-center border-2 border-pixel-white bg-pixel-black text-pixel-white transition-colors hover:border-pixel-yellow hover:text-pixel-yellow md:flex"
-      style={{ boxShadow: '2px 2px 0px 0px #101010' }}
+      className="hidden h-8 w-8 items-center justify-center border border-pixel-black bg-pixel-white text-pixel-black transition-colors hover:border-pixel-yellow hover:text-pixel-yellow md:flex"
+      style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
     >
       <DisplayModeIcon mode={displayMode} />
     </motion.button>
@@ -72,7 +72,7 @@ export function Header({
   const showHeaderBrand = !traditionalMode || !traditionalSidebarOpen;
 
   return (
-    <header className={`border-b-4 border-pixel-white bg-pixel-black px-4 py-3 ${traditionalMode ? 'md:px-0' : ''}`}>
+    <header className={`border-b border-pixel-black bg-pixel-white px-4 py-2 ${traditionalMode ? 'md:px-0' : ''}`}>
       <div
         className={
           traditionalMode
@@ -83,14 +83,14 @@ export function Header({
       >
         {showHeaderBrand && (
           <div className="flex min-w-0 items-center gap-4">
-            <Link href="/" className="flex min-w-0 items-center gap-4 no-underline">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center border-4 border-pixel-white bg-pixel-red">
-                <BrandMark className="h-7 w-7 text-pixel-white" />
+            <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
+              <div className="pixel-notch-sm flex h-9 w-9 shrink-0 items-center justify-center bg-pixel-yellow">
+                <BrandMark className="h-5 w-5 text-pixel-black" />
               </div>
-              <h1 className="flex min-w-0 items-center gap-3">
-                <span className="brand-large whitespace-nowrap !text-pixel-red">SwarmDev</span>
-                <span className={`font-pixel !text-pixel-yellow ${traditionalMode ? 'hidden text-xl lg:inline' : 'text-xl'}`}>
-                  AGENT TEAM PLATFORM
+              <h1 className="flex min-w-0 items-baseline gap-3">
+                <span className="brand-large whitespace-nowrap !text-pixel-black">SwarmDev</span>
+                <span className={`font-pixel uppercase tracking-widest !text-pixel-gray ${traditionalMode ? 'hidden text-xs lg:inline' : 'text-xs'}`}>
+                  Agent team platform
                 </span>
               </h1>
             </Link>
@@ -104,15 +104,15 @@ export function Header({
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 border-2 border-pixel-white px-2 py-1 transition-colors hover:border-pixel-yellow"
+                className="flex items-center gap-2 border border-pixel-black bg-pixel-white px-2 py-1 transition-colors hover:border-pixel-yellow"
               >
-                <div className="flex h-8 w-8 items-center justify-center border-2 border-pixel-white bg-pixel-green">
-                  <span className="font-pixel text-sm text-pixel-white">
+                <div className="flex h-6 w-6 items-center justify-center border border-pixel-black bg-pixel-yellow">
+                  <span className="font-pixel text-xs text-pixel-black">
                     {user.username.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span className="font-pixel text-sm text-pixel-white">{user.username}</span>
-                <span className="text-pixel-white/50">▾</span>
+                <span className="font-pixel text-sm text-pixel-black">{user.username}</span>
+                <span className="text-pixel-gray">▾</span>
               </button>
 
               {showUserMenu && (
@@ -125,15 +125,15 @@ export function Header({
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="border-2 border-pixel-white bg-pixel-blue px-3 py-1 font-pixel text-sm text-pixel-white no-underline transition-colors hover:bg-pixel-green hover:text-pixel-black"
-                style={{ boxShadow: '2px 2px 0px 0px #101010' }}
+                className="border border-pixel-black bg-pixel-white px-3 py-1 font-pixel text-sm uppercase text-pixel-black no-underline transition-colors hover:bg-pixel-cream"
+                style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="border-2 border-pixel-white bg-pixel-green px-3 py-1 font-pixel text-sm text-pixel-black no-underline transition-colors hover:bg-pixel-yellow"
-                style={{ boxShadow: '2px 2px 0px 0px #101010' }}
+                className="border border-pixel-black bg-pixel-yellow px-3 py-1 font-pixel text-sm uppercase text-pixel-black no-underline transition-colors hover:bg-pixel-orange hover:text-pixel-white"
+                style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
               >
                 Sign up
               </Link>
