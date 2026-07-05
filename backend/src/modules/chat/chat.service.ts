@@ -19,6 +19,8 @@ import {
 
 export interface TurnEvents {
   onChunk?: (text: string) => void;
+  /** Message meta source tag; defaults to 'chat'. */
+  source?: string;
 }
 
 export interface TurnOutcome {
@@ -128,7 +130,9 @@ export async function runChatTurn(
   }
 
   const history = await listMessages(userId, conversationId);
-  const userMessage = await appendMessage(conversationId, 'user', content, { source: 'chat' });
+  const userMessage = await appendMessage(conversationId, 'user', content, {
+    source: events.source ?? 'chat',
+  });
 
   const credentials = agent.providerId
     ? await getProviderCredentials(userId, agent.providerId)

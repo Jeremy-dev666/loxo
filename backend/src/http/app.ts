@@ -4,6 +4,7 @@ import { config } from '../config';
 import { agentsRouter, groupsRouter } from '../modules/agents/agents.routes';
 import { authRouter } from '../modules/auth/auth.routes';
 import { conversationsRouter } from '../modules/chat/conversations.routes';
+import { integrationsRouter } from '../modules/integrations/integrations.routes';
 import { marketRouter } from '../modules/market/market.routes';
 import { roundtableRouter } from '../modules/roundtable/roundtable.routes';
 import { communityRouter } from '../modules/community/community.routes';
@@ -28,7 +29,15 @@ export function createApp(): express.Express {
       credentials: true,
     })
   );
-  app.use(express.json({ limit: '1mb' }));
+  app.use(
+    express.json({
+      limit: '1mb',
+      // Slack signature verification needs the exact bytes that were signed.
+      verify: (req, _res, buf) => {
+        (req as Request & { rawBody?: Buffer }).rawBody = buf;
+      },
+    })
+  );
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -45,6 +54,7 @@ export function createApp(): express.Express {
   app.use('/api/teams', teamsRouter);
   app.use('/api/projects', projectsRouter);
   app.use('/api/workflows', workflowsRouter);
+  app.use('/api/integrations', integrationsRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'not_found', message: 'Route not found' });
