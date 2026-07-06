@@ -159,7 +159,7 @@ function EditorInner() {
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="mr-2 font-pixel text-xl font-bold text-pixel-black">{team.name}</h1>
-        <span className="border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+        <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
           {team.workflow.execution.mode}
         </span>
         {team.workflow.metadata?.origin && (
@@ -167,26 +167,26 @@ function EditorInner() {
             type="button"
             onClick={() => setShowOrigin((v) => !v)}
             title="This workflow was confirmed out of a roundtable discussion"
-            className="border border-pixel-black bg-pixel-blue/15 px-1.5 py-0.5 font-pixel text-xs text-pixel-blue hover:bg-pixel-blue/25"
+            className="border border-pixel-line bg-pixel-blue/15 px-1.5 py-0.5 font-pixel text-xs text-pixel-blue hover:bg-pixel-blue/25"
           >
             v{team.workflow.metadata.version ?? 1} · from roundtable {showOrigin ? '▴' : '▾'}
           </button>
         )}
         <button
           onClick={() => addNode('agent')}
-          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           + Agent node
         </button>
         <button
           onClick={() => addNode('condition')}
-          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           + Condition
         </button>
         <button
           onClick={() => setSlackOpen(true)}
-          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           Slack
         </button>
@@ -194,14 +194,14 @@ function EditorInner() {
           <button
             onClick={() => save(true)}
             disabled={saving}
-            className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+            className="border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             Save draft
           </button>
           <button
             onClick={() => save(false)}
             disabled={saving}
-            className="border border-pixel-black bg-pixel-yellow px-4 py-1.5 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+            className="border border-pixel-line bg-pixel-yellow px-4 py-1.5 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -210,7 +210,7 @@ function EditorInner() {
 
       <div className="flex gap-2">
         <input
-          className="flex-1 border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue" style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.10)' }}
+          className="flex-1 border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue" style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.10)' }}
           placeholder='Describe the workflow, e.g. "research the topic, review quality, then write a summary"'
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -219,14 +219,14 @@ function EditorInner() {
         <button
           onClick={generate}
           disabled={generating || !prompt.trim()}
-          className="border border-pixel-black bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-line bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           {generating ? 'Generating…' : 'Generate'}
         </button>
       </div>
 
       {showOrigin && team.workflow.metadata?.origin && (
-        <div className="border border-pixel-black bg-pixel-cream px-3 py-2 font-pixel text-xs text-pixel-black">
+        <div className="border border-pixel-line bg-pixel-cream px-3 py-2 font-pixel text-xs text-pixel-black">
           <p>
             Confirmed from roundtable “{team.workflow.metadata.origin.sessionTitle}” (draft rev{' '}
             {team.workflow.metadata.origin.revision}
@@ -257,7 +257,7 @@ function EditorInner() {
         </p>
       )}
 
-      <div className="min-h-0 flex-1 border border-pixel-black bg-pixel-white" style={{ boxShadow: '5px 5px 0 rgba(17,17,17,0.10)' }}>
+      <div className="min-h-0 flex-1 border border-pixel-line bg-pixel-white" style={{ boxShadow: '5px 5px 0 rgba(17,17,17,0.10)' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}

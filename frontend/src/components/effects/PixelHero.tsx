@@ -164,7 +164,7 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           <div
-            className="mx-auto flex h-[120px] w-[120px] items-center justify-center border border-pixel-black bg-pixel-yellow"
+            className="mx-auto flex h-[120px] w-[120px] items-center justify-center border border-pixel-line bg-pixel-yellow"
             style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}
           >
             <BrandMark className="h-16 w-16 text-pixel-black" />
@@ -210,7 +210,7 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
         {showButton && (
           <motion.button
             onClick={onEnter}
-            className="pointer-events-auto mt-5 border border-pixel-black bg-pixel-blue px-5 py-2.5 font-pixel text-base text-pixel-white transition-all duration-150 hover:bg-pixel-cream hover:text-pixel-black"
+            className="pointer-events-auto mt-5 border border-pixel-line bg-pixel-blue px-5 py-2.5 font-pixel text-base text-pixel-white transition-all duration-150 hover:bg-pixel-cream hover:text-pixel-black"
             style={{ boxShadow: '4px 4px 0px rgba(16,16,16,0.12)' }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -45,11 +45,11 @@ export function AgentSprite({
         <img
           src={avatar}
           alt={agent.name}
-          className={`${styles.box} border-pixel-black object-cover pixelated ${dimmed ? 'opacity-45 grayscale' : ''}`}
+          className={`${styles.box} border-pixel-line object-cover pixelated ${dimmed ? 'opacity-45 grayscale' : ''}`}
         />
       ) : (
         <div
-          className={`${styles.box} flex items-center justify-center border-pixel-black font-pixel text-pixel-white ${toneFor(agent)} ${
+          className={`${styles.box} flex items-center justify-center border-pixel-line font-pixel text-pixel-white ${toneFor(agent)} ${
             dimmed ? 'opacity-45 grayscale' : ''
           }`}
         >
@@ -59,7 +59,7 @@ export function AgentSprite({
       {showProviderStatus && !silhouette && (
         <span
           aria-label={providerConfigured ? 'Provider configured' : 'Provider not configured'}
-          className={`absolute -right-1 -top-1 rounded-full border-pixel-black ${styles.dot} ${
+          className={`absolute -right-1 -top-1 rounded-full border-pixel-line ${styles.dot} ${
             providerConfigured ? 'bg-pixel-green' : 'bg-pixel-gray'
           }`}
         />

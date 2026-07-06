@@ -20,13 +20,13 @@ export function PixelCard({
   return (
     <div
       onClick={onClick}
-      className={`flex min-h-0 flex-col border border-pixel-black bg-pixel-white transition-colors duration-100 ${
+      className={`flex min-h-0 flex-col border border-pixel-line bg-pixel-white transition-colors duration-100 ${
         onClick ? 'cursor-pointer' : ''
       } ${hoverable ? 'hover:border-pixel-yellow' : ''} ${className}`}
       style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
     >
       {title && (
-        <div className="flex items-center gap-2 border-b border-pixel-black bg-pixel-cream px-3 py-1.5">
+        <div className="flex items-center gap-2 border-b border-pixel-line bg-pixel-cream px-3 py-1.5">
           <span className="h-3 w-1 bg-pixel-yellow" aria-hidden />
           <span className="font-pixel text-xs uppercase tracking-wide text-pixel-black">{title}</span>
         </div>

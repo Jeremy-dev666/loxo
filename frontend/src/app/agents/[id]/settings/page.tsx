@@ -29,11 +29,11 @@ const VENDORS_FOR_RUNTIME: Record<string, string[]> = {
 };
 
 const inputClass =
-  'w-full border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none focus:border-pixel-blue';
-const sectionClass = 'space-y-3 border border-pixel-black bg-pixel-white p-4';
+  'w-full border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none focus:border-pixel-blue';
+const sectionClass = 'space-y-3 border border-pixel-line bg-pixel-white p-4';
 const sectionStyle = { boxShadow: '5px 5px 0 rgba(17,17,17,0.10)' } as const;
 const chipButtonClass =
-  'cursor-pointer border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream';
+  'cursor-pointer border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream';
 
 function SettingsInner() {
   const params = useParams<{ id: string }>();
@@ -133,15 +133,15 @@ function SettingsInner() {
       <div className="flex items-center gap-4">
         {avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt="" className="h-14 w-14 border border-pixel-black object-cover pixelated" />
+          <img src={avatar} alt="" className="h-14 w-14 border border-pixel-line object-cover pixelated" />
         ) : (
-          <div className="flex h-14 w-14 items-center justify-center border border-pixel-black bg-pixel-blue font-pixel text-pixel-white">
+          <div className="flex h-14 w-14 items-center justify-center border border-pixel-line bg-pixel-blue font-pixel text-pixel-white">
             {agent.name.slice(0, 2).toUpperCase()}
           </div>
         )}
         <div>
           <h1 className="font-pixel text-2xl font-bold text-pixel-black">{agent.name}</h1>
-          <span className="border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+          <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
             {agent.runtime}
           </span>
         </div>
@@ -170,7 +170,7 @@ function SettingsInner() {
         />
         <button
           disabled={saving}
-          className="border border-pixel-black bg-pixel-yellow px-4 py-2 font-pixel text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-pixel text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           Save
         </button>
@@ -229,7 +229,7 @@ function SettingsInner() {
         ) : (
           <ul className="space-y-2">
             {skills.map((skill) => (
-              <li key={skill.id} className="border border-pixel-black px-3 py-2" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}>
+              <li key={skill.id} className="border border-pixel-line px-3 py-2" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}>
                 <span className="font-pixel text-sm font-bold text-pixel-black">{skill.name}</span>
                 <p className="font-pixel text-xs text-pixel-black/60">{skill.description}</p>
               </li>

@@ -12,14 +12,14 @@ import {
 } from '@/lib/integrations';
 
 const inputClass =
-  'w-full border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue';
+  'w-full border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue';
 const chipButtonClass =
-  'cursor-pointer border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50';
+  'cursor-pointer border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50';
 
 function StatusChip({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span
-      className={`border border-pixel-black px-1.5 py-0.5 font-pixel text-xs ${
+      className={`border border-pixel-line px-1.5 py-0.5 font-pixel text-xs ${
         ok ? 'bg-pixel-green text-pixel-white' : 'bg-pixel-white text-pixel-black/55'
       }`}
     >
@@ -130,7 +130,7 @@ export function SlackIntegrationCard({
       </div>
 
       {config && (
-        <div className="flex items-center justify-between border border-pixel-black bg-pixel-green/10 px-3 py-2">
+        <div className="flex items-center justify-between border border-pixel-line bg-pixel-green/10 px-3 py-2">
           <p className="font-pixel text-xs text-pixel-black">
             Connected · token {config.botTokenMasked} · secret {config.signingSecretMasked}
             {config.channelId ? ` · channel ${config.channelId}` : ''}
@@ -169,7 +169,7 @@ export function SlackIntegrationCard({
         />
         <button
           disabled={saving || !botToken.trim() || !signingSecret.trim()}
-          className="border border-pixel-black bg-pixel-yellow px-4 py-2 font-pixel text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60"
+          className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-pixel text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60"
           style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           {saving ? 'Saving…' : config ? 'Update credentials' : 'Connect Slack'}

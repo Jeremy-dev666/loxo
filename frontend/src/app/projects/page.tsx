@@ -55,18 +55,18 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-pixel-black/70 p-4">
-      <div className="w-full max-w-lg border border-pixel-black bg-pixel-white shadow-pixel p-5">
+      <div className="w-full max-w-lg border border-pixel-line bg-pixel-white shadow-pixel p-5">
         <h2 className="text-lg font-semibold">New project</h2>
         <div className="mt-4 space-y-3">
           <input
             autoFocus
-            className="w-full border border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+            className="w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             placeholder="Project name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <textarea
-            className="w-full border border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+            className="w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             placeholder="What is this project about? (optional)"
             rows={2}
             value={description}
@@ -81,8 +81,8 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
                   onClick={() => toggle(teamIds, team.id, setTeamIds)}
                   className={`border px-2 py-1 text-xs ${
                     teamIds.includes(team.id)
-                      ? 'border-pixel-black bg-pixel-yellow/30 font-bold text-pixel-black'
-                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-cream'
+                      ? 'border-pixel-line bg-pixel-yellow/30 font-bold text-pixel-black'
+                      : 'border-pixel-line text-pixel-black/60 hover:bg-pixel-cream'
                   }`}
                 >
                   {team.name}
@@ -100,8 +100,8 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
                   onClick={() => toggle(agentIds, agent.id, setAgentIds)}
                   className={`border px-2 py-1 text-xs ${
                     agentIds.includes(agent.id)
-                      ? 'border-pixel-black bg-pixel-yellow/30 font-bold text-pixel-black'
-                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-cream'
+                      ? 'border-pixel-line bg-pixel-yellow/30 font-bold text-pixel-black'
+                      : 'border-pixel-line text-pixel-black/60 hover:bg-pixel-cream'
                   }`}
                 >
                   {agent.name}
@@ -115,7 +115,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream"
+            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream"
           >
             Cancel
           </button>
@@ -171,7 +171,7 @@ function ProjectsPageInner() {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
-          <div key={project.id} className="border border-pixel-black bg-pixel-white shadow-pixel p-4">
+          <div key={project.id} className="border border-pixel-line bg-pixel-white shadow-pixel p-4">
             <div className="flex items-start justify-between">
               <Link href={`/projects/${project.id}`} className="font-medium hover:text-pixel-blue">
                 {project.name}

@@ -39,18 +39,18 @@ export function PixelDialog({ isOpen, onClose, title, children }: PixelDialogPro
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.97, y: 8, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="my-auto w-full max-w-lg border border-pixel-black bg-pixel-white"
+              className="my-auto w-full max-w-lg border border-pixel-line bg-pixel-white"
               style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}
             >
               {title && (
-                <div className="flex items-center justify-between border-b border-pixel-black bg-pixel-cream px-3 py-2">
+                <div className="flex items-center justify-between border-b border-pixel-line bg-pixel-cream px-3 py-2">
                   <span className="flex items-center gap-2 font-pixel text-sm uppercase tracking-wide text-pixel-black">
                     <span className="h-3 w-1 bg-pixel-yellow" aria-hidden />
                     {title}
                   </span>
                   <button
                     onClick={onClose}
-                    className="flex h-6 w-6 items-center justify-center border border-pixel-black bg-pixel-white text-xs text-pixel-black hover:bg-pixel-red hover:text-pixel-white"
+                    className="flex h-6 w-6 items-center justify-center border border-pixel-line bg-pixel-white text-xs text-pixel-black hover:bg-pixel-red hover:text-pixel-white"
                     style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
                   >
                     X

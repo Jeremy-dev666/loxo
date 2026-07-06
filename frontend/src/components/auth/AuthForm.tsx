@@ -43,7 +43,7 @@ function FloatingMark({
       animate={{ y: [0, -10, 0], opacity: [0.35, 0.6, 0.35] }}
       transition={{ duration: 3.5, repeat: Infinity, delay, ease: 'easeInOut' }}
     >
-      <span className={`flex h-9 w-9 items-center justify-center border border-pixel-black ${tone}`}>
+      <span className={`flex h-9 w-9 items-center justify-center border border-pixel-line ${tone}`}>
         <BrandMark className="h-5 w-5 text-pixel-white" />
       </span>
     </motion.div>
@@ -136,9 +136,9 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-md"
       >
-        <div className="border border-pixel-black bg-pixel-white" style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}>
+        <div className="border border-pixel-line bg-pixel-white" style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}>
           <div
-            className="flex items-center justify-center gap-3 border-b border-pixel-black bg-pixel-black p-3 text-center font-pixel text-xl text-pixel-white"
+            className="flex items-center justify-center gap-3 border-b border-pixel-line bg-pixel-black p-3 text-center font-pixel text-xl text-pixel-white"
           >
             <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
               <BrandMark className="h-6 w-6" />
@@ -155,7 +155,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
               <div
-                className="flex h-20 w-20 items-center justify-center border border-pixel-black bg-pixel-yellow"
+                className="flex h-20 w-20 items-center justify-center border border-pixel-line bg-pixel-yellow"
                 style={{ filter: 'drop-shadow(4px 4px 0px rgba(17,17,17,0.10))' }}
               >
                 <BrandMark className="h-11 w-11 text-pixel-black" />

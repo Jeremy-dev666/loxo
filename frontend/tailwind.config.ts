@@ -13,6 +13,7 @@ const config: Config = {
     extend: {
       colors: {
         'pixel-black': '#111111',
+        'pixel-line': '#E4E4E4',
         'pixel-white': '#FFFFFF',
         'pixel-cream': '#F5F5F5',
         'pixel-gray': '#757575',

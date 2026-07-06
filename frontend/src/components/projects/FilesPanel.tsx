@@ -137,7 +137,7 @@ export function FilesPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-pixel-black px-3 py-2">
+      <div className="flex items-center justify-between border-b border-pixel-line px-3 py-2">
         <span className="text-xs font-medium text-pixel-black/70">Files</span>
         <div className="flex gap-2">
           <button
@@ -193,10 +193,10 @@ export function FilePreviewModal({ projectId, path, onClose }: FilePreviewModalP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-pixel-black/70 p-4" onClick={onClose}>
       <div
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col border border-pixel-black bg-pixel-white shadow-pixel"
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col border border-pixel-line bg-pixel-white shadow-pixel"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-pixel-black px-4 py-2">
+        <div className="flex items-center justify-between border-b border-pixel-line px-4 py-2">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{path}</p>
             {preview && (
