@@ -6,7 +6,7 @@ import { storage } from '../../storage/layout';
 import { getAgent } from '../agents/agents.service';
 import { getProviderCredentials } from '../providers/providers.service';
 import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
-import { executeApiTurn, type ApiChatMessage, type ApiProtocol } from '../runner/api-turn';
+import { executeApiTurn, resolveApiModel, type ApiChatMessage, type ApiProtocol } from '../runner/api-turn';
 import { buildDirectChatPrompt } from '../runner/turn-context';
 import type { CliRuntime } from '../agents/runtime-detect';
 import type { Agent } from '../../db/schema';
@@ -77,10 +77,7 @@ async function runApiAgentTurn(
       'api_failed'
     );
   }
-  const model = agent.model ?? agent.manifest.api?.model;
-  if (!model) {
-    throw new RunnerError('Select a model for this agent first', 'api_failed');
-  }
+  const model = resolveApiModel(agent, credentials.vendor as ApiProtocol);
 
   const system =
     agent.manifest.api?.systemPrompt ?? `You are ${agent.name}. ${agent.description}`.trim();

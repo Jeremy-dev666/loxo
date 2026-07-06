@@ -4,7 +4,7 @@ import { getAgent } from '../agents/agents.service';
 import type { CliRuntime } from '../agents/runtime-detect';
 import { getProviderCredentials } from '../providers/providers.service';
 import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
-import { executeApiTurn, type ApiProtocol } from '../runner/api-turn';
+import { executeApiTurn, resolveApiModel, type ApiProtocol } from '../runner/api-turn';
 import { buildWorkflowNodePrompt } from '../runner/turn-context';
 import type { Agent } from '../../db/schema';
 import { storage } from '../../storage/layout';
@@ -73,10 +73,7 @@ async function runApiNode(
       'api_failed'
     );
   }
-  const model = agent.model ?? agent.manifest.api?.model;
-  if (!model) {
-    throw new RunnerError(`Agent "${agent.name}" has no model configured`, 'api_failed');
-  }
+  const model = resolveApiModel(agent, credentials.vendor as ApiProtocol);
 
   const task = [
     `You are acting as node "${request.node.label ?? request.node.id}" in the workflow "${request.workflowName}".`,

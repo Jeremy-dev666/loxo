@@ -7,7 +7,7 @@ import { storage } from '../../storage/layout';
 import { getAgent } from '../agents/agents.service';
 import type { CliRuntime } from '../agents/runtime-detect';
 import { getProviderCredentials } from '../providers/providers.service';
-import { executeApiTurn, type ApiProtocol } from '../runner/api-turn';
+import { executeApiTurn, resolveApiModel, type ApiProtocol } from '../runner/api-turn';
 import { runTurn } from '../runner/runner';
 import { sanitizeInjected } from '../runner/turn-context';
 import { generateWorkflow } from '../teams/dsl-generator';
@@ -493,8 +493,7 @@ async function runAgentReply(
     if (!credentials) {
       throw new Error(`Agent "${agent.name}" needs an OpenAI or Anthropic provider configured`);
     }
-    const model = agent.model ?? agent.manifest.api?.model;
-    if (!model) throw new Error(`Agent "${agent.name}" has no model configured`);
+    const model = resolveApiModel(agent, credentials.vendor as ApiProtocol);
     const result = await executeApiTurn({
       protocol: credentials.vendor as ApiProtocol,
       apiKey: credentials.apiKey,

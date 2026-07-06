@@ -3,6 +3,7 @@ import {
   extractAnthropicDelta,
   extractOpenAiDelta,
   normalizeApiMessages,
+  resolveApiModel,
   runApiTurn,
   type ApiTurnRequest,
 } from '../src/modules/runner/api-turn';
@@ -197,5 +198,33 @@ describe('runApiTurn: aborts', () => {
     await expect(
       runApiTurn({ ...baseRequest('openai'), messages: [{ role: 'user', content: '  ' }] })
     ).rejects.toBeInstanceOf(RunnerError);
+  });
+});
+
+describe('resolveApiModel', () => {
+  const agent = (model: string | null, presetModel?: string) => ({
+    name: 'Helper',
+    model,
+    manifest: { api: presetModel ? { model: presetModel } : {} },
+  });
+
+  it('adapts a mismatched preset model to the provider vendor', () => {
+    expect(resolveApiModel(agent(null, 'claude-sonnet-5'), 'openai')).toBe('gpt-4o-mini');
+    expect(resolveApiModel(agent(null, 'gpt-4o-mini'), 'anthropic')).toBe('claude-sonnet-5');
+  });
+
+  it('keeps a matching or unrecognized preset model', () => {
+    expect(resolveApiModel(agent(null, 'claude-sonnet-5'), 'anthropic')).toBe('claude-sonnet-5');
+    expect(resolveApiModel(agent(null, 'my-relay-model'), 'openai')).toBe('my-relay-model');
+  });
+
+  it('rejects an explicit user pick that contradicts the vendor', () => {
+    expect(() => resolveApiModel(agent('claude-sonnet-5'), 'openai')).toThrow(RunnerError);
+    expect(resolveApiModel(agent('o3-mini'), 'openai')).toBe('o3-mini');
+  });
+
+  it('falls back to the vendor default when nothing is configured', () => {
+    expect(resolveApiModel(agent(null), 'openai')).toBe('gpt-4o-mini');
+    expect(resolveApiModel(agent(null), 'anthropic')).toBe('claude-sonnet-5');
   });
 });

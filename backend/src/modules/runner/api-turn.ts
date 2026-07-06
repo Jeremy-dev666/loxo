@@ -25,6 +25,50 @@ const ANTHROPIC_DEFAULT_BASE = 'https://api.anthropic.com';
 const ANTHROPIC_VERSION = '2023-06-01';
 const ANTHROPIC_MAX_TOKENS = 4096;
 
+const VENDOR_DEFAULT_MODELS: Record<ApiProtocol, string> = {
+  anthropic: 'claude-sonnet-5',
+  openai: 'gpt-4o-mini',
+};
+
+/** Vendor a model id unambiguously belongs to; null when unrecognized. */
+export function impliedVendor(model: string): ApiProtocol | null {
+  const id = model.toLowerCase();
+  if (id.startsWith('claude')) return 'anthropic';
+  if (id.startsWith('gpt') || id.startsWith('chatgpt') || /^o\d/.test(id)) return 'openai';
+  return null;
+}
+
+/**
+ * Model for an API turn. Catalog presets pin a model for one vendor; when the
+ * bound provider is the other vendor that preset would 404 there. An explicit
+ * user pick fails loudly on a mismatch; a preset default adapts to the
+ * provider's vendor; unrecognized ids pass through (relays accept anything).
+ */
+export function resolveApiModel(
+  agent: { name: string; model: string | null; manifest: { api?: { model?: string } } },
+  vendor: ApiProtocol
+): string {
+  const explicit = agent.model?.trim();
+  if (explicit) {
+    const implied = impliedVendor(explicit);
+    if (implied && implied !== vendor) {
+      throw new RunnerError(
+        `Model "${explicit}" is ${implied === 'anthropic' ? 'an Anthropic' : 'an OpenAI'} model, but agent "${agent.name}" uses ${vendor === 'anthropic' ? 'an Anthropic' : 'an OpenAI'} provider. Pick a matching model or switch the provider.`,
+        'api_failed'
+      );
+    }
+    return explicit;
+  }
+
+  const preset = agent.manifest.api?.model?.trim();
+  if (preset) {
+    const implied = impliedVendor(preset);
+    if (implied && implied !== vendor) return VENDOR_DEFAULT_MODELS[vendor];
+    return preset;
+  }
+  return VENDOR_DEFAULT_MODELS[vendor];
+}
+
 function apiBase(request: ApiTurnRequest): string {
   const fallback = request.protocol === 'openai' ? OPENAI_DEFAULT_BASE : ANTHROPIC_DEFAULT_BASE;
   return (request.baseUrl?.trim() || fallback).replace(/\/+$/, '');
