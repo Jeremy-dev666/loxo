@@ -24,12 +24,12 @@ export function UserMenu({ onClose }: UserMenuProps) {
 
   return (
     <div
-      className="w-72 border border-pixel-black bg-pixel-white"
-      style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
+      className="w-72 rounded-sm border border-[#E4E4E4] bg-white"
+      style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
     >
-      <div className="border-b border-pixel-black bg-pixel-cream p-4">
+      <div className="border-b border-[#F0F0F0] bg-white p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-pixel-black bg-pixel-yellow font-pixel text-xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-[#111] text-white font-pixel text-xl">
             {user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div>
@@ -44,7 +44,7 @@ export function UserMenu({ onClose }: UserMenuProps) {
       <div className="py-2">
         <button
           onClick={handleProviders}
-          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-pixel-yellow/30"
+          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F5F5F5]"
         >
           <span className="text-lg">🔑</span>
           <div>
@@ -55,11 +55,11 @@ export function UserMenu({ onClose }: UserMenuProps) {
 
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-pixel-red/20"
+          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F5F5F5]"
         >
           <span className="text-lg">🚪</span>
           <div>
-            <div className="font-pixel text-sm text-pixel-red">Sign out</div>
+            <div className="font-pixel text-sm text-[#111]">Sign out</div>
             <div className="font-pixel text-xs text-pixel-black/50">Switch account</div>
           </div>
         </button>
