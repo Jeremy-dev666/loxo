@@ -108,6 +108,19 @@ describe('conversations REST', () => {
       .set(auth());
     expect(gone.status).toBe(404);
   });
+
+  it('reuses the empty conversation for untitled creates', async () => {
+    const first = await request(app).post('/api/conversations').set(auth()).send({ agentId });
+    const second = await request(app).post('/api/conversations').set(auth()).send({ agentId });
+    expect(second.body.conversation.id).toBe(first.body.conversation.id);
+
+    // A titled create is deliberate and always makes a fresh record.
+    const titled = await request(app)
+      .post('/api/conversations')
+      .set(auth())
+      .send({ agentId, title: 'Deliberate' });
+    expect(titled.body.conversation.id).not.toBe(first.body.conversation.id);
+  });
 });
 
 describe('websocket chat', () => {

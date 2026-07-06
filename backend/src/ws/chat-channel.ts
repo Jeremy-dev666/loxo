@@ -1,6 +1,6 @@
 import type { WebSocket } from 'ws';
 import { runChatTurn, stopTurn } from '../modules/chat/chat.service';
-import { createConversation, getConversation } from '../modules/chat/conversations.service';
+import { getConversation, openConversation } from '../modules/chat/conversations.service';
 
 /**
  * Chat frames over the shared /ws socket:
@@ -42,7 +42,7 @@ export async function handleChatFrame(
         const requested = str(payload.conversationId);
         const conversation = requested
           ? await getConversation(userId, requested)
-          : await createConversation(userId, agentId);
+          : await openConversation(userId, agentId);
         send(ws, 'chat.ready', { conversationId: conversation.id, agentId });
         return;
       }

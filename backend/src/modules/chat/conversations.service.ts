@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { db } from '../../db/client';
 import {
   conversations,
@@ -23,6 +23,24 @@ export async function createConversation(
     .values({ userId, agentId, title: title?.trim() || 'New conversation' })
     .returning();
   return conversation!;
+}
+
+/**
+ * Conversation to use when the client opens a chat without picking one.
+ * Reuses the newest message-less conversation for the agent so page reloads
+ * and repeated new-chat clicks don't pile up empty records.
+ */
+export async function openConversation(userId: string, agentId: string): Promise<Conversation> {
+  await getAgent(userId, agentId);
+  const [empty] = await db
+    .select({ conversation: conversations })
+    .from(conversations)
+    .leftJoin(messages, eq(messages.conversationId, conversations.id))
+    .where(and(eq(conversations.userId, userId), eq(conversations.agentId, agentId), isNull(messages.id)))
+    .orderBy(desc(conversations.updatedAt))
+    .limit(1);
+  if (empty) return empty.conversation;
+  return createConversation(userId, agentId);
 }
 
 export async function getConversation(

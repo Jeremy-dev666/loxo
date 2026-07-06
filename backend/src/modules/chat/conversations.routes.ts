@@ -8,6 +8,7 @@ import {
   getConversation,
   listConversations,
   listMessages,
+  openConversation,
   renameConversation,
 } from './conversations.service';
 
@@ -28,11 +29,11 @@ conversationsRouter.post('/', async (req: AuthedRequest, res, next) => {
     const schema = z.object({ agentId: z.string().uuid(), title: z.string().max(120).optional() });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) throw badRequest('invalid_input', 'agentId is required');
-    const conversation = await createConversation(
-      req.auth!.userId,
-      parsed.data.agentId,
-      parsed.data.title
-    );
+    // Untitled creates reuse an existing empty conversation; an explicit
+    // title always makes a fresh one.
+    const conversation = parsed.data.title?.trim()
+      ? await createConversation(req.auth!.userId, parsed.data.agentId, parsed.data.title)
+      : await openConversation(req.auth!.userId, parsed.data.agentId);
     res.status(201).json({ conversation });
   } catch (error) {
     next(error);
