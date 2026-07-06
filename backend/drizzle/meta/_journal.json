@@ -71,6 +71,13 @@
       "when": 1783234847366,
       "tag": "0009_slack",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783325128546,
+      "tag": "0010_memos",
+      "breakpoints": true
     }
   ]
 }

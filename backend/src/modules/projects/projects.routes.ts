@@ -192,11 +192,13 @@ projectsRouter.patch('/:id/deliverables/:deliverableId', async (req: AuthedReque
     if (status !== 'accepted' && status !== 'revision') {
       throw badRequest('invalid_status', 'Status must be accepted or revision');
     }
+    const note = typeof req.body?.note === 'string' ? req.body.note.slice(0, 2000) : undefined;
     res.json({
       deliverable: await reviewDeliverable(
         req.auth!.userId,
         String(req.params.deliverableId),
-        status
+        status,
+        note
       ),
     });
   } catch (error) {

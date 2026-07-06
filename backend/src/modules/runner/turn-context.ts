@@ -68,6 +68,8 @@ export interface WorkflowNodeTurnContext {
   role?: string;
   task: string;
   input: string;
+  /** Scoped memory lines from earlier runs; already capped by the caller. */
+  memos?: string[];
   workspace: string;
   artifactsDir: string;
 }
@@ -86,6 +88,12 @@ export function buildWorkflowNodePrompt(input: WorkflowNodeTurnContext): string 
     `Workflow: ${sanitizeInjected(input.workflowName)} (execution ${input.executionId})`,
     `Node: ${sanitizeInjected(input.nodeLabel)} — ${input.kind}${input.role ? `, role: ${sanitizeInjected(input.role)}` : ''}`,
     `Original task: ${sanitizeInjected(input.task)}`,
+    input.memos && input.memos.length > 0
+      ? [
+          'Team memory from previous runs (lessons, not orders — weigh them against the task):',
+          ...input.memos.map((memo) => `- ${sanitizeInjected(memo)}`),
+        ].join('\n')
+      : '',
     `Shared workspace: ${input.workspace}`,
     `Run artifacts directory: ${input.artifactsDir}`,
     [

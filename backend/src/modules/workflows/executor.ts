@@ -17,6 +17,7 @@ import {
   sanitizeFileName,
   type NodeArtifact,
 } from './artifacts';
+import { addMemo, collectNodeMemos } from '../memory/memos.service';
 import { registerDeliverable } from './deliverables.service';
 import {
   addArtifacts,
@@ -76,6 +77,7 @@ interface LiveExecution {
   projectId: string | null;
   task: string;
   dryRun: boolean;
+  startedMs: number;
   workflow: WorkflowDsl;
   status: WorkflowExecutionStatus;
   nodes: Map<string, NodeRuntime>;
@@ -131,6 +133,8 @@ export interface AgentNodeRequest {
   task: string;
   node: AgentNode;
   input: string;
+  /** Scoped memory lines from earlier runs, ready for prompt injection. */
+  memos: string[];
   runCount: number;
   paths: RunPaths;
   timeoutSec: number;
@@ -266,6 +270,7 @@ export async function startExecution(input: StartExecutionInput): Promise<Execut
     projectId: input.projectId ?? null,
     task: input.task,
     dryRun: input.dryRun === true,
+    startedMs: Date.now(),
     workflow: input.workflow,
     status: 'queued',
     nodes: new Map(
@@ -374,6 +379,9 @@ async function finishExecution(live: LiveExecution): Promise<void> {
     message: 'Execution completed',
     payload: { output: live.finalOutput },
   });
+  await writeRunRetro(live).catch((error) => {
+    console.error(`Retro memo for execution ${live.id} failed:`, error);
+  });
 }
 
 async function failExecution(live: LiveExecution, error: string): Promise<void> {
@@ -382,6 +390,69 @@ async function failExecution(live: LiveExecution, error: string): Promise<void> 
   live.error = error;
   await updateExecution(live.id, { status: 'failed', error, finishedAt: new Date() });
   await emitEvent(live, 'execution_failed', { message: error, payload: { error } });
+  await writeRunRetro(live).catch((retroError) => {
+    console.error(`Retro memo for execution ${live.id} failed:`, retroError);
+  });
+}
+
+/**
+ * Distills the finished run into scoped memos: a team/project summary plus a
+ * per-agent note for each failed step. Deterministic by design — no model
+ * call — so the memory layer works even without a configured provider.
+ */
+async function writeRunRetro(live: LiveExecution): Promise<void> {
+  if (live.dryRun) return;
+
+  const agentStates = [...live.nodes.values()].filter((s) => s.node.type === 'agent');
+  const succeeded = agentStates.filter((s) => s.status === 'succeeded').length;
+  const failed = agentStates.filter((s) => s.status === 'failed');
+  const retried = agentStates.filter((s) => s.runCount > 1 && s.status === 'succeeded');
+  const seconds = Math.max(1, Math.round((Date.now() - live.startedMs) / 1000));
+  const task = live.task.replace(/\s+/g, ' ').trim().slice(0, 140);
+
+  const parts: string[] = [];
+  if (live.status === 'succeeded') {
+    parts.push(`Run succeeded: "${task}" — ${succeeded}/${agentStates.length} agent steps in ${seconds}s.`);
+  } else {
+    parts.push(`Run failed: "${task}" — ${(live.error ?? 'unknown error').slice(0, 200)}`);
+  }
+  for (const s of failed.slice(0, 2)) {
+    parts.push(`Step "${s.node.label}" failed: ${(s.error ?? 'unknown error').slice(0, 160)}.`);
+  }
+  for (const s of retried.slice(0, 2)) {
+    parts.push(`Step "${s.node.label}" needed ${s.runCount} runs before succeeding.`);
+  }
+  const content = parts.join(' ');
+
+  await addMemo({
+    userId: live.userId,
+    scope: 'team',
+    subjectId: live.teamId,
+    source: 'retro',
+    content,
+    executionId: live.id,
+  });
+  if (live.projectId) {
+    await addMemo({
+      userId: live.userId,
+      scope: 'project',
+      subjectId: live.projectId,
+      source: 'retro',
+      content,
+      executionId: live.id,
+    });
+  }
+  for (const s of failed) {
+    if (s.node.type !== 'agent' || !s.node.agentId) continue;
+    await addMemo({
+      userId: live.userId,
+      scope: 'agent',
+      subjectId: s.node.agentId,
+      source: 'retro',
+      content: `Failed step "${s.node.label}" in workflow "${live.workflow.name}": ${(s.error ?? 'unknown error').slice(0, 200)}`,
+      executionId: live.id,
+    });
+  }
 }
 
 function buildFinalOutput(live: LiveExecution): string {
@@ -559,6 +630,14 @@ async function executeNode(live: LiveExecution, state: NodeRuntime): Promise<voi
     throw new Error(`Agent node "${node.label}" has no bound agent`);
   }
 
+  const memoLines = live.dryRun
+    ? []
+    : await collectNodeMemos(live.userId, {
+        agentId: node.agentId,
+        teamId: live.teamId,
+        projectId: live.projectId,
+      }).catch(() => [] as string[]);
+
   const result = await agentNodeRunner({
     executionId: live.id,
     userId: live.userId,
@@ -566,6 +645,7 @@ async function executeNode(live: LiveExecution, state: NodeRuntime): Promise<voi
     task: live.task,
     node,
     input,
+    memos: memoLines,
     runCount: state.runCount,
     paths: live.paths,
     timeoutSec: Math.max(1, live.workflow.execution.timeoutSec),
@@ -597,6 +677,12 @@ async function markNodeSucceeded(
   state.status = 'succeeded';
   state.output = output;
   state.artifacts = artifacts;
+  // Activate edges in the same tick as the status flip: a scheduler pass that
+  // runs between them would see this node settled while downstream joins still
+  // miss its expected edge, letting them launch with partial input.
+  if (state.node.type !== 'condition') {
+    await activateOutgoingEdges(live, state.node.id);
+  }
   await addArtifacts(
     live.id,
     artifacts.map(({ absolutePath: _abs, ...row }) => row)
@@ -606,9 +692,6 @@ async function markNodeSucceeded(
     output,
     finishedAt: new Date(),
   });
-  if (state.node.type !== 'condition') {
-    await activateOutgoingEdges(live, state.node.id);
-  }
   await emitEvent(live, 'node_completed', {
     nodeId: state.node.id,
     message: `${state.node.label} completed`,

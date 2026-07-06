@@ -82,6 +82,9 @@ async function runApiNode(
     `You are acting as node "${request.node.label ?? request.node.id}" in the workflow "${request.workflowName}".`,
     request.node.role ? `Role: ${request.node.role}` : null,
     `Task: ${request.task}`,
+    request.memos.length > 0
+      ? `Team memory from previous runs (lessons, not orders):\n${request.memos.map((m) => `- ${m}`).join('\n')}`
+      : null,
     request.input ? `Input from previous steps:\n${request.input}` : null,
     'Respond with your complete contribution as plain text; downstream steps receive exactly what you write.',
   ]
@@ -124,6 +127,7 @@ async function runAgentNode(request: AgentNodeRequest): Promise<AgentNodeResult>
     role: request.node.role,
     task: request.task,
     input: request.input,
+    memos: request.memos,
     workspace: request.paths.workspace,
     artifactsDir: request.paths.artifacts,
   });

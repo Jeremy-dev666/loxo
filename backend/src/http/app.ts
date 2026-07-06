@@ -5,6 +5,7 @@ import { agentsRouter, groupsRouter } from '../modules/agents/agents.routes';
 import { authRouter } from '../modules/auth/auth.routes';
 import { conversationsRouter } from '../modules/chat/conversations.routes';
 import { integrationsRouter } from '../modules/integrations/integrations.routes';
+import { memosRouter } from '../modules/memory/memos.routes';
 import { marketRouter } from '../modules/market/market.routes';
 import { roundtableRouter } from '../modules/roundtable/roundtable.routes';
 import { communityRouter } from '../modules/community/community.routes';
@@ -55,6 +56,7 @@ export function createApp(): express.Express {
   app.use('/api/projects', projectsRouter);
   app.use('/api/workflows', workflowsRouter);
   app.use('/api/integrations', integrationsRouter);
+  app.use('/api/memos', memosRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ code: 'not_found', message: 'Route not found' });

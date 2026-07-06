@@ -341,6 +341,31 @@ export const deliverables = pgTable('deliverables', {
 
 export type Deliverable = typeof deliverables.$inferSelect;
 
+export type MemoScope = 'agent' | 'team' | 'project';
+export type MemoSource = 'retro' | 'review';
+
+/**
+ * Distilled learning from a workflow run or a deliverable review, scoped to
+ * the agent/team/project it belongs to. subjectId is polymorphic (no FK);
+ * rows are pruned with their owner via the users cascade.
+ */
+export const memos = pgTable('memos', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  scope: text('scope').$type<MemoScope>().notNull(),
+  subjectId: uuid('subject_id').notNull(),
+  source: text('source').$type<MemoSource>().notNull(),
+  content: text('content').notNull(),
+  executionId: uuid('execution_id').references(() => workflowExecutions.id, {
+    onDelete: 'set null',
+  }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Memo = typeof memos.$inferSelect;
+
 export type MarketVisibility = 'public' | 'unlisted' | 'private';
 export type MarketListingStatus = 'active' | 'disabled';
 
