@@ -223,6 +223,11 @@ describe('resolveApiModel', () => {
     expect(resolveApiModel(agent('o3-mini'), 'openai')).toBe('o3-mini');
   });
 
+  it('treats a model copied from the catalog preset as a preset, not a user pick', () => {
+    expect(resolveApiModel(agent('claude-sonnet-5', 'claude-sonnet-5'), 'openai')).toBe('gpt-4o-mini');
+    expect(resolveApiModel(agent('gpt-4o-mini', 'gpt-4o-mini'), 'anthropic')).toBe('claude-sonnet-5');
+  });
+
   it('falls back to the vendor default when nothing is configured', () => {
     expect(resolveApiModel(agent(null), 'openai')).toBe('gpt-4o-mini');
     expect(resolveApiModel(agent(null), 'anthropic')).toBe('claude-sonnet-5');

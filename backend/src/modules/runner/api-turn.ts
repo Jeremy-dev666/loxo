@@ -49,7 +49,11 @@ export function resolveApiModel(
   vendor: ApiProtocol
 ): string {
   const explicit = agent.model?.trim();
-  if (explicit) {
+  const preset = agent.manifest.api?.model?.trim();
+
+  // Catalog deploys copy the preset into the agent's model field; only a
+  // value that diverges from the preset is a deliberate user pick.
+  if (explicit && explicit !== preset) {
     const implied = impliedVendor(explicit);
     if (implied && implied !== vendor) {
       throw new RunnerError(
@@ -60,11 +64,11 @@ export function resolveApiModel(
     return explicit;
   }
 
-  const preset = agent.manifest.api?.model?.trim();
-  if (preset) {
-    const implied = impliedVendor(preset);
+  const candidate = preset ?? explicit;
+  if (candidate) {
+    const implied = impliedVendor(candidate);
     if (implied && implied !== vendor) return VENDOR_DEFAULT_MODELS[vendor];
-    return preset;
+    return candidate;
   }
   return VENDOR_DEFAULT_MODELS[vendor];
 }
