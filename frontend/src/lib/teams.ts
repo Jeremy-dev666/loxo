@@ -38,6 +38,16 @@ export interface DslEdge {
   label?: string;
 }
 
+export interface WorkflowOrigin {
+  kind: 'roundtable';
+  sessionId: string;
+  sessionTitle: string;
+  revision: number;
+  feedback?: string;
+  notes: Array<{ column: string; text: string; authorName: string }>;
+  confirmedAt: string;
+}
+
 export interface WorkflowDsl {
   version: '1';
   name: string;
@@ -50,6 +60,12 @@ export interface WorkflowDsl {
     maxConcurrency: number;
     timeoutSec: number;
     maxIterations?: number;
+  };
+  metadata?: {
+    source?: 'canvas' | 'generated' | 'fallback' | 'template';
+    pattern?: string;
+    version?: number;
+    origin?: WorkflowOrigin;
   };
 }
 

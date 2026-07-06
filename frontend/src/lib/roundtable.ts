@@ -1,4 +1,5 @@
 import { apiFetch } from './api';
+import type { TeamView, WorkflowDsl } from './teams';
 
 export const WHITEBOARD_COLUMNS = ['ideas', 'questions', 'actions', 'risks'] as const;
 export type WhiteboardColumn = (typeof WHITEBOARD_COLUMNS)[number];
@@ -16,6 +17,21 @@ export interface RoundtableMessage {
   senderName: string;
   content: string;
   sentAt: string;
+  /** Present on system messages that announce a workflow draft card. */
+  draftId?: string;
+}
+
+export interface WorkflowDraft {
+  id: string;
+  workflow: WorkflowDsl;
+  generator: 'anthropic' | 'openai' | 'fallback';
+  warnings: string[];
+  revision: number;
+  feedback?: string;
+  noteCount: number;
+  status: 'proposed' | 'superseded' | 'confirmed';
+  teamId?: string;
+  createdAt: string;
 }
 
 export interface WhiteboardNote {
@@ -47,6 +63,7 @@ export interface SessionState {
   messages: RoundtableMessage[];
   notes: WhiteboardNote[];
   runLogs: RunLogEntry[];
+  workflowDrafts: WorkflowDraft[];
   speakingAgents: string[];
   updatedAt: string;
 }
@@ -73,6 +90,31 @@ export const stopSession = (sessionId: string) =>
   apiFetch<SessionState>(`/api/roundtable/sessions/${encodeURIComponent(sessionId)}/stop`, {
     method: 'POST',
   });
+
+export const generateWorkflowDraft = (
+  sessionId: string,
+  input: {
+    title?: string;
+    members?: RoundtableMember[];
+    notes?: WhiteboardNote[];
+    feedback?: string;
+    previousDraftId?: string;
+  }
+) =>
+  apiFetch<{ draft: WorkflowDraft; state: SessionState }>(
+    `/api/roundtable/sessions/${encodeURIComponent(sessionId)}/workflow-drafts`,
+    { method: 'POST', body: JSON.stringify(input) }
+  );
+
+export const confirmWorkflowDraft = (
+  sessionId: string,
+  draftId: string,
+  input: { name?: string; description?: string; teamId?: string } = {}
+) =>
+  apiFetch<{ team: TeamView; state: SessionState }>(
+    `/api/roundtable/sessions/${encodeURIComponent(sessionId)}/workflow-drafts/${encodeURIComponent(draftId)}/confirm`,
+    { method: 'POST', body: JSON.stringify(input) }
+  );
 
 export const updateNote = (
   sessionId: string,
