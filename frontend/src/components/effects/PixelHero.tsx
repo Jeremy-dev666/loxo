@@ -164,10 +164,10 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           <div
-            className="mx-auto flex h-[120px] w-[120px] items-center justify-center border border-pixel-black bg-pixel-red"
+            className="mx-auto flex h-[120px] w-[120px] items-center justify-center border border-pixel-black bg-pixel-yellow"
             style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}
           >
-            <BrandMark className="h-16 w-16 text-pixel-white" />
+            <BrandMark className="h-16 w-16 text-pixel-black" />
           </div>
         </motion.div>
 

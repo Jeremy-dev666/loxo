@@ -81,7 +81,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
                   onClick={() => toggle(teamIds, team.id, setTeamIds)}
                   className={`border px-2 py-1 text-xs ${
                     teamIds.includes(team.id)
-                      ? 'border-pixel-red bg-pixel-yellow/30 font-bold text-pixel-black'
+                      ? 'border-pixel-black bg-pixel-yellow/30 font-bold text-pixel-black'
                       : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-cream'
                   }`}
                 >
@@ -100,7 +100,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
                   onClick={() => toggle(agentIds, agent.id, setAgentIds)}
                   className={`border px-2 py-1 text-xs ${
                     agentIds.includes(agent.id)
-                      ? 'border-pixel-red bg-pixel-yellow/30 font-bold text-pixel-black'
+                      ? 'border-pixel-black bg-pixel-yellow/30 font-bold text-pixel-black'
                       : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-cream'
                   }`}
                 >
@@ -122,7 +122,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
           <button
             onClick={save}
             disabled={!name.trim() || saving}
-            className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white disabled:opacity-50"
+            className="bg-pixel-yellow px-4 py-2 text-sm font-medium text-pixel-black disabled:opacity-50"
           >
             {saving ? 'Creating…' : 'Create'}
           </button>
@@ -163,7 +163,7 @@ function ProjectsPageInner() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white"
+          className="bg-pixel-yellow px-4 py-2 text-sm font-medium text-pixel-black"
         >
           New project
         </button>

@@ -8,7 +8,7 @@ import { BackButton } from '@/components/ui/BackButton';
 import { PixelButton } from '@/components/ui/PixelButton';
 import { deleteTeam, fetchTeams, type TeamView } from '@/lib/teams';
 
-const TEAM_TONES = ['bg-pixel-blue', 'bg-pixel-green', 'bg-pixel-red', 'bg-pixel-yellow'];
+const TEAM_TONES = ['bg-pixel-black', 'bg-pixel-yellow'];
 
 function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; onDelete: (team: TeamView) => void }) {
   const agents = team.workflow.nodes.filter((n) => n.type === 'agent');
@@ -44,7 +44,7 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
         </p>
 
         <div className="mt-3 flex flex-wrap gap-1">
-          <span className="border border-pixel-black bg-pixel-blue px-2 py-0.5 font-pixel text-xs text-pixel-white">
+          <span className="border border-pixel-black bg-pixel-black px-2 py-0.5 font-pixel text-xs text-pixel-white">
             {agents.length} AGENTS
           </span>
           <span

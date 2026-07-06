@@ -14,7 +14,7 @@ interface PixelButtonProps {
 }
 
 const VARIANT_STYLES = {
-  primary: 'bg-pixel-yellow text-pixel-black hover:bg-pixel-orange hover:text-pixel-white',
+  primary: 'bg-pixel-yellow text-pixel-black hover:bg-pixel-orange',
   secondary: 'bg-pixel-white text-pixel-black hover:bg-pixel-cream',
   danger: 'bg-pixel-red text-pixel-white hover:bg-pixel-black',
 };

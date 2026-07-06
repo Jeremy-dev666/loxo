@@ -173,7 +173,7 @@ function CommunityPageInner() {
           </select>
           <button
             disabled={!draft.trim()}
-            className="border border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-black bg-pixel-yellow px-4 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             Post
           </button>
@@ -188,7 +188,7 @@ function CommunityPageInner() {
             onClick={() => setView(item.id)}
             className={
               view === item.id
-                ? 'border-b border-pixel-red bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
+                ? 'border-b border-pixel-black bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
                 : 'px-4 py-2 font-pixel text-pixel-black/55 hover:text-pixel-black'
             }
           >

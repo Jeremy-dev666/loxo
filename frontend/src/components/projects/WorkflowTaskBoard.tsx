@@ -66,7 +66,7 @@ export function TaskBoard({ execution }: { execution: TrackedExecution | null })
         </span>
       </div>
       <div className="h-1.5 overflow-hidden bg-pixel-cream">
-        <div className="h-full bg-pixel-red transition-all" style={{ width: `${percent}%` }} />
+        <div className="h-full bg-pixel-yellow transition-all" style={{ width: `${percent}%` }} />
       </div>
 
       <div className="space-y-2">

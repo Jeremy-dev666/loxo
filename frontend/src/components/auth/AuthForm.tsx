@@ -51,13 +51,13 @@ function FloatingMark({
 }
 
 const FLOATING_MARKS = [
-  { top: '8%', left: '15%', delay: 0, tone: 'bg-pixel-blue' },
-  { top: '12%', right: '12%', delay: 1.2, tone: 'bg-pixel-green' },
-  { top: '30%', left: '4%', delay: 0.7, tone: 'bg-pixel-red' },
+  { top: '8%', left: '15%', delay: 0, tone: 'bg-pixel-black' },
+  { top: '12%', right: '12%', delay: 1.2, tone: 'bg-pixel-yellow' },
+  { top: '30%', left: '4%', delay: 0.7, tone: 'bg-pixel-gray' },
   { top: '20%', right: '5%', delay: 1.8, tone: 'bg-pixel-yellow' },
-  { top: '48%', left: '6%', delay: 2.5, tone: 'bg-pixel-green' },
-  { top: '55%', right: '4%', delay: 0.4, tone: 'bg-pixel-blue' },
-  { top: '68%', left: '10%', delay: 1.1, tone: 'bg-pixel-yellow' },
+  { top: '48%', left: '6%', delay: 2.5, tone: 'bg-pixel-black' },
+  { top: '55%', right: '4%', delay: 0.4, tone: 'bg-pixel-yellow' },
+  { top: '68%', left: '10%', delay: 1.1, tone: 'bg-pixel-gray' },
 ];
 
 export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
@@ -138,9 +138,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       >
         <div className="border border-pixel-black bg-pixel-white" style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}>
           <div
-            className={`flex items-center justify-center gap-3 border-b border-pixel-black p-3 text-center font-pixel text-xl text-pixel-white ${
-              isRegister ? 'bg-pixel-green' : 'bg-pixel-red'
-            }`}
+            className="flex items-center justify-center gap-3 border-b border-pixel-black bg-pixel-black p-3 text-center font-pixel text-xl text-pixel-white"
           >
             <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
               <BrandMark className="h-6 w-6" />
@@ -157,10 +155,10 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
               <div
-                className="flex h-20 w-20 items-center justify-center border border-pixel-black bg-pixel-red"
+                className="flex h-20 w-20 items-center justify-center border border-pixel-black bg-pixel-yellow"
                 style={{ filter: 'drop-shadow(4px 4px 0px rgba(17,17,17,0.10))' }}
               >
-                <BrandMark className="h-11 w-11 text-pixel-white" />
+                <BrandMark className="h-11 w-11 text-pixel-black" />
               </div>
             </motion.div>
           </div>

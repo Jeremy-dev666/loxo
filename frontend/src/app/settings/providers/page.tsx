@@ -104,7 +104,7 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
       <button
         type="submit"
         disabled={saving}
-        className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white disabled:opacity-60"
+        className="bg-pixel-yellow px-4 py-2 text-sm font-medium text-pixel-black disabled:opacity-60"
       >
         {saving ? 'Saving…' : 'Save provider'}
       </button>
@@ -186,7 +186,7 @@ function ProvidersPageInner() {
                   {provider.vendor}
                 </span>
                 {provider.isDefault && (
-                  <span className="bg-pixel-red/15 px-1.5 py-0.5 text-xs text-pixel-blue">
+                  <span className="bg-pixel-yellow/30 px-1.5 py-0.5 text-xs text-pixel-blue">
                     default
                   </span>
                 )}

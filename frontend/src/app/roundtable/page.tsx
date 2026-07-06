@@ -19,7 +19,7 @@ import {
 
 const COLUMN_STYLES: Record<string, { label: string; chip: string; note: string }> = {
   ideas: { label: 'Ideas', chip: 'bg-pixel-blue/20 text-pixel-blue', note: 'border-pixel-blue bg-pixel-blue/10' },
-  questions: { label: 'Questions', chip: 'bg-pixel-yellow/30 text-pixel-yellow', note: 'border-pixel-yellow bg-pixel-yellow/15' },
+  questions: { label: 'Questions', chip: 'bg-pixel-yellow/30 text-pixel-blue', note: 'border-pixel-yellow bg-pixel-yellow/15' },
   actions: { label: 'Actions', chip: 'bg-pixel-green/20 text-pixel-green', note: 'border-pixel-green bg-pixel-green/10' },
   risks: { label: 'Risks', chip: 'bg-pixel-red/20 text-pixel-red', note: 'border-pixel-red bg-pixel-red/10' },
 };
@@ -137,7 +137,7 @@ function Whiteboard({
 }
 
 const DRAFT_STATUS_STYLES: Record<WorkflowDraft['status'], { label: string; chip: string }> = {
-  proposed: { label: 'Proposed', chip: 'bg-pixel-yellow/30 text-pixel-yellow' },
+  proposed: { label: 'Proposed', chip: 'bg-pixel-yellow/30 text-pixel-blue' },
   superseded: { label: 'Superseded', chip: 'bg-pixel-gray/25 text-pixel-gray' },
   confirmed: { label: 'Confirmed', chip: 'bg-pixel-green/25 text-pixel-green' },
 };
@@ -186,7 +186,7 @@ function WorkflowDraftCard({
         ))}
       </ol>
       {draft.warnings.length > 0 && (
-        <p className="mt-2 text-xs text-pixel-yellow">{draft.warnings[0]}</p>
+        <p className="mt-2 text-xs text-pixel-blue">{draft.warnings[0]}</p>
       )}
       {draft.feedback && (
         <p className="mt-2 text-xs italic text-pixel-black/50">Feedback applied: {draft.feedback}</p>
@@ -453,7 +453,7 @@ function RoundtablePageInner() {
               onClick={() => toggleMember(agent)}
               className={
                 memberIds.has(agent.id)
-                  ? 'rounded-full bg-pixel-red px-3 py-1 text-xs font-medium text-pixel-white'
+                  ? 'rounded-full bg-pixel-black px-3 py-1 text-xs font-medium text-pixel-white'
                   : 'rounded-full border border-pixel-black px-3 py-1 text-xs text-pixel-black/70 hover:bg-pixel-cream'
               }
             >
@@ -517,7 +517,7 @@ function RoundtablePageInner() {
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
             />
-            <button className="border border-pixel-black bg-pixel-red px-4 py-2 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange">
+            <button className="border border-pixel-black bg-pixel-yellow px-4 py-2 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange">
               Send
             </button>
           </form>
@@ -548,7 +548,7 @@ function RoundtablePageInner() {
                         log.status === 'error'
                           ? 'text-pixel-red'
                           : log.status === 'running'
-                            ? 'text-pixel-yellow'
+                            ? 'text-pixel-blue'
                             : 'text-pixel-green'
                       }
                     >

@@ -41,7 +41,7 @@ export function AgentNode({ id, data }: NodeProps) {
   const d = data as CanvasNodeData;
   const bound = canvasContext.agents.find((a) => a.id === d.agentId);
   return (
-    <div className={`${box} w-52 ${bound ? '!border-pixel-blue' : '!border-pixel-yellow'}`}>
+    <div className={`${box} w-52 ${bound ? '!border-pixel-black' : '!border-pixel-yellow'}`}>
       <div className="flex items-center justify-between">
         <input
           className="w-32 bg-transparent font-bold text-pixel-black outline-none"

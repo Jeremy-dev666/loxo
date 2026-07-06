@@ -4,7 +4,7 @@ import type { Memo } from '@/lib/memos';
 
 const SOURCE_STYLES: Record<Memo['source'], { label: string; chip: string }> = {
   retro: { label: 'Run retro', chip: 'bg-pixel-blue/20 text-pixel-blue' },
-  review: { label: 'Review', chip: 'bg-pixel-yellow/30 text-pixel-yellow' },
+  review: { label: 'Review', chip: 'bg-pixel-yellow/30 text-pixel-blue' },
 };
 
 function relativeTime(iso: string): string {

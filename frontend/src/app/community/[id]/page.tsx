@@ -168,7 +168,7 @@ function PostDetailInner() {
           </select>
           <button
             disabled={!draft.trim()}
-            className="border border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-black bg-pixel-yellow px-4 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {replyTo ? 'Reply' : 'Comment'}
           </button>

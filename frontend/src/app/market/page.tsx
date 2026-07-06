@@ -97,7 +97,7 @@ function OfficialAdoptModal({ onClose, onDone }: { onClose: () => void; onDone: 
           </button>
           <button
             disabled={busy || !name.trim()}
-            className="border border-pixel-black bg-pixel-red px-3 py-2 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-black bg-pixel-yellow px-3 py-2 font-pixel font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {busy ? 'Adopting…' : 'Adopt'}
           </button>
@@ -191,7 +191,7 @@ function ListingsTab() {
                 <button
                   onClick={() => download(listing)}
                   disabled={!listing.hasFiles}
-                  className="border border-pixel-black bg-pixel-red px-3 py-1.5 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+                  className="border border-pixel-black bg-pixel-yellow px-3 py-1.5 font-pixel font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
                 >
                   Download
                 </button>
@@ -247,7 +247,7 @@ function ApiAgentsTab() {
             <div className="flex items-center gap-2">
               <span className="font-medium">{preset.name}</span>
               {preset.featured && (
-                <span className="bg-pixel-red/20 px-1.5 py-0.5 text-xs text-pixel-blue">featured</span>
+                <span className="bg-pixel-yellow/30 px-1.5 py-0.5 text-xs text-pixel-blue">featured</span>
               )}
             </div>
             <p className="mt-1 line-clamp-3 text-xs text-pixel-black/60">{preset.description}</p>
@@ -260,7 +260,7 @@ function ApiAgentsTab() {
             <div className="mt-3 flex justify-end">
               <button
                 onClick={() => deploy(preset)}
-                className="border border-pixel-black bg-pixel-red px-3 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange"
+                className="border border-pixel-black bg-pixel-yellow px-3 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange"
               >
                 Deploy
               </button>
@@ -364,7 +364,7 @@ function TemplateAdoptModal({
           </button>
           <button
             disabled={busy || !teamName.trim()}
-            className="border border-pixel-black bg-pixel-red px-3 py-2 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-black bg-pixel-yellow px-3 py-2 font-pixel font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {busy ? 'Creating…' : 'Adopt team'}
           </button>
@@ -411,7 +411,7 @@ function TeamTemplatesTab() {
             <div className="mt-3 flex justify-end">
               <button
                 onClick={() => setAdopting(template)}
-                className="border border-pixel-black bg-pixel-red px-3 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange"
+                className="border border-pixel-black bg-pixel-yellow px-3 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange"
               >
                 Adopt team
               </button>
@@ -442,7 +442,7 @@ function MarketPageInner() {
             onClick={() => setTab(t.id)}
             className={
               tab === t.id
-                ? 'border-b border-pixel-red bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
+                ? 'border-b border-pixel-black bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
                 : 'px-4 py-2 font-pixel text-pixel-black/55 hover:text-pixel-black'
             }
           >

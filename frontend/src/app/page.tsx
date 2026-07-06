@@ -19,10 +19,10 @@ const HERO_SEEN_KEY = 'swarmdev.hasSeenHeroAnimation';
 type MobileTabKey = 'projects' | 'contacts' | 'teams' | 'discover' | 'me';
 
 const MOBILE_TABS: Array<{ key: MobileTabKey; label: string; accent: string }> = [
-  { key: 'projects', label: 'Projects', accent: 'bg-pixel-blue' },
-  { key: 'contacts', label: 'Agents', accent: 'bg-pixel-green' },
+  { key: 'projects', label: 'Projects', accent: 'bg-pixel-yellow' },
+  { key: 'contacts', label: 'Agents', accent: 'bg-pixel-yellow' },
   { key: 'teams', label: 'Teams', accent: 'bg-pixel-yellow' },
-  { key: 'discover', label: 'Discover', accent: 'bg-pixel-red' },
+  { key: 'discover', label: 'Discover', accent: 'bg-pixel-yellow' },
   { key: 'me', label: 'Me', accent: 'bg-pixel-gray' },
 ];
 
@@ -141,9 +141,9 @@ function OfficialAdoptPrompt({
             <motion.div
               animate={{ scale: [1, 1.06, 1] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-              className="mx-auto flex h-28 w-28 shrink-0 items-center justify-center border border-pixel-black bg-pixel-green sm:h-32 sm:w-32"
+              className="mx-auto flex h-28 w-28 shrink-0 items-center justify-center border border-pixel-black bg-pixel-yellow sm:h-32 sm:w-32"
             >
-              <span className="font-pixel text-4xl text-pixel-white">SW</span>
+              <span className="font-pixel text-4xl text-pixel-black">SW</span>
             </motion.div>
             <div className="min-w-0 flex-1">
               <label className="mb-1 block font-pixel text-xs text-pixel-black/70">Agent name</label>
@@ -209,7 +209,7 @@ function MobileLinkRow({
   description,
   badge,
   icon,
-  accent = 'bg-pixel-blue',
+  accent = 'bg-pixel-yellow',
 }: {
   href: string;
   title: string;
@@ -328,7 +328,7 @@ function MobileHome({
         <main className="mt-2 space-y-2.5">
           {activeTab === 'projects' && (
             <MobilePanel>
-              <div className="flex items-center justify-between border-b border-pixel-black bg-pixel-blue px-3 py-2 text-pixel-white">
+              <div className="flex items-center justify-between border-b border-pixel-black bg-pixel-black px-3 py-2 text-pixel-white">
                 <div>
                   <p className="font-pixel text-base font-bold leading-tight">Recent projects</p>
                   <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
@@ -351,7 +351,7 @@ function MobileHome({
                     description={project.description || `${project.teamIds.length} teams bound`}
                     badge={project.teamIds.length ? `${project.teamIds.length}` : undefined}
                     icon={<FolderGlyph className="h-7 w-7 text-pixel-blue" />}
-                    accent="bg-pixel-blue"
+                    accent="bg-pixel-yellow"
                   />
                 ))
               ) : (
@@ -360,7 +360,7 @@ function MobileHome({
                   title="Create your first project"
                   description="Name a server workspace and bind a team"
                   icon={<FolderGlyph className="h-7 w-7 text-pixel-blue" />}
-                  accent="bg-pixel-blue"
+                  accent="bg-pixel-yellow"
                 />
               )}
             </MobilePanel>
@@ -368,7 +368,7 @@ function MobileHome({
 
           {activeTab === 'contacts' && (
             <MobilePanel>
-              <div className="border-b border-pixel-black bg-pixel-green px-3 py-2 text-pixel-white">
+              <div className="border-b border-pixel-black bg-pixel-black px-3 py-2 text-pixel-white">
                 <p className="font-pixel text-base font-bold leading-tight">Agent contacts</p>
                 <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
                   {configuredCount}/{agents.length} providers configured
@@ -381,7 +381,7 @@ function MobileHome({
                   href="/upload"
                   title="No agents yet"
                   description="Upload or adopt an agent to get started"
-                  accent="bg-pixel-green"
+                  accent="bg-pixel-yellow"
                 />
               )}
             </MobilePanel>
@@ -390,9 +390,9 @@ function MobileHome({
           {activeTab === 'teams' && (
             <>
               <MobilePanel>
-                <div className="border-b border-pixel-black bg-pixel-yellow px-3 py-2 text-pixel-black">
+                <div className="border-b border-pixel-black bg-pixel-black px-3 py-2 text-pixel-white">
                   <p className="font-pixel text-base font-bold leading-tight">Team workbench</p>
-                  <p className="mt-1 font-pixel text-xs leading-tight text-pixel-black/65">
+                  <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
                     Create teams, manage them, join group chats
                   </p>
                 </div>
@@ -401,19 +401,19 @@ function MobileHome({
                   title="Create a team"
                   description="Design an agent team with the canvas or plain language"
                   badge="NEW"
-                  accent="bg-pixel-blue"
+                  accent="bg-pixel-yellow"
                 />
                 <MobileLinkRow
                   href="/teams"
                   title="My teams"
                   description={`${teamCount} teams created`}
-                  accent="bg-pixel-green"
+                  accent="bg-pixel-yellow"
                 />
               </MobilePanel>
               <MobilePanel>
-                <div className="border-b border-pixel-black bg-pixel-yellow px-3 py-2 text-pixel-black">
+                <div className="border-b border-pixel-black bg-pixel-black px-3 py-2 text-pixel-white">
                   <p className="font-pixel text-base font-bold leading-tight">Roundtable</p>
-                  <p className="mt-1 font-pixel text-xs leading-tight text-pixel-black/65">
+                  <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
                     Drop into your agent group chats
                   </p>
                 </div>
@@ -421,7 +421,7 @@ function MobileHome({
                   href="/roundtable"
                   title="Open the roundtable"
                   description="Multi-agent discussion with a shared whiteboard"
-                  accent="bg-pixel-red"
+                  accent="bg-pixel-yellow"
                 />
               </MobilePanel>
             </>
@@ -429,7 +429,7 @@ function MobileHome({
 
           {activeTab === 'discover' && (
             <MobilePanel>
-              <div className="border-b border-pixel-black bg-pixel-red px-3 py-2 text-pixel-white">
+              <div className="border-b border-pixel-black bg-pixel-black px-3 py-2 text-pixel-white">
                 <p className="font-pixel text-base font-bold leading-tight">Discover</p>
                 <p className="mt-1 font-pixel text-xs leading-tight text-pixel-white/80">
                   Agent market and hosted API agents
@@ -445,20 +445,20 @@ function MobileHome({
                 href="/market?tab=api-agents"
                 title="API agents"
                 description="Deploy hosted OpenAI/Anthropic agents"
-                accent="bg-pixel-red"
+                accent="bg-pixel-yellow"
               />
               <MobileLinkRow
                 href="/community"
                 title="Community"
                 description="Posts, comments, and agent follows"
-                accent="bg-pixel-green"
+                accent="bg-pixel-yellow"
               />
             </MobilePanel>
           )}
 
           {activeTab === 'me' && (
             <MobilePanel>
-              <div className={`border-b border-pixel-black ${isLoggedIn ? 'bg-pixel-blue' : 'bg-pixel-gray'} px-3 py-2 text-pixel-white`}>
+              <div className={`border-b border-pixel-black ${isLoggedIn ? 'bg-pixel-black' : 'bg-pixel-gray'} px-3 py-2 text-pixel-white`}>
                 <p className="font-pixel text-base font-bold leading-tight">
                   {isLoggedIn ? 'Signed in' : 'Signed out'}
                 </p>
@@ -476,7 +476,7 @@ function MobileHome({
                       logout();
                       router.replace('/?mobileTab=me');
                     }}
-                    className="flex min-h-[48px] w-full items-center justify-center border border-pixel-black bg-pixel-red px-3 font-pixel text-base font-bold leading-none text-pixel-white"
+                    className="flex min-h-[48px] w-full items-center justify-center border border-pixel-black bg-pixel-black px-3 font-pixel text-base font-bold leading-none text-pixel-white"
                     style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                   >
                     Sign out
@@ -485,14 +485,14 @@ function MobileHome({
                   <div className="grid grid-cols-2 gap-2">
                     <Link
                       href="/login"
-                      className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-blue px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
+                      className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-yellow px-3 font-pixel text-base font-bold leading-none text-pixel-black no-underline"
                       style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                     >
                       Sign in
                     </Link>
                     <Link
                       href="/register"
-                      className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-green px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
+                      className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-black px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
                       style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                     >
                       Sign up
@@ -504,13 +504,13 @@ function MobileHome({
                 href="/settings/providers"
                 title="Provider settings"
                 description="Configure model providers and API keys"
-                accent="bg-pixel-blue"
+                accent="bg-pixel-yellow"
               />
               <MobileLinkRow
                 href="/agents"
                 title="My agent den"
                 description={`${agents.length} agents owned`}
-                accent="bg-pixel-green"
+                accent="bg-pixel-yellow"
               />
               <MobileLinkRow
                 href="/upload"

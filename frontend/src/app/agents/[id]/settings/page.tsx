@@ -170,7 +170,7 @@ function SettingsInner() {
         />
         <button
           disabled={saving}
-          className="border border-pixel-brown bg-pixel-red px-4 py-2 font-pixel text-sm text-pixel-white hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-black bg-pixel-yellow px-4 py-2 font-pixel text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           Save
         </button>

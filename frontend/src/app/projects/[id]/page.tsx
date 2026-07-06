@@ -138,7 +138,7 @@ function BindingsDialog({
           <button
             onClick={save}
             disabled={saving}
-            className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white disabled:opacity-50"
+            className="bg-pixel-yellow px-4 py-2 text-sm font-medium text-pixel-black disabled:opacity-50"
           >
             Save
           </button>
@@ -486,7 +486,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
                 <button
                   onClick={submit}
                   disabled={submitting || !task.trim() || running}
-                  className="border border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-sm font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+                  className="border border-pixel-black bg-pixel-yellow px-4 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
                 >
                   {running ? 'Running…' : submitting ? 'Submitting…' : 'Submit task'}
                 </button>

@@ -84,7 +84,7 @@ function GroupSection({
                 e.stopPropagation();
                 onDeleteGroup(group);
               }}
-              className="hidden border border-pixel-black bg-pixel-red px-3 py-2 font-pixel text-sm font-bold text-pixel-white transition-colors hover:bg-pixel-orange sm:block md:py-1 md:text-xs"
+              className="hidden border border-pixel-black bg-pixel-yellow px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-orange sm:block md:py-1 md:text-xs"
               style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
             >
               Delete den
@@ -367,7 +367,7 @@ function AgentsPageInner() {
                   <span>Add agents to {addTargetGroup.name}</span>
                   <button
                     onClick={() => setAddTargetGroupId(null)}
-                    className="flex h-8 w-8 items-center justify-center border border-pixel-black bg-pixel-red text-pixel-white"
+                    className="flex h-8 w-8 items-center justify-center border border-pixel-black bg-pixel-black text-pixel-white"
                     style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
                   >
                     X

@@ -1,10 +1,11 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Monochrome palette. Legacy pixel-* hue names are kept as class names but
- * resolve to a gray ramp chosen so existing bg/text pairings stay readable:
- * dark tokens (black/blue/green/red) carry white text, light tokens
- * (cream/yellow) carry black text.
+ * Monochrome base with signal accents. Color carries information only:
+ * green = healthy/success, red = error/destructive, amber (yellow) = brand
+ * accent and busy/pending surfaces with black text, blue resolves to a
+ * darker ochre for accent text and accent fills that carry white text,
+ * orange is the amber hover step. Everything else stays black/white/gray.
  */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
@@ -15,12 +16,12 @@ const config: Config = {
         'pixel-white': '#FFFFFF',
         'pixel-cream': '#F5F5F5',
         'pixel-gray': '#757575',
-        'pixel-red': '#111111',
-        'pixel-orange': '#3D3D3D',
+        'pixel-red': '#C94141',
+        'pixel-orange': '#C8871E',
         'pixel-brown': '#4A4A4A',
-        'pixel-green': '#3D3D3D',
-        'pixel-blue': '#111111',
-        'pixel-yellow': '#9B9B9B',
+        'pixel-green': '#2F8A4C',
+        'pixel-blue': '#A9721C',
+        'pixel-yellow': '#F2B03D',
       },
       fontFamily: {
         pixel: ['"Departure Mono"', 'VT323', 'monospace'],

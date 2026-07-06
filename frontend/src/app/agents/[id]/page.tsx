@@ -111,7 +111,7 @@ function SessionsSidebar({
           <div
             key={conversation.id}
             className={`cursor-pointer border-b border-pixel-black/10 px-3 py-2 ${
-              conversation.id === activeId ? 'border-l-2 border-l-pixel-red bg-pixel-yellow/30' : 'hover:bg-pixel-cream'
+              conversation.id === activeId ? 'border-l-2 border-l-pixel-black bg-pixel-yellow/30' : 'hover:bg-pixel-cream'
             }`}
             onClick={() => onSelect(conversation.id)}
           >

@@ -201,7 +201,7 @@ function EditorInner() {
           <button
             onClick={() => save(false)}
             disabled={saving}
-            className="border border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+            className="border border-pixel-black bg-pixel-yellow px-4 py-1.5 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -219,7 +219,7 @@ function EditorInner() {
         <button
           onClick={generate}
           disabled={generating || !prompt.trim()}
-          className="border border-pixel-black bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-green disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-black bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           {generating ? 'Generating…' : 'Generate'}
         </button>

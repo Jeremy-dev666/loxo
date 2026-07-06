@@ -6,10 +6,10 @@ import { usePathname, useSearchParams } from 'next/navigation';
 type MobileTabKey = 'projects' | 'agents' | 'teams' | 'discover' | 'me';
 
 const MOBILE_TABS: Array<{ key: MobileTabKey; label: string; accent: string; href: string }> = [
-  { key: 'projects', label: 'Projects', accent: 'bg-pixel-blue', href: '/?mobileTab=projects' },
-  { key: 'agents', label: 'Agents', accent: 'bg-pixel-green', href: '/?mobileTab=contacts' },
+  { key: 'projects', label: 'Projects', accent: 'bg-pixel-yellow', href: '/?mobileTab=projects' },
+  { key: 'agents', label: 'Agents', accent: 'bg-pixel-yellow', href: '/?mobileTab=contacts' },
   { key: 'teams', label: 'Teams', accent: 'bg-pixel-yellow', href: '/?mobileTab=teams' },
-  { key: 'discover', label: 'Discover', accent: 'bg-pixel-red', href: '/?mobileTab=discover' },
+  { key: 'discover', label: 'Discover', accent: 'bg-pixel-yellow', href: '/?mobileTab=discover' },
   { key: 'me', label: 'Me', accent: 'bg-pixel-gray', href: '/?mobileTab=me' },
 ];
 
