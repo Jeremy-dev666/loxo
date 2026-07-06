@@ -17,6 +17,8 @@ interface UseAgentChatOptions {
   agentId: string;
   conversationId: string | null;
   onConversationCreated?: (conversationId: string) => void;
+  /** Fires when a turn settles (reply or error); titles and previews may have changed. */
+  onTurnComplete?: () => void;
 }
 
 interface UseAgentChatResult {
@@ -39,6 +41,7 @@ export function useAgentChat({
   agentId,
   conversationId,
   onConversationCreated,
+  onTurnComplete,
 }: UseAgentChatOptions): UseAgentChatResult {
   const token = useAuthStore((s) => s.token);
   const [connected, setConnected] = useState(false);
@@ -128,12 +131,14 @@ export function useAgentChat({
                   createdAt: new Date().toISOString(),
                 },
               ]);
+              onTurnComplete?.();
             }
             break;
           case 'chat.error':
             setBusy(false);
             setStreamText('');
             setError(String(payload.message ?? 'Chat failed'));
+            onTurnComplete?.();
             break;
           default:
             break;
@@ -160,7 +165,7 @@ export function useAgentChat({
       wsRef.current = null;
       setConnected(false);
     };
-  }, [token, agentId, onConversationCreated]);
+  }, [token, agentId, onConversationCreated, onTurnComplete]);
 
   const sendMessage = useCallback((content: string) => {
     const ws = wsRef.current;

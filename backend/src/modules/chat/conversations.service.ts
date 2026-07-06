@@ -12,6 +12,34 @@ import { getAgent } from '../agents/agents.service';
 
 const PREVIEW_MAX_CHARS = 160;
 
+export const DEFAULT_CONVERSATION_TITLE = 'New conversation';
+const TITLE_MAX_CHARS = 48;
+
+/** Title from the first user message: whitespace collapsed, word-boundary cut. */
+export function deriveConversationTitle(content: string): string {
+  const flat = content.replace(/\s+/g, ' ').trim();
+  if (!flat) return DEFAULT_CONVERSATION_TITLE;
+  if (flat.length <= TITLE_MAX_CHARS) return flat;
+  const cut = flat.slice(0, TITLE_MAX_CHARS);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > TITLE_MAX_CHARS / 2 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
+/**
+ * Names a still-default conversation after its first user message, like
+ * hosted chat products do. The WHERE guard keeps manual renames authoritative.
+ */
+export async function autoTitleConversation(conversationId: string, content: string): Promise<void> {
+  const title = deriveConversationTitle(content);
+  if (title === DEFAULT_CONVERSATION_TITLE) return;
+  await db
+    .update(conversations)
+    .set({ title, updatedAt: new Date() })
+    .where(
+      and(eq(conversations.id, conversationId), eq(conversations.title, DEFAULT_CONVERSATION_TITLE))
+    );
+}
+
 export async function createConversation(
   userId: string,
   agentId: string,
@@ -20,7 +48,7 @@ export async function createConversation(
   await getAgent(userId, agentId);
   const [conversation] = await db
     .insert(conversations)
-    .values({ userId, agentId, title: title?.trim() || 'New conversation' })
+    .values({ userId, agentId, title: title?.trim() || DEFAULT_CONVERSATION_TITLE })
     .returning();
   return conversation!;
 }

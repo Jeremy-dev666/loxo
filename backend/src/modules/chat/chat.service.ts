@@ -12,6 +12,7 @@ import type { CliRuntime } from '../agents/runtime-detect';
 import type { Agent } from '../../db/schema';
 import {
   appendMessage,
+  autoTitleConversation,
   getConversation,
   listMessages,
   setRunnerSessionRef,
@@ -130,6 +131,7 @@ export async function runChatTurn(
   const userMessage = await appendMessage(conversationId, 'user', content, {
     source: events.source ?? 'chat',
   });
+  await autoTitleConversation(conversationId, content);
 
   const credentials = agent.providerId
     ? await getProviderCredentials(userId, agent.providerId)

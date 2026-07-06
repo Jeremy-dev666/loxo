@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { pool } from '../src/db/client';
 import { createApp } from '../src/http/app';
 import { setTurnExecutorForTests } from '../src/modules/chat/chat.service';
+import { deriveConversationTitle } from '../src/modules/chat/conversations.service';
 import { RunnerError } from '../src/modules/runner/runner';
 import { attachWsGateway, type WsGateway } from '../src/ws/gateway';
 
@@ -123,12 +124,35 @@ describe('conversations REST', () => {
   });
 });
 
+describe('deriveConversationTitle', () => {
+  it('uses the message verbatim when short, collapsing whitespace', () => {
+    expect(deriveConversationTitle('  Fix the\n login bug ')).toBe('Fix the login bug');
+  });
+
+  it('cuts long messages at a word boundary with an ellipsis', () => {
+    const title = deriveConversationTitle(
+      'Please review this pull request and check whether the migration is backwards compatible'
+    );
+    expect(title.length).toBeLessThanOrEqual(49);
+    expect(title.endsWith('…')).toBe(true);
+    expect(title).not.toMatch(/ …$/);
+  });
+
+  it('hard-cuts text without word boundaries', () => {
+    const title = deriveConversationTitle('评审一下这个迁移脚本是否向后兼容'.repeat(10));
+    expect(title.length).toBe(49);
+    expect(title.endsWith('…')).toBe(true);
+  });
+});
+
 describe('websocket chat', () => {
   it('rejects upgrade without a valid token', async () => {
     await expect(connect('token=garbage')).rejects.toThrow();
   });
 
   it('runs a full turn: open → message → delta → reply, all persisted', async () => {
+    // Earlier tests leave empty conversations that chat.open would reuse.
+    await pool.query('DELETE FROM conversations');
     setTurnExecutorForTests(async (req) => {
       req.onChunk?.('partial ');
       req.onChunk?.('answer');
@@ -162,9 +186,36 @@ describe('websocket chat', () => {
     expect(messages.body.messages[1]).toMatchObject({ role: 'assistant', content: 'partial answer' });
 
     const [row] = (
-      await pool.query('SELECT runner_session_ref FROM conversations WHERE id = $1', [conversationId])
+      await pool.query('SELECT runner_session_ref, title FROM conversations WHERE id = $1', [
+        conversationId,
+      ])
     ).rows;
     expect(row.runner_session_ref).toBe('cli-sess-1');
+    expect(row.title).toBe('Hi agent');
+  });
+
+  it('keeps a manual title when messages arrive', async () => {
+    setTurnExecutorForTests(async () => ({ text: 'ok', sessionRef: null, durationMs: 1 }));
+    const created = await request(app)
+      .post('/api/conversations')
+      .set(auth())
+      .send({ agentId, title: 'My topic' });
+    const conversationId = created.body.conversation.id as string;
+
+    const ws = await connect();
+    ws.send(JSON.stringify({ type: 'chat.open', payload: { agentId, conversationId } }));
+    await collectUntil(ws, ['chat.ready']);
+    const framesPromise = collectUntil(ws, ['chat.reply', 'chat.error']);
+    ws.send(
+      JSON.stringify({ type: 'chat.message', payload: { conversationId, content: 'Something else' } })
+    );
+    await framesPromise;
+    ws.close();
+
+    const [row] = (
+      await pool.query('SELECT title FROM conversations WHERE id = $1', [conversationId])
+    ).rows;
+    expect(row.title).toBe('My topic');
   });
 
   it('persists runner failures as system messages instead of dropping them', async () => {

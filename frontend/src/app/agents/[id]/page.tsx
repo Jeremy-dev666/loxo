@@ -325,6 +325,7 @@ function ChatPageInner() {
     agentId,
     conversationId: activeId,
     onConversationCreated,
+    onTurnComplete: reloadConversations,
   });
 
   const allMessages = useMemo(() => {
