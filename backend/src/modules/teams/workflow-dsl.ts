@@ -80,7 +80,21 @@ export interface WorkflowDsl {
   metadata?: {
     source?: 'canvas' | 'generated' | 'fallback' | 'template';
     pattern?: string;
+    /** Bumps each time a confirmed draft replaces this workflow. */
+    version?: number;
+    origin?: WorkflowOrigin;
   };
+}
+
+/** Provenance for workflows crystallized out of a roundtable discussion. */
+export interface WorkflowOrigin {
+  kind: 'roundtable';
+  sessionId: string;
+  sessionTitle: string;
+  revision: number;
+  feedback?: string;
+  notes: Array<{ column: string; text: string; authorName: string }>;
+  confirmedAt: string;
 }
 
 export interface ValidationIssue {

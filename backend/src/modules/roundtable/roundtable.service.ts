@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Agent } from '../../db/schema';
-import { notFound } from '../../http/errors';
+import { badRequest, notFound } from '../../http/errors';
 import { storage } from '../../storage/layout';
 import { getAgent } from '../agents/agents.service';
 import type { CliRuntime } from '../agents/runtime-detect';
@@ -10,6 +10,9 @@ import { getProviderCredentials } from '../providers/providers.service';
 import { executeApiTurn, type ApiProtocol } from '../runner/api-turn';
 import { runTurn } from '../runner/runner';
 import { sanitizeInjected } from '../runner/turn-context';
+import { generateWorkflow } from '../teams/dsl-generator';
+import { createTeam, getTeam, saveWorkflow, updateTeamMeta, type TeamView } from '../teams/teams.service';
+import type { WorkflowDsl, WorkflowOrigin } from '../teams/workflow-dsl';
 
 /**
  * Roundtable sessions are in-memory by design (v1): a server restart loses
@@ -30,6 +33,7 @@ const STOP_PHRASES = /stop this topic|stop topic|end this topic|pause this topic
 const MESSAGE_CAP = 160;
 const NOTE_CAP = 80;
 const LOG_CAP = 80;
+const DRAFT_CAP = 12;
 
 const BOARD_WIDTH = 1800;
 const BOARD_HEIGHT = 1320;
@@ -50,6 +54,8 @@ export interface RoundtableMessage {
   senderName: string;
   content: string;
   sentAt: string;
+  /** Present on system messages announcing a workflow draft card. */
+  draftId?: string;
 }
 
 export interface WhiteboardNote {
@@ -71,6 +77,20 @@ export interface RunLogEntry {
   at: string;
 }
 
+/** A workflow proposal generated from the whiteboard; becomes a Team only on confirm. */
+export interface WorkflowDraft {
+  id: string;
+  workflow: WorkflowDsl;
+  generator: 'anthropic' | 'openai' | 'fallback';
+  warnings: string[];
+  revision: number;
+  feedback?: string;
+  noteCount: number;
+  status: 'proposed' | 'superseded' | 'confirmed';
+  teamId?: string;
+  createdAt: string;
+}
+
 interface RoundtableSession {
   userId: string;
   sessionId: string;
@@ -79,6 +99,7 @@ interface RoundtableSession {
   messages: RoundtableMessage[];
   notes: WhiteboardNote[];
   runLogs: RunLogEntry[];
+  workflowDrafts: WorkflowDraft[];
   speakingAgents: string[];
   active: boolean;
   stopRequested: boolean;
@@ -588,6 +609,7 @@ function getOrCreateSession(userId: string, sessionId: string, title?: string): 
     messages: [],
     notes: [],
     runLogs: [],
+    workflowDrafts: [],
     speakingAgents: [],
     active: false,
     stopRequested: false,
@@ -612,6 +634,7 @@ export interface SessionState {
   messages: RoundtableMessage[];
   notes: WhiteboardNote[];
   runLogs: RunLogEntry[];
+  workflowDrafts: WorkflowDraft[];
   speakingAgents: string[];
   updatedAt: string;
 }
@@ -627,6 +650,7 @@ function serializeSession(session: RoundtableSession): SessionState {
     messages: session.messages,
     notes: session.notes,
     runLogs: session.runLogs,
+    workflowDrafts: session.workflowDrafts,
     speakingAgents: session.speakingAgents,
     updatedAt: session.updatedAt,
   };
@@ -643,6 +667,7 @@ function emptySessionState(sessionId: string): SessionState {
     messages: [],
     notes: [],
     runLogs: [],
+    workflowDrafts: [],
     speakingAgents: [],
     updatedAt: new Date().toISOString(),
   };
@@ -927,4 +952,172 @@ export function updateSessionNote(
   note.updatedAt = new Date().toISOString();
   session.updatedAt = note.updatedAt;
   return note;
+}
+
+// ---------------------------------------------------------------------------
+// Workflow drafts: whiteboard consensus -> proposed DSL -> confirmed Team
+
+function buildDraftPrompt(
+  session: RoundtableSession,
+  feedback?: string,
+  previous?: WorkflowDraft
+): string {
+  const board = WHITEBOARD_COLUMNS.map((column) => {
+    const lines = session.notes
+      .filter((n) => n.column === column && n.text.trim())
+      .map((n) => `- ${n.text} (${n.authorName})`);
+    return lines.length > 0 ? `${column.toUpperCase()}:\n${lines.join('\n')}` : null;
+  })
+    .filter(Boolean)
+    .join('\n');
+
+  const members = session.members
+    .map((m) => `- ${m.name}${m.role ? ` (${m.role})` : ''}`)
+    .join('\n');
+
+  const parts = [
+    `Roundtable topic: ${session.title}`,
+    'The whiteboard below is the converged consensus of a team discussion.',
+    'Design a workflow that turns these notes into an executable multi-agent plan.',
+    '',
+    'Whiteboard:',
+    board,
+  ];
+  if (members) {
+    parts.push('', 'Discussion participants (prefer them as workflow agents):', members);
+  }
+  if (previous && feedback?.trim()) {
+    parts.push(
+      '',
+      'Previous draft (JSON):',
+      JSON.stringify(previous.workflow),
+      '',
+      'Revision feedback — apply these changes:',
+      feedback.trim()
+    );
+  }
+  return parts.join('\n');
+}
+
+export interface DraftRequest {
+  title?: string;
+  members?: RoundtableMember[];
+  notes?: WhiteboardNote[];
+  feedback?: string;
+  previousDraftId?: string;
+}
+
+export async function generateSessionWorkflowDraft(
+  userId: string,
+  sessionId: string,
+  input: DraftRequest
+): Promise<{ draft: WorkflowDraft; state: SessionState }> {
+  const session = getOrCreateSession(userId, sessionId, input.title);
+  if (input.members?.length) session.members = input.members;
+  mergeNotes(session, (input.notes ?? []).map((note, index) => normalizeNote(note, index)));
+
+  const noteCount = session.notes.filter((n) => n.text.trim()).length;
+  if (noteCount === 0) {
+    throw badRequest('empty_whiteboard', 'Add whiteboard notes before generating a workflow draft.');
+  }
+
+  const previous = input.previousDraftId
+    ? session.workflowDrafts.find((d) => d.id === input.previousDraftId)
+    : undefined;
+  if (input.previousDraftId && !previous) throw notFound('Previous draft not found');
+
+  pushRunLog(session, 'Roundtable', 'running', 'Generating a workflow draft from the whiteboard…');
+  const result = await generateWorkflow(userId, buildDraftPrompt(session, input.feedback, previous));
+
+  const draft: WorkflowDraft = {
+    id: makeId('draft'),
+    workflow: result.workflow,
+    generator: result.generator,
+    warnings: result.warnings,
+    revision: previous ? previous.revision + 1 : 1,
+    feedback: input.feedback?.trim() || undefined,
+    noteCount,
+    status: 'proposed',
+    createdAt: new Date().toISOString(),
+  };
+  if (previous?.status === 'proposed') previous.status = 'superseded';
+  session.workflowDrafts = [...session.workflowDrafts, draft].slice(-DRAFT_CAP);
+
+  const agentSteps = result.workflow.nodes.filter((n) => n.type === 'agent').length;
+  mergeMessages(session, [
+    {
+      id: makeId('msg'),
+      senderId: 'system',
+      senderName: 'Roundtable',
+      content: `Workflow draft v${draft.revision}: "${result.workflow.name}" — ${agentSteps} agent step(s) from ${noteCount} whiteboard note(s). Confirm it as a team or regenerate with feedback.`,
+      sentAt: draft.createdAt,
+      draftId: draft.id,
+    },
+  ]);
+  pushRunLog(session, 'Roundtable', 'success', `Workflow draft v${draft.revision} ready (${draft.generator}).`);
+  session.updatedAt = new Date().toISOString();
+  return { draft, state: serializeSession(session) };
+}
+
+export async function confirmSessionWorkflowDraft(
+  userId: string,
+  sessionId: string,
+  draftId: string,
+  input: { name?: string; description?: string; teamId?: string }
+): Promise<{ team: TeamView; state: SessionState }> {
+  const session = sessions.get(sessionKey(userId, sessionId));
+  const draft = session?.workflowDrafts.find((d) => d.id === draftId);
+  if (!session || !draft) throw notFound('Workflow draft not found');
+  if (draft.status === 'confirmed') {
+    throw badRequest('draft_already_confirmed', 'This draft was already confirmed.');
+  }
+
+  const existing = input.teamId ? await getTeam(userId, input.teamId) : null;
+  const version = existing ? (existing.workflow.metadata?.version ?? 1) + 1 : 1;
+  const origin: WorkflowOrigin = {
+    kind: 'roundtable',
+    sessionId: session.sessionId,
+    sessionTitle: session.title,
+    revision: draft.revision,
+    feedback: draft.feedback,
+    notes: session.notes
+      .filter((n) => n.text.trim())
+      .map((n) => ({ column: n.column, text: n.text, authorName: n.authorName })),
+    confirmedAt: new Date().toISOString(),
+  };
+  const workflow: WorkflowDsl = {
+    ...draft.workflow,
+    metadata: { ...draft.workflow.metadata, version, origin },
+  };
+
+  let team: TeamView;
+  if (existing) {
+    team = await saveWorkflow(userId, existing.id, workflow, { skipErrorCheck: true });
+    const meta: { name?: string; description?: string } = {};
+    if (input.name?.trim()) meta.name = input.name.trim();
+    if (input.description?.trim()) meta.description = input.description.trim();
+    if (Object.keys(meta).length > 0) team = await updateTeamMeta(userId, existing.id, meta);
+  } else {
+    team = await createTeam(userId, {
+      name: input.name?.trim() || workflow.name || session.title,
+      description: input.description?.trim() || workflow.description,
+      workflow,
+    });
+  }
+
+  draft.status = 'confirmed';
+  draft.teamId = team.id;
+  mergeMessages(session, [
+    {
+      id: makeId('msg'),
+      senderId: 'system',
+      senderName: 'Roundtable',
+      content: `Workflow draft v${draft.revision} confirmed as team "${team.name}" (workflow v${version}).`,
+      sentAt: new Date().toISOString(),
+      draftId: draft.id,
+    },
+  ]);
+  pushRunLog(session, 'Roundtable', 'success', `Team "${team.name}" saved (workflow v${version}).`);
+  session.updatedAt = new Date().toISOString();
+  return { team, state: serializeSession(session) };
 }

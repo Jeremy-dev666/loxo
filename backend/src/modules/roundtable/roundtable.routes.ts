@@ -3,7 +3,9 @@ import { z } from 'zod';
 import { badRequest } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
 import {
+  confirmSessionWorkflowDraft,
   executeRoundtableTurn,
+  generateSessionWorkflowDraft,
   getSessionState,
   postSessionMessage,
   stopSession,
@@ -11,6 +13,7 @@ import {
   WHITEBOARD_COLUMNS,
   type RoundtableMember,
   type WhiteboardColumn,
+  type WhiteboardNote,
 } from './roundtable.service';
 
 export const roundtableRouter = Router();
@@ -134,6 +137,62 @@ roundtableRouter.post('/sessions/:sessionId/stop', (req: AuthedRequest, res, nex
     next(error);
   }
 });
+
+const noteSeedSchema = z.object({
+  id: z.string().max(80).optional(),
+  column: z.string().optional(),
+  text: z.string().max(2000).optional(),
+  authorName: z.string().max(80).optional(),
+  x: z.number().optional(),
+  y: z.number().optional(),
+  createdAt: z.string().max(40).optional(),
+  updatedAt: z.string().max(40).optional(),
+});
+
+const draftRequestSchema = z.object({
+  title: z.string().max(120).optional(),
+  members: z.array(memberSchema).max(16).optional(),
+  notes: z.array(noteSeedSchema).max(80).optional(),
+  feedback: z.string().max(4000).optional(),
+  previousDraftId: z.string().max(80).optional(),
+});
+
+roundtableRouter.post('/sessions/:sessionId/workflow-drafts', async (req: AuthedRequest, res, next) => {
+  try {
+    const sessionId = parseOr400(sessionIdSchema, req.params.sessionId);
+    const input = parseOr400(draftRequestSchema, req.body);
+    res.json(
+      await generateSessionWorkflowDraft(req.auth!.userId, sessionId, {
+        ...input,
+        members: input.members as RoundtableMember[] | undefined,
+        notes: input.notes as WhiteboardNote[] | undefined,
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+const draftConfirmSchema = z.object({
+  name: z.string().max(120).optional(),
+  description: z.string().max(2000).optional(),
+  teamId: z.string().uuid().optional(),
+});
+
+roundtableRouter.post(
+  '/sessions/:sessionId/workflow-drafts/:draftId/confirm',
+  async (req: AuthedRequest, res, next) => {
+    try {
+      const sessionId = parseOr400(sessionIdSchema, req.params.sessionId);
+      const input = parseOr400(draftConfirmSchema, req.body);
+      res.json(
+        await confirmSessionWorkflowDraft(req.auth!.userId, sessionId, String(req.params.draftId), input)
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 const notePatchSchema = z.object({
   x: z.number().optional(),
