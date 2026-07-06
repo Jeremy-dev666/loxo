@@ -2,49 +2,13 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/auth';
 import { UserMenu } from '@/components/user/UserMenu';
-import { useDisplayMode } from '@/lib/display-mode';
 
 interface HeaderProps {
   traditionalMode?: boolean;
   traditionalSidebarOpen?: boolean;
   traditionalSidebarWidth?: number;
-}
-
-function DisplayModeIcon({ mode }: { mode: 'professional' | 'traditional' }) {
-  if (mode === 'traditional') {
-    return (
-      <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true" shapeRendering="crispEdges">
-        <path fill="currentColor" d="M3 3h5v18H3V3Zm7 2h11v4H10V5Zm0 6h5v4h-5v-4Zm7 0h4v4h-4v-4Zm-7 6h11v2H10v-2Z" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true" shapeRendering="crispEdges">
-      <path fill="currentColor" d="M3 4h8v7H3V4Zm10 0h8v7h-8V4ZM3 13h8v7H3v-7Zm10 0h8v7h-8v-7Z" />
-    </svg>
-  );
-}
-
-function DisplayModeToggle() {
-  const [displayMode, setDisplayMode] = useDisplayMode();
-  const nextMode = displayMode === 'professional' ? 'traditional' : 'professional';
-
-  return (
-    <motion.button
-      type="button"
-      aria-label={nextMode === 'traditional' ? 'Switch to sidebar layout' : 'Switch to centered layout'}
-      title={nextMode === 'traditional' ? 'Switch to sidebar layout' : 'Switch to centered layout'}
-      onClick={() => setDisplayMode(nextMode)}
-      whileHover={{ y: -1 }}
-      whileTap={{ y: 1, scale: 0.96 }}
-      className="hidden h-8 w-8 items-center justify-center rounded-sm border border-[#E4E4E4] bg-white text-[#6B6B6B] transition-colors hover:border-[#111] hover:text-[#111] md:flex"
-    >
-      <DisplayModeIcon mode={displayMode} />
-    </motion.button>
-  );
 }
 
 /** Pixel swarm mark: three stacked hex-ish blocks. */
@@ -97,8 +61,6 @@ export function Header({
         )}
 
         <div className="flex shrink-0 items-center gap-4">
-          <DisplayModeToggle />
-
           {hasHydrated && user && token ? (
             <div className="relative">
               <button

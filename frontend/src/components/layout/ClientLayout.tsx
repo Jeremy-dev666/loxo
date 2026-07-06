@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Header, BrandMark } from '@/components/layout/Header';
 import { MobileAppNav } from '@/components/layout/MobileAppNav';
-import { useDisplayMode } from '@/lib/display-mode';
 import { useAuthStore } from '@/store/auth';
 import { fetchProjects, deleteProject, type ProjectView } from '@/lib/projects';
 
@@ -237,7 +236,7 @@ function TraditionalSidebar({
           animate={{ x: 0, opacity: 1 }}
           whileHover={{ x: 2 }}
           whileTap={{ x: 0, scale: 0.96 }}
-          className="fixed left-0 top-[96px] z-[45] hidden h-14 w-8 items-center justify-center rounded-r-sm border border-l-0 border-[#E4E4E4] bg-white text-[#6B6B6B] transition-colors hover:border-[#111] hover:text-[#111] md:flex"
+          className="fixed left-0 top-[96px] z-[45] hidden h-14 w-8 items-center justify-center rounded-r-sm bg-[#111] text-white transition-colors hover:bg-[#333] md:flex"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" shapeRendering="crispEdges">
             <path fill="currentColor" d="M10 5v5H3v4h7v5l7-7-7-7Z" />
@@ -250,7 +249,6 @@ function TraditionalSidebar({
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [displayMode] = useDisplayMode();
   const { token, hasHydrated } = useAuthStore();
   const [isDesktopViewport, setIsDesktopViewport] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -260,22 +258,17 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const isPublicPath = pathname === '/' || pathname === '/login' || pathname === '/register';
   const isRouteGuardBlocking = !isPublicPath && (!hasHydrated || !token);
   const isChatRoute = /^\/agents\/[^/]+$/.test(pathname) || pathname.startsWith('/roundtable');
-  const isTraditionalMode = displayMode === 'traditional';
   const isProjectDetailRoute = /^\/projects\/[^/]+/.test(pathname);
 
   const mainClassName = isChatRoute
-    ? isTraditionalMode
-      ? 'max-w-none bg-pixel-cream p-0 md:mx-auto md:min-h-[calc(100vh-120px)] md:w-full md:max-w-none md:bg-pixel-white md:p-0'
-      : 'max-w-none bg-pixel-cream p-0 md:mx-auto md:min-h-[calc(100vh-120px)] md:max-w-7xl md:bg-pixel-white md:p-4'
-    : isTraditionalMode
-      ? 'mx-auto min-h-screen bg-pixel-white p-4 pb-0 md:min-h-[calc(100vh-120px)] md:w-full md:max-w-none md:p-0'
-      : 'max-w-7xl mx-auto p-4 pb-0 md:pb-4 bg-pixel-white min-h-screen md:min-h-[calc(100vh-120px)]';
+    ? 'max-w-none bg-pixel-cream p-0 md:mx-auto md:min-h-[calc(100vh-120px)] md:w-full md:max-w-none md:bg-pixel-white md:p-0'
+    : 'mx-auto min-h-screen bg-pixel-white p-4 pb-0 md:min-h-[calc(100vh-120px)] md:w-full md:max-w-none md:p-0';
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 768px)');
     const syncViewport = () => {
       setIsDesktopViewport(media.matches);
-      if (isTraditionalMode && media.matches) {
+      if (media.matches) {
         document.body.dataset.traditionalDesktopMode = 'true';
       } else {
         delete document.body.dataset.traditionalDesktopMode;
@@ -287,7 +280,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       media.removeEventListener('change', syncViewport);
       delete document.body.dataset.traditionalDesktopMode;
     };
-  }, [isTraditionalMode]);
+  }, []);
 
   useEffect(() => {
     const storedWidth = window.localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
@@ -319,7 +312,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     reloadProjects();
   }, [reloadProjects, pathname]);
 
-  const traditionalShellActive = isTraditionalMode && isDesktopViewport;
+  const traditionalShellActive = isDesktopViewport;
   const sidebarEnabled = traditionalShellActive && !isRouteGuardBlocking;
   const effectiveSidebarOpen = sidebarEnabled && sidebarOpen;
   const sidebarOffset = effectiveSidebarOpen ? sidebarWidth + SIDEBAR_WORKSPACE_GAP : 0;
@@ -334,7 +327,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     <>
       <div className="hidden md:block">
         <Header
-          traditionalMode={isTraditionalMode}
+          traditionalMode
           traditionalSidebarOpen={effectiveSidebarOpen}
           traditionalSidebarWidth={sidebarOffset}
         />
@@ -375,7 +368,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       </main>
       <footer className="hidden border-t border-pixel-black bg-pixel-white py-3 transition-[padding] duration-300 ease-out md:block" style={effectiveSidebarOpen ? { paddingLeft: sidebarOffset } : undefined}>
         <div
-          className={`${isTraditionalMode ? 'mx-0 w-full max-w-none px-8 xl:px-10 2xl:px-12' : 'mx-auto max-w-7xl'} text-center font-pixel text-xs text-pixel-gray`}
+          className="mx-0 w-full max-w-none px-8 text-center font-pixel text-xs text-pixel-gray xl:px-10 2xl:px-12"
         >
           <p>SwarmDev — Efficient AI Team Collaboration</p>
           <p className="mt-1 uppercase tracking-widest text-[#9B9B9B]">Ready.</p>
