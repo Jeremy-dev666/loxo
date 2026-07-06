@@ -1,11 +1,13 @@
 import { createServer } from 'node:http';
 import { assertRequiredEnv, config } from './config';
 import { closeDb } from './db/client';
+import { configureEgressProxy } from './http/egress-proxy';
 import { createApp } from './http/app';
 import { markInterruptedExecutions } from './modules/workflows/execution-store';
 import { attachWsGateway } from './ws/gateway';
 
 assertRequiredEnv();
+configureEgressProxy();
 
 const app = createApp();
 const server = createServer(app);
