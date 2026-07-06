@@ -42,7 +42,7 @@ function CreateTeamInner() {
         </p>
       </motion.div>
 
-      <div className="space-y-5 border border-pixel-black bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 #26221B' }}>
+      <div className="space-y-5 border border-pixel-black bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
         <div>
           <label className="mb-1 block font-pixel text-sm text-pixel-black">Team name</label>
           <PixelInput value={name} onChange={setName} placeholder="Product delivery squad" />

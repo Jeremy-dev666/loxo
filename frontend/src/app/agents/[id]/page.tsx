@@ -54,7 +54,7 @@ function MessageBubble({ message, agentName }: { message: LiveMessage | ChatMess
                 ? 'bg-pixel-red/10 text-pixel-red'
                 : 'bg-pixel-white text-pixel-black'
           }`}
-          style={{ boxShadow: '3px 3px 0 #26221B' }}
+          style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           {isUser || isError ? (
             <p className="whitespace-pre-wrap font-pixel text-sm">{message.content}</p>
@@ -100,8 +100,8 @@ function SessionsSidebar({
         <span className="font-pixel text-sm font-bold text-pixel-white">SESSIONS</span>
         <button
           onClick={onNew}
-          className="border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-yellow"
-          style={{ boxShadow: '2px 2px 0 #26221B' }}
+          className="border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-cream"
+          style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           + NEW
         </button>
@@ -111,7 +111,7 @@ function SessionsSidebar({
           <div
             key={conversation.id}
             className={`cursor-pointer border-b border-pixel-black/10 px-3 py-2 ${
-              conversation.id === activeId ? 'border-l-2 border-l-pixel-red bg-pixel-yellow/30' : 'hover:bg-pixel-yellow/15'
+              conversation.id === activeId ? 'border-l-2 border-l-pixel-red bg-pixel-yellow/30' : 'hover:bg-pixel-cream'
             }`}
             onClick={() => onSelect(conversation.id)}
           >
@@ -206,7 +206,7 @@ function MonitorView({
         <div
           key={row.label}
           className="flex items-center justify-between border border-pixel-black bg-pixel-white px-4 py-3"
-          style={{ boxShadow: '3px 3px 0 #26221B' }}
+          style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           <span className="font-pixel text-sm text-pixel-black/60">{row.label}</span>
           <span
@@ -262,7 +262,7 @@ function SkillsView({ agentId }: { agentId: string }) {
         <div
           key={skill.id}
           className="border border-pixel-black bg-pixel-white px-4 py-3"
-          style={{ boxShadow: '3px 3px 0 #26221B' }}
+          style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-sm font-bold text-pixel-black">{skill.name}</p>
           <p className="mt-1 font-pixel text-xs text-pixel-black/60">{skill.description || 'No description'}</p>
@@ -397,7 +397,7 @@ function ChatPageInner() {
   const providerConfigured = Boolean(agent.providerId);
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-pixel-cream md:h-[calc(100vh-10rem)] md:border md:border-pixel-black" style={{ boxShadow: '6px 6px 0 #26221B' }}>
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-pixel-cream md:h-[calc(100vh-10rem)] md:border md:border-pixel-black" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -410,7 +410,7 @@ function ChatPageInner() {
                 type="button"
                 onClick={() => router.push('/agents')}
                 className="flex h-9 w-9 shrink-0 items-center justify-center border border-pixel-black bg-pixel-white text-pixel-black"
-                style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+                style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
                 aria-label="Back to agents"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -449,7 +449,7 @@ function ChatPageInner() {
               {agentProvider && (
                 <select
                   className="hidden border border-pixel-black bg-pixel-white px-2 py-1.5 font-pixel text-xs text-pixel-black md:block"
-                  style={{ boxShadow: '2px 2px 0 #26221B' }}
+                  style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                   value={agent.model ?? ''}
                   disabled={savingModel}
                   onChange={(e) => void changeModel(e.target.value)}
@@ -536,7 +536,7 @@ function ChatPageInner() {
                       <p className="mb-1 font-pixel text-xs text-pixel-black/45">{agent.name}</p>
                       <div
                         className="border border-pixel-black bg-pixel-white px-4 py-2 opacity-90"
-                        style={{ boxShadow: '3px 3px 0 #26221B' }}
+                        style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                       >
                         <div className="prose prose-sm max-w-none font-pixel prose-p:my-1">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamText}</ReactMarkdown>
@@ -565,7 +565,7 @@ function ChatPageInner() {
               <form onSubmit={submit} className="flex gap-2 border-t border-pixel-black bg-pixel-white p-3">
                 <textarea
                   className="max-h-40 min-h-[2.75rem] flex-1 resize-y border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue"
-                  style={{ boxShadow: 'inset 2px 2px 0 #26221B' }}
+                  style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.10)' }}
                   placeholder={`Message ${agent.name}…`}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}

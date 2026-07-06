@@ -50,7 +50,7 @@ function GroupSection({
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
       <div
         className="flex cursor-pointer items-center gap-4 border border-pixel-black p-4"
-        style={{ background: group.color, boxShadow: '5px 5px 0px 0px #26221B' }}
+        style={{ background: group.color, boxShadow: '5px 5px 0px 0px rgba(17,17,17,0.10)' }}
         onClick={() => setExpanded(!expanded)}
       >
         <div
@@ -71,8 +71,8 @@ function GroupSection({
                 e.stopPropagation();
                 onOpenAddAgent(group.id);
               }}
-              className="border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-yellow md:py-1 md:text-xs"
-              style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+              className="border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-cream md:py-1 md:text-xs"
+              style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
             >
               + Add agent
             </button>
@@ -85,7 +85,7 @@ function GroupSection({
                 onDeleteGroup(group);
               }}
               className="hidden border border-pixel-black bg-pixel-red px-3 py-2 font-pixel text-sm font-bold text-pixel-white transition-colors hover:bg-pixel-orange sm:block md:py-1 md:text-xs"
-              style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+              style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
             >
               Delete den
             </button>
@@ -125,8 +125,8 @@ function GroupSection({
                           <button
                             type="button"
                             onClick={() => onMoveOut(agent.id)}
-                            className="border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-yellow md:px-2 md:py-1 md:text-xs"
-                            style={{ boxShadow: '2px 2px 0 #26221B' }}
+                            className="border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-cream md:px-2 md:py-1 md:text-xs"
+                            style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                           >
                             Move out
                           </button>
@@ -258,7 +258,7 @@ function AgentsPageInner() {
       >
         <div
           className="border border-pixel-black bg-pixel-white px-3 py-3 text-center md:px-6 md:text-left"
-          style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
+          style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-base leading-none text-pixel-black/60 md:text-xs">Total</p>
           <p className="mt-1 font-pixel text-[1.8rem] leading-none text-pixel-black md:text-2xl md:leading-normal">
@@ -267,7 +267,7 @@ function AgentsPageInner() {
         </div>
         <div
           className="border border-pixel-black bg-pixel-green px-3 py-3 text-center md:px-6 md:text-left"
-          style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
+          style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-base leading-none text-pixel-white md:text-xs">Configured</p>
           <p className="mt-1 font-pixel text-[1.8rem] leading-none text-pixel-white md:text-2xl md:leading-normal">
@@ -276,7 +276,7 @@ function AgentsPageInner() {
         </div>
         <div
           className="border border-pixel-black bg-pixel-gray px-3 py-3 text-center md:px-6 md:text-left"
-          style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
+          style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-base leading-none text-pixel-white md:text-xs">Unconfigured</p>
           <p className="mt-1 font-pixel text-[1.8rem] leading-none text-pixel-black md:text-2xl md:leading-normal">
@@ -359,7 +359,7 @@ function AgentsPageInner() {
                 exit={{ scale: 0.92, y: 16 }}
                 onClick={(e) => e.stopPropagation()}
                 className="max-h-[80vh] w-full max-w-lg overflow-y-auto border border-pixel-black bg-pixel-white"
-                style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
+                style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}
               >
                 <div
                   className="flex items-center justify-between border-b border-pixel-black p-3 font-pixel text-xl text-pixel-white"
@@ -369,7 +369,7 @@ function AgentsPageInner() {
                   <button
                     onClick={() => setAddTargetGroupId(null)}
                     className="flex h-8 w-8 items-center justify-center border border-pixel-black bg-pixel-red text-pixel-white"
-                    style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+                    style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
                   >
                     X
                   </button>
@@ -387,8 +387,8 @@ function AgentsPageInner() {
                       onClick={async () => {
                         await handleMove(agent.id, addTargetGroupId);
                       }}
-                      className="flex w-full items-center gap-3 border border-pixel-black bg-pixel-white p-2 text-left hover:bg-pixel-yellow/40"
-                      style={{ boxShadow: '2px 2px 0 #26221B' }}
+                      className="flex w-full items-center gap-3 border border-pixel-black bg-pixel-white p-2 text-left hover:bg-pixel-cream"
+                      style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                     >
                       <AgentSprite agent={agent} size="sm" showProviderStatus providerConfigured={!!agent.providerId} />
                       <span className="min-w-0 flex-1">
@@ -426,7 +426,7 @@ function AgentsPageInner() {
                   type="button"
                   onClick={() => setNewGroupColor(color)}
                   className={`h-9 w-9 border ${newGroupColor === color ? 'border-pixel-black' : 'border-transparent'}`}
-                  style={{ background: color, boxShadow: newGroupColor === color ? '2px 2px 0 #26221B' : 'none' }}
+                  style={{ background: color, boxShadow: newGroupColor === color ? '2px 2px 0 rgba(17,17,17,0.10)' : 'none' }}
                   aria-label={`Choose color ${color}`}
                 />
               ))}

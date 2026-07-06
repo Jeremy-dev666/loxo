@@ -31,9 +31,9 @@ const VENDORS_FOR_RUNTIME: Record<string, string[]> = {
 const inputClass =
   'w-full border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none focus:border-pixel-blue';
 const sectionClass = 'space-y-3 border border-pixel-black bg-pixel-white p-4';
-const sectionStyle = { boxShadow: '5px 5px 0 #26221B' } as const;
+const sectionStyle = { boxShadow: '5px 5px 0 rgba(17,17,17,0.10)' } as const;
 const chipButtonClass =
-  'cursor-pointer border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow';
+  'cursor-pointer border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream';
 
 function SettingsInner() {
   const params = useParams<{ id: string }>();
@@ -145,7 +145,7 @@ function SettingsInner() {
             {agent.runtime}
           </span>
         </div>
-        <label className={`ml-auto ${chipButtonClass}`} style={{ boxShadow: '2px 2px 0 #26221B' }}>
+        <label className={`ml-auto ${chipButtonClass}`} style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}>
           Change avatar
           <input
             type="file"
@@ -170,7 +170,7 @@ function SettingsInner() {
         />
         <button
           disabled={saving}
-          className="border border-pixel-brown bg-pixel-red px-4 py-2 font-pixel text-sm text-pixel-white hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 #26221B' }}
+          className="border border-pixel-brown bg-pixel-red px-4 py-2 font-pixel text-sm text-pixel-white hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           Save
         </button>
@@ -214,7 +214,7 @@ function SettingsInner() {
       <section className={sectionClass} style={sectionStyle}>
         <div className="flex items-center justify-between">
           <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Skills</h2>
-          <label className={chipButtonClass} style={{ boxShadow: '2px 2px 0 #26221B' }}>
+          <label className={chipButtonClass} style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}>
             Upload skill (.md / .zip)
             <input
               type="file"
@@ -229,7 +229,7 @@ function SettingsInner() {
         ) : (
           <ul className="space-y-2">
             {skills.map((skill) => (
-              <li key={skill.id} className="border border-pixel-black px-3 py-2" style={{ boxShadow: '2px 2px 0 #26221B' }}>
+              <li key={skill.id} className="border border-pixel-black px-3 py-2" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}>
                 <span className="font-pixel text-sm font-bold text-pixel-black">{skill.name}</span>
                 <p className="font-pixel text-xs text-pixel-black/60">{skill.description}</p>
               </li>
@@ -248,7 +248,7 @@ function SettingsInner() {
           <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Diagnostics</h2>
           <button
             onClick={runDiagnostics}
-            className={chipButtonClass} style={{ boxShadow: '2px 2px 0 #26221B' }}
+            className={chipButtonClass} style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             Run check
           </button>

@@ -11,14 +11,14 @@
 @tailwind utilities;
 
 :root {
-  --pixel-ink: #26221b;
-  --pixel-paper: #f5f0e6;
-  --pixel-panel: #fdfaf3;
-  --pixel-gray: #7a7265;
-  --pixel-blue: #4a5d7e;
-  --pixel-green: #4a7a3d;
-  --pixel-amber: #c77b1e;
-  --pixel-red: #a3402e;
+  --pixel-ink: #111111;
+  --pixel-paper: #ffffff;
+  --pixel-panel: #ffffff;
+  --pixel-gray: #757575;
+  --pixel-blue: #111111;
+  --pixel-green: #3d3d3d;
+  --pixel-amber: #9b9b9b;
+  --pixel-red: #111111;
   --font-main: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -93,7 +93,7 @@ body[data-traditional-desktop-mode='true'] main[data-app-main='true'] {
 .pixel-notch-frame {
   background-color: var(--pixel-ink);
   padding: 1px;
-  filter: drop-shadow(2px 2px 0 var(--pixel-ink));
+  filter: none;
 }
 
 .pixel-notch-frame > .pixel-notch,
@@ -104,41 +104,41 @@ body[data-traditional-desktop-mode='true'] main[data-app-main='true'] {
 /* Bayer-style dither for section backdrops */
 .pixel-dither {
   background-image:
-    linear-gradient(45deg, rgba(38, 34, 27, 0.05) 25%, transparent 25%, transparent 75%, rgba(38, 34, 27, 0.05) 75%),
-    linear-gradient(45deg, rgba(38, 34, 27, 0.05) 25%, transparent 25%, transparent 75%, rgba(38, 34, 27, 0.05) 75%);
+    linear-gradient(45deg, rgba(17, 17, 17, 0.04) 25%, transparent 25%, transparent 75%, rgba(17, 17, 17, 0.04) 75%),
+    linear-gradient(45deg, rgba(17, 17, 17, 0.04) 25%, transparent 25%, transparent 75%, rgba(17, 17, 17, 0.04) 75%);
   background-size: 4px 4px;
   background-position: 0 0, 2px 2px;
 }
 
 /* Panel dialog (legacy class name kept; visual is now a quiet 1px frame) */
 .rpg-dialog {
-  background: var(--pixel-panel);
-  border: 1px solid var(--pixel-ink);
-  box-shadow: 2px 2px 0 0 var(--pixel-ink);
+  background: #ffffff;
+  border: 1px solid #e4e4e4;
+  box-shadow: 0 1px 3px rgba(17, 17, 17, 0.08);
 }
 
 ::selection {
-  background-color: var(--pixel-amber);
-  color: var(--pixel-panel);
+  background-color: #111111;
+  color: #ffffff;
 }
 
 ::-webkit-scrollbar {
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--pixel-paper);
-  border-left: 1px solid rgba(38, 34, 27, 0.25);
+  background: #ffffff;
+  border-left: 1px solid #ececec;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c9bfa9;
+  background: #d4d4d4;
   border: 1px solid var(--pixel-ink);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--pixel-amber);
+  background: #9b9b9b;
 }
 
 *:focus {
-  outline: 2px solid var(--pixel-amber);
+  outline: 2px solid #111111;
   outline-offset: 1px;
 }
 
@@ -162,8 +162,8 @@ footer {
   body::before {
     background-color: var(--pixel-panel);
     background-image:
-      linear-gradient(rgba(38, 34, 27, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(38, 34, 27, 0.03) 1px, transparent 1px);
+      linear-gradient(rgba(17, 17, 17, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px);
     background-size: 16px 16px;
   }
 
@@ -181,7 +181,7 @@ footer {
   input,
   textarea,
   select {
-    -webkit-tap-highlight-color: rgba(199, 123, 30, 0.3);
+    -webkit-tap-highlight-color: rgba(17, 17, 17, 0.12);
   }
 
   input,
@@ -204,9 +204,9 @@ footer {
     z-index: 40;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    border-top: 1px solid var(--pixel-ink);
-    background: var(--pixel-panel);
-    box-shadow: 0 -2px 0 0 var(--pixel-ink);
+    border-top: 1px solid #e4e4e4;
+    background: #ffffff;
+    box-shadow: 0 -1px 0 #e4e4e4;
   }
 
   [data-mobile-app-nav='true'] a {
@@ -218,7 +218,7 @@ footer {
     justify-content: center;
     gap: 2px;
     padding: 6px 0 4px;
-    border-right: 1px solid rgba(38, 34, 27, 0.12);
+    border-right: 1px solid rgba(17, 17, 17, 0.10);
     font-size: 0.62rem;
     line-height: 1;
     text-align: center;

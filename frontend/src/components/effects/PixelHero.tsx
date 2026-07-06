@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BrandMark } from '@/components/layout/Header';
 
-const NODE_COLORS = ['#4A5D7E', '#4A7A3D', '#A3402E', '#C77B1E', '#7A7265'];
+const NODE_COLORS = ['#111111', '#3D3D3D', '#5A5A5A', '#757575', '#9B9B9B'];
 
 /** Animated agent-network backdrop: nodes, edges, pulses, drifting particles. */
 function NetworkGraph() {
@@ -29,7 +29,7 @@ function NetworkGraph() {
       for (let j = 0; j < connections; j++) {
         const target = (i + 1 + Math.floor(Math.random() * (nodes.length - 1))) % nodes.length;
         if (!edgeList.some((e) => (e.from === i && e.to === target) || (e.from === target && e.to === i))) {
-          edgeList.push({ from: i, to: target, delay: Math.random() * 2, color: Math.random() > 0.5 ? '#4A5D7E' : '#4A7A3D' });
+          edgeList.push({ from: i, to: target, delay: Math.random() * 2, color: Math.random() > 0.5 ? '#9B9B9B' : '#D4D4D4' });
         }
       }
     }
@@ -50,18 +50,18 @@ function NetworkGraph() {
       <svg className="absolute inset-0 h-full w-full" style={{ opacity: 0.2 }}>
         <defs>
           <linearGradient id="edgeGradientBlue" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#4A5D7E" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#4A5D7E" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#9B9B9B" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#9B9B9B" stopOpacity="0.2" />
           </linearGradient>
           <linearGradient id="edgeGradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#4A7A3D" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#4A7A3D" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#D4D4D4" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#D4D4D4" stopOpacity="0.2" />
           </linearGradient>
         </defs>
         {edges.map((edge, i) => {
           const from = nodes[edge.from]!;
           const to = nodes[edge.to]!;
-          const gradientId = edge.color === '#4A5D7E' ? 'edgeGradientBlue' : 'edgeGradientGreen';
+          const gradientId = edge.color === '#9B9B9B' ? 'edgeGradientBlue' : 'edgeGradientGreen';
           return (
             <motion.line
               key={i}
@@ -165,7 +165,7 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
         >
           <div
             className="mx-auto flex h-[120px] w-[120px] items-center justify-center border border-pixel-black bg-pixel-red"
-            style={{ boxShadow: '6px 6px 0 #26221B' }}
+            style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}
           >
             <BrandMark className="h-16 w-16 text-pixel-white" />
           </div>
@@ -210,7 +210,7 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
         {showButton && (
           <motion.button
             onClick={onEnter}
-            className="pointer-events-auto mt-5 border border-pixel-black bg-pixel-blue px-5 py-2.5 font-pixel text-base text-pixel-white transition-all duration-150 hover:bg-pixel-yellow hover:text-pixel-black"
+            className="pointer-events-auto mt-5 border border-pixel-black bg-pixel-blue px-5 py-2.5 font-pixel text-base text-pixel-white transition-all duration-150 hover:bg-pixel-cream hover:text-pixel-black"
             style={{ boxShadow: '4px 4px 0px rgba(16,16,16,0.12)' }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}

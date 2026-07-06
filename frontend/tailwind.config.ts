@@ -1,29 +1,35 @@
 import type { Config } from 'tailwindcss';
 
+/**
+ * Monochrome palette. Legacy pixel-* hue names are kept as class names but
+ * resolve to a gray ramp chosen so existing bg/text pairings stay readable:
+ * dark tokens (black/blue/green/red) carry white text, light tokens
+ * (cream/yellow) carry black text.
+ */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        'pixel-black': '#26221B',
+        'pixel-black': '#111111',
         'pixel-white': '#FFFFFF',
-        'pixel-cream': '#F5F0E6',
-        'pixel-gray': '#7A7265',
-        'pixel-red': '#A3402E',
-        'pixel-orange': '#A8661A',
-        'pixel-brown': '#5C4A33',
-        'pixel-green': '#4A7A3D',
-        'pixel-blue': '#4A5D7E',
-        'pixel-yellow': '#C77B1E',
+        'pixel-cream': '#F5F5F5',
+        'pixel-gray': '#757575',
+        'pixel-red': '#111111',
+        'pixel-orange': '#3D3D3D',
+        'pixel-brown': '#4A4A4A',
+        'pixel-green': '#3D3D3D',
+        'pixel-blue': '#111111',
+        'pixel-yellow': '#9B9B9B',
       },
       fontFamily: {
         pixel: ['"Departure Mono"', 'VT323', 'monospace'],
       },
       boxShadow: {
-        pixel: '2px 2px 0px 0px #26221B',
-        'pixel-inset': 'inset 2px 2px 0px 0px #26221B',
-        'pixel-sm': '1px 1px 0px 0px #26221B',
-        'pixel-lg': '3px 3px 0px 0px #26221B',
+        pixel: '0 1px 3px rgba(17,17,17,0.10)',
+        'pixel-inset': 'inset 0 1px 2px rgba(17,17,17,0.08)',
+        'pixel-sm': '0 1px 2px rgba(17,17,17,0.08)',
+        'pixel-lg': '0 2px 6px rgba(17,17,17,0.12)',
       },
       animation: {
         shake: 'shake 0.3s ease-in-out infinite',

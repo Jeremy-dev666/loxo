@@ -23,7 +23,7 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       className="group/team-card relative flex h-full flex-col border border-pixel-black bg-pixel-white"
-      style={{ boxShadow: '6px 6px 0 #26221B' }}
+      style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}
     >
       <div className={`flex items-center justify-between gap-2 border-b border-pixel-black p-3 ${tone}`}>
         <h2 className={`truncate font-pixel text-lg font-bold ${yellow ? 'text-pixel-black' : 'text-pixel-white'}`}>

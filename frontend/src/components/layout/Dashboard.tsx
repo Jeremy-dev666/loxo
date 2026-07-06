@@ -16,7 +16,7 @@ function SectionShell({
   children?: ReactNode;
 }) {
   return (
-    <div className="border border-pixel-black bg-pixel-white p-4" style={{ boxShadow: '2px 2px 0px 0px #26221B' }}>
+    <div className="border border-pixel-black bg-pixel-white p-4" style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}>
       <div className="mb-4 flex items-center gap-3">
         <div className={`flex h-10 w-10 items-center justify-center border border-pixel-black ${tone}`}>
           {icon}
@@ -91,7 +91,7 @@ export function MenuCard({ href, icon, title, description, color, delay = 0 }: M
         transition={{ delay }}
         whileHover={{ x: 2 }}
         className={`${color} group flex cursor-pointer items-center gap-4 border border-pixel-black p-4`}
-        style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
+        style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
       >
         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center border border-pixel-black bg-pixel-white">
           {icon}

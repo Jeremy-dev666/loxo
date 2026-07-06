@@ -14,7 +14,7 @@ import {
 const inputClass =
   'w-full border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue';
 const chipButtonClass =
-  'cursor-pointer border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow disabled:opacity-50';
+  'cursor-pointer border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50';
 
 function StatusChip({ ok, label }: { ok: boolean; label: string }) {
   return (
@@ -117,7 +117,7 @@ export function SlackIntegrationCard({
             type="button"
             onClick={copyUrl}
             className={chipButtonClass}
-            style={{ boxShadow: '2px 2px 0 #26221B' }}
+            style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             {copied ? 'Copied!' : 'Copy'}
           </button>
@@ -139,7 +139,7 @@ export function SlackIntegrationCard({
             type="button"
             onClick={disconnect}
             className={chipButtonClass}
-            style={{ boxShadow: '2px 2px 0 #26221B' }}
+            style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             Disconnect
           </button>
@@ -170,7 +170,7 @@ export function SlackIntegrationCard({
         <button
           disabled={saving || !botToken.trim() || !signingSecret.trim()}
           className="border border-pixel-brown bg-pixel-red px-4 py-2 font-pixel text-sm text-pixel-white hover:bg-pixel-orange disabled:opacity-60"
-          style={{ boxShadow: '3px 3px 0 #26221B' }}
+          style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           {saving ? 'Saving…' : config ? 'Update credentials' : 'Connect Slack'}
         </button>

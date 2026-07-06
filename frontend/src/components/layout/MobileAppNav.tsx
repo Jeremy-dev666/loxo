@@ -83,7 +83,7 @@ export function MobileAppNav() {
   return (
     <nav
       data-mobile-app-nav="true"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-pixel-black bg-pixel-white shadow-[0_-4px_0_0_#26221B] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-pixel-black bg-pixel-white shadow-[0_-4px_0_0_rgba(17,17,17,0.10)] md:hidden"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       {MOBILE_TABS.map((tab) => {
@@ -104,7 +104,7 @@ export function MobileAppNav() {
               className={`flex h-[28px] w-[28px] items-center justify-center border border-pixel-black ${
                 active ? tab.accent : 'bg-pixel-white'
               }`}
-              style={{ boxShadow: active ? '2px 2px 0 #26221B' : '1px 1px 0 rgba(16,16,16,0.35)' }}
+              style={{ boxShadow: active ? '2px 2px 0 rgba(17,17,17,0.10)' : '1px 1px 0 rgba(16,16,16,0.35)' }}
             >
               <MobileNavIcon tab={tab.key} />
             </span>

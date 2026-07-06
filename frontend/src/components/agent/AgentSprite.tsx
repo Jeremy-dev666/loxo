@@ -9,7 +9,7 @@ const SIZE_STYLES = {
 };
 
 /** Deterministic tone per agent so placeholder portraits stay recognizable. */
-const TONES = ['bg-pixel-blue', 'bg-pixel-green', 'bg-pixel-red', 'bg-pixel-yellow', 'bg-pixel-gray'];
+const TONES = ['bg-[#111111]', 'bg-[#3D3D3D]', 'bg-[#5A5A5A]', 'bg-[#757575]', 'bg-[#9B9B9B]'];
 
 function toneFor(agent: Agent): string {
   let hash = 0;

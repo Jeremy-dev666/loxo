@@ -82,7 +82,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
                   className={`border px-2 py-1 text-xs ${
                     teamIds.includes(team.id)
                       ? 'border-pixel-red bg-pixel-yellow/30 font-bold text-pixel-black'
-                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-yellow/40'
+                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-cream'
                   }`}
                 >
                   {team.name}
@@ -101,7 +101,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
                   className={`border px-2 py-1 text-xs ${
                     agentIds.includes(agent.id)
                       ? 'border-pixel-red bg-pixel-yellow/30 font-bold text-pixel-black'
-                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-yellow/40'
+                      : 'border-pixel-black text-pixel-black/60 hover:bg-pixel-cream'
                   }`}
                 >
                   {agent.name}
@@ -115,7 +115,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70 hover:bg-pixel-yellow/40"
+            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream"
           >
             Cancel
           </button>

@@ -253,7 +253,7 @@ function WorkflowDraftCard({
                 type="button"
                 disabled={busy}
                 onClick={() => setShowActions('regenerate')}
-                className="border border-pixel-black bg-pixel-white px-3 py-1 font-pixel text-xs text-pixel-black shadow-pixel-sm hover:bg-pixel-yellow/40 disabled:opacity-50"
+                className="border border-pixel-black bg-pixel-white px-3 py-1 font-pixel text-xs text-pixel-black shadow-pixel-sm hover:bg-pixel-cream disabled:opacity-50"
               >
                 Regenerate with feedback
               </button>
@@ -434,7 +434,7 @@ function RoundtablePageInner() {
           )}
           <button
             onClick={newSession}
-            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-pixel-black/70 hover:bg-pixel-yellow/40"
+            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-pixel-black/70 hover:bg-pixel-cream"
           >
             New session
           </button>
@@ -454,7 +454,7 @@ function RoundtablePageInner() {
               className={
                 memberIds.has(agent.id)
                   ? 'rounded-full bg-pixel-red px-3 py-1 text-xs font-medium text-pixel-white'
-                  : 'rounded-full border border-pixel-black px-3 py-1 text-xs text-pixel-black/70 hover:bg-pixel-yellow/40'
+                  : 'rounded-full border border-pixel-black px-3 py-1 text-xs text-pixel-black/70 hover:bg-pixel-cream'
               }
             >
               {agent.name}

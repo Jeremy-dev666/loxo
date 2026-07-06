@@ -410,7 +410,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
           </select>
           <button
             onClick={() => setShowBindings(true)}
-            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-sm text-pixel-black/70 hover:bg-pixel-yellow/40"
+            className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-sm text-pixel-black/70 hover:bg-pixel-cream"
           >
             Manage bindings
           </button>

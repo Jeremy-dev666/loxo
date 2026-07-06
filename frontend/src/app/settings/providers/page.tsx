@@ -200,7 +200,7 @@ function ProvidersPageInner() {
               {!provider.isDefault && (
                 <button
                   onClick={() => setDefault(provider)}
-                  className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-yellow/40"
+                  className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
                 >
                   Make default
                 </button>

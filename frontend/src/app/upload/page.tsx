@@ -178,7 +178,7 @@ function UploadPageInner() {
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           className="border border-pixel-black bg-pixel-white p-8 text-center"
-          style={{ boxShadow: '8px 8px 0 #26221B' }}
+          style={{ boxShadow: '8px 8px 0 rgba(17,17,17,0.10)' }}
         >
           <div className="mb-4 text-6xl">🎉</div>
           <h1 className="brand-large mb-2 text-pixel-black">Agent on board!</h1>
@@ -221,9 +221,9 @@ function UploadPageInner() {
             type="button"
             onClick={() => switchMode(m)}
             className={`flex flex-col items-center gap-2 border border-pixel-black p-5 font-pixel transition-colors ${
-              mode === m ? 'bg-pixel-blue text-pixel-white' : 'bg-pixel-white text-pixel-black hover:bg-pixel-yellow/40'
+              mode === m ? 'bg-pixel-blue text-pixel-white' : 'bg-pixel-white text-pixel-black hover:bg-pixel-cream'
             }`}
-            style={{ boxShadow: mode === m ? '5px 5px 0 #26221B' : '3px 3px 0 #26221B' }}
+            style={{ boxShadow: mode === m ? '5px 5px 0 rgba(17,17,17,0.10)' : '3px 3px 0 rgba(17,17,17,0.10)' }}
           >
             <ModeGlyph mode={m} />
             <span className="text-lg font-bold">{m === 'folder' ? 'Folder' : 'Zip archive'}</span>
@@ -234,7 +234,7 @@ function UploadPageInner() {
         ))}
       </div>
 
-      <div className="border border-pixel-black bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 #26221B' }}>
+      <div className="border border-pixel-black bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
         {!hasSelection ? (
           <div className="py-8 text-center">
             <p className="mb-4 font-pixel text-sm text-pixel-black/60">
@@ -273,8 +273,8 @@ function UploadPageInner() {
               <button
                 type="button"
                 onClick={resetSelection}
-                className="shrink-0 border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow"
-                style={{ boxShadow: '2px 2px 0 #26221B' }}
+                className="shrink-0 border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black hover:bg-pixel-cream"
+                style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
               >
                 Reselect
               </button>
@@ -308,9 +308,9 @@ function UploadPageInner() {
                       className={`border border-pixel-black px-3 py-2 font-pixel text-sm transition-colors ${
                         effectiveRuntime === runtime
                           ? 'bg-pixel-blue text-pixel-white'
-                          : 'bg-pixel-white text-pixel-black hover:bg-pixel-yellow/40'
+                          : 'bg-pixel-white text-pixel-black hover:bg-pixel-cream'
                       }`}
-                      style={{ boxShadow: '2px 2px 0 #26221B' }}
+                      style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                     >
                       {RUNTIME_LABELS[runtime]}
                     </button>

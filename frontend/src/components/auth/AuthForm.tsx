@@ -13,12 +13,12 @@ import { useAuthStore } from '@/store/auth';
 function PixelStar({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg viewBox="0 0 16 16" className={className} style={style} xmlns="http://www.w3.org/2000/svg">
-      <rect x="7" y="0" width="2" height="16" fill="#C77B1E" />
-      <rect x="0" y="7" width="16" height="2" fill="#C77B1E" />
-      <rect x="2" y="2" width="2" height="2" fill="#C77B1E" />
-      <rect x="12" y="2" width="2" height="2" fill="#C77B1E" />
-      <rect x="2" y="12" width="2" height="2" fill="#C77B1E" />
-      <rect x="12" y="12" width="2" height="2" fill="#C77B1E" />
+      <rect x="7" y="0" width="2" height="16" fill="#111111" />
+      <rect x="0" y="7" width="16" height="2" fill="#111111" />
+      <rect x="2" y="2" width="2" height="2" fill="#111111" />
+      <rect x="12" y="2" width="2" height="2" fill="#111111" />
+      <rect x="2" y="12" width="2" height="2" fill="#111111" />
+      <rect x="12" y="12" width="2" height="2" fill="#111111" />
     </svg>
   );
 }
@@ -136,7 +136,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-md"
       >
-        <div className="border border-pixel-black bg-pixel-white" style={{ boxShadow: '3px 3px 0px 0px #26221B' }}>
+        <div className="border border-pixel-black bg-pixel-white" style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}>
           <div
             className={`flex items-center justify-center gap-3 border-b border-pixel-black p-3 text-center font-pixel text-xl text-pixel-white ${
               isRegister ? 'bg-pixel-green' : 'bg-pixel-red'
@@ -158,7 +158,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             >
               <div
                 className="flex h-20 w-20 items-center justify-center border border-pixel-black bg-pixel-red"
-                style={{ filter: 'drop-shadow(4px 4px 0px #26221B)' }}
+                style={{ filter: 'drop-shadow(4px 4px 0px rgba(17,17,17,0.10))' }}
               >
                 <BrandMark className="h-11 w-11 text-pixel-white" />
               </div>

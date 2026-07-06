@@ -146,7 +146,7 @@ function ListingsTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-sm text-pixel-black/70 hover:bg-pixel-yellow/40">
+        <button className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream">
           Search
         </button>
       </form>
@@ -183,7 +183,7 @@ function ListingsTab() {
               {listing.isOfficial ? (
                 <button
                   onClick={() => setAdopting(true)}
-                  className="border border-pixel-black bg-pixel-green px-3 py-1.5 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-yellow hover:text-pixel-black"
+                  className="border border-pixel-black bg-pixel-green px-3 py-1.5 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-cream hover:text-pixel-black"
                 >
                   Adopt
                 </button>

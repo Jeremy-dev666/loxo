@@ -141,12 +141,12 @@ export function AgentCard({
           {menuOpen && (
             <div
               className="absolute right-0 mt-2 w-72 border border-pixel-black bg-pixel-white py-1 md:w-56"
-              style={{ boxShadow: '2px 2px 0px 0px #26221B' }}
+              style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
               onClick={(event) => event.stopPropagation()}
             >
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-yellow disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleConfigure}
                 disabled={busyAction !== null}
               >
@@ -154,7 +154,7 @@ export function AgentCard({
               </button>
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-yellow disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleDelete}
                 disabled={busyAction !== null}
               >
@@ -162,7 +162,7 @@ export function AgentCard({
               </button>
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-yellow disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleMarketToggle}
                 disabled={busyAction !== null}
               >
@@ -170,7 +170,7 @@ export function AgentCard({
               </button>
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-yellow disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleCommunity}
                 disabled={busyAction !== null}
               >

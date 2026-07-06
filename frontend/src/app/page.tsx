@@ -116,7 +116,7 @@ function OfficialAdoptPrompt({
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-h-[calc(100dvh-2rem)] w-full max-w-[680px] overflow-y-auto border border-pixel-black bg-white p-4 md:p-5"
-          style={{ boxShadow: '6px 6px 0 #26221B' }}
+          style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}
         >
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
@@ -152,7 +152,7 @@ function OfficialAdoptPrompt({
                 onChange={(event) => setAdoptName(event.target.value)}
                 disabled={isAdopting}
                 className="w-full border border-pixel-black bg-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none disabled:opacity-50 md:text-base"
-                style={{ boxShadow: 'inset 2px 2px 0 #26221B' }}
+                style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.10)' }}
               />
             </div>
           </div>
@@ -169,7 +169,7 @@ function OfficialAdoptPrompt({
               onClick={dismiss}
               disabled={isAdopting}
               className="border border-pixel-black bg-pixel-white px-3 py-3 font-pixel text-sm text-pixel-black disabled:opacity-50 md:text-base"
-              style={{ boxShadow: '3px 3px 0 #26221B' }}
+              style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
             >
               Later
             </button>
@@ -178,7 +178,7 @@ function OfficialAdoptPrompt({
               onClick={() => void handleAdopt()}
               disabled={isAdopting}
               className="border border-pixel-black bg-pixel-green px-3 py-3 font-pixel text-sm text-pixel-white disabled:opacity-50 md:text-base"
-              style={{ boxShadow: '3px 3px 0 #26221B' }}
+              style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
             >
               {isAdopting ? 'Adopting…' : 'Adopt'}
             </button>
@@ -196,7 +196,7 @@ function MobilePanel({ children, className = '' }: { children: React.ReactNode; 
   return (
     <section
       className={`overflow-hidden border border-pixel-black bg-pixel-white ${className}`}
-      style={{ boxShadow: '5px 5px 0 #26221B' }}
+      style={{ boxShadow: '5px 5px 0 rgba(17,17,17,0.10)' }}
     >
       {children}
     </section>
@@ -318,7 +318,7 @@ function MobileHome({
             </div>
             <div
               className={`flex h-10 w-10 shrink-0 items-center justify-center border border-pixel-black ${activeTabMeta.accent} text-pixel-white`}
-              style={{ boxShadow: '2px 2px 0 #26221B' }}
+              style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
             >
               <FolderGlyph className="h-5 w-5" />
             </div>
@@ -477,7 +477,7 @@ function MobileHome({
                       router.replace('/?mobileTab=me');
                     }}
                     className="flex min-h-[48px] w-full items-center justify-center border border-pixel-black bg-pixel-red px-3 font-pixel text-base font-bold leading-none text-pixel-white"
-                    style={{ boxShadow: '3px 3px 0 #26221B' }}
+                    style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                   >
                     Sign out
                   </button>
@@ -486,14 +486,14 @@ function MobileHome({
                     <Link
                       href="/login"
                       className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-blue px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
-                      style={{ boxShadow: '3px 3px 0 #26221B' }}
+                      style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                     >
                       Sign in
                     </Link>
                     <Link
                       href="/register"
                       className="flex min-h-[48px] items-center justify-center border border-pixel-black bg-pixel-green px-3 font-pixel text-base font-bold leading-none text-pixel-white no-underline"
-                      style={{ boxShadow: '3px 3px 0 #26221B' }}
+                      style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                     >
                       Sign up
                     </Link>

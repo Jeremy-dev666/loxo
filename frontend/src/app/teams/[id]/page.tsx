@@ -174,19 +174,19 @@ function EditorInner() {
         )}
         <button
           onClick={() => addNode('agent')}
-          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow" style={{ boxShadow: '2px 2px 0 #26221B' }}
+          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           + Agent node
         </button>
         <button
           onClick={() => addNode('condition')}
-          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow" style={{ boxShadow: '2px 2px 0 #26221B' }}
+          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           + Condition
         </button>
         <button
           onClick={() => setSlackOpen(true)}
-          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow" style={{ boxShadow: '2px 2px 0 #26221B' }}
+          className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           Slack
         </button>
@@ -194,14 +194,14 @@ function EditorInner() {
           <button
             onClick={() => save(true)}
             disabled={saving}
-            className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow disabled:opacity-50" style={{ boxShadow: '2px 2px 0 #26221B' }}
+            className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             Save draft
           </button>
           <button
             onClick={() => save(false)}
             disabled={saving}
-            className="border border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 #26221B' }}
+            className="border border-pixel-black bg-pixel-red px-4 py-1.5 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-orange disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -210,7 +210,7 @@ function EditorInner() {
 
       <div className="flex gap-2">
         <input
-          className="flex-1 border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue" style={{ boxShadow: 'inset 2px 2px 0 #26221B' }}
+          className="flex-1 border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue" style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.10)' }}
           placeholder='Describe the workflow, e.g. "research the topic, review quality, then write a summary"'
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -219,7 +219,7 @@ function EditorInner() {
         <button
           onClick={generate}
           disabled={generating || !prompt.trim()}
-          className="border border-pixel-black bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-green disabled:opacity-50" style={{ boxShadow: '2px 2px 0 #26221B' }}
+          className="border border-pixel-black bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-green disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           {generating ? '✨ Generating…' : '✨ Generate'}
         </button>
@@ -257,7 +257,7 @@ function EditorInner() {
         </p>
       )}
 
-      <div className="min-h-0 flex-1 border border-pixel-black bg-pixel-white" style={{ boxShadow: '5px 5px 0 #26221B' }}>
+      <div className="min-h-0 flex-1 border border-pixel-black bg-pixel-white" style={{ boxShadow: '5px 5px 0 rgba(17,17,17,0.10)' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
