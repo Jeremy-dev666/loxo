@@ -221,7 +221,7 @@ function EditorInner() {
           disabled={generating || !prompt.trim()}
           className="border border-pixel-black bg-pixel-blue px-4 py-2 font-pixel text-xs font-bold text-pixel-white hover:bg-pixel-green disabled:opacity-50" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
-          {generating ? '✨ Generating…' : '✨ Generate'}
+          {generating ? 'Generating…' : 'Generate'}
         </button>
       </div>
 

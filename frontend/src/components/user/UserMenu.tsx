@@ -46,7 +46,6 @@ export function UserMenu({ onClose }: UserMenuProps) {
           onClick={handleProviders}
           className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F5F5F5]"
         >
-          <span className="text-lg">🔑</span>
           <div>
             <div className="font-pixel text-sm text-pixel-black">Provider settings</div>
             <div className="font-pixel text-xs text-pixel-black/50">Manage API keys</div>
@@ -57,7 +56,6 @@ export function UserMenu({ onClose }: UserMenuProps) {
           onClick={handleLogout}
           className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F5F5F5]"
         >
-          <span className="text-lg">🚪</span>
           <div>
             <div className="font-pixel text-sm text-[#111]">Sign out</div>
             <div className="font-pixel text-xs text-pixel-black/50">Switch account</div>

@@ -95,10 +95,10 @@ function PostCard({
       )}
       <div className="mt-3 flex gap-4 text-xs text-pixel-black/50">
         <button onClick={like} className={liked ? 'text-pixel-blue' : 'hover:text-pixel-black'}>
-          ♥ {likeCount}
+          {likeCount} likes
         </button>
         <Link href={`/community/${post.id}`} className="hover:text-pixel-black">
-          💬 {post.commentCount}
+          {post.commentCount} comments
         </Link>
       </div>
     </div>

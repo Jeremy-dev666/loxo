@@ -180,7 +180,6 @@ function UploadPageInner() {
           className="border border-pixel-black bg-pixel-white p-8 text-center"
           style={{ boxShadow: '8px 8px 0 rgba(17,17,17,0.10)' }}
         >
-          <div className="mb-4 text-6xl">🎉</div>
           <h1 className="brand-large mb-2 text-pixel-black">Agent on board!</h1>
           <p className="font-pixel text-sm text-pixel-black/60">
             “{createdAgent.name}” joined your den as a {RUNTIME_LABELS[createdAgent.runtime]} agent.

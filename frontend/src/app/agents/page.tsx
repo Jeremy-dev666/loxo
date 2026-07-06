@@ -300,7 +300,6 @@ function AgentsPageInner() {
 
       {groups.length === 0 && agents.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-16 text-center">
-          <div className="mb-4 text-6xl">🤖</div>
           <h2 className="md:brand-large mb-4 font-pixel text-[2.2rem] font-bold leading-tight text-pixel-black">
             No dens yet
           </h2>

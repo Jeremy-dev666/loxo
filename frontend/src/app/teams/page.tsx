@@ -65,7 +65,7 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
 
         {team.warnings.length > 0 && (
           <p className="mt-2 font-pixel text-xs text-pixel-red">
-            ⚠ {team.warnings.length} warning{team.warnings.length > 1 ? 's' : ''}
+            {team.warnings.length} warning{team.warnings.length > 1 ? 's' : ''}
           </p>
         )}
 
@@ -131,7 +131,6 @@ function TeamsPageInner() {
         <p className="py-12 text-center font-pixel text-pixel-black/50">Loading…</p>
       ) : teams.length === 0 ? (
         <div className="py-16 text-center">
-          <div className="mb-4 text-6xl">🧩</div>
           <p className="mb-6 font-pixel text-base text-pixel-black/60">
             No teams yet — assemble your first agent crew.
           </p>

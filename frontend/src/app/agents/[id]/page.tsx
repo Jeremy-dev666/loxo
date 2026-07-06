@@ -465,7 +465,7 @@ function ChatPageInner() {
                 </select>
               )}
               <PixelButton variant="secondary" size="sm" onClick={() => router.push(`/agents/${agentId}/settings`)} title="Agent settings">
-                ⚙️
+                Settings
               </PixelButton>
               {busy && (
                 <PixelButton variant="danger" size="sm" onClick={stopTurn}>
@@ -490,9 +490,9 @@ function ChatPageInner() {
         <div className="flex border-t border-pixel-black">
           {(
             [
-              ['chat', '💬 Chat'],
-              ['monitor', '📊 Monitor'],
-              ['skills', '🛠️ Skills'],
+              ['chat', 'Chat'],
+              ['monitor', 'Monitor'],
+              ['skills', 'Skills'],
             ] as Array<[TabType, string]>
           ).map(([tab, label], index) => (
             <button
@@ -553,7 +553,6 @@ function ChatPageInner() {
                 )}
                 {allMessages.length === 0 && !busy && (
                   <div className="py-16 text-center">
-                    <p className="mb-2 text-4xl">💬</p>
                     <p className="font-pixel text-sm text-pixel-black/50">
                       Send a message to start the conversation.
                     </p>

@@ -38,7 +38,7 @@ function CommentBlock({
       <p className="mt-1 whitespace-pre-wrap text-sm text-pixel-black">{comment.content}</p>
       <div className="mt-2 flex gap-3 text-xs text-pixel-black/50">
         <button onClick={like} className={comment.isLiked ? 'text-pixel-blue' : 'hover:text-pixel-black'}>
-          ♥ {comment.likeCount}
+          {comment.likeCount} likes
         </button>
         {!comment.parentCommentId && (
           <button onClick={() => onReply(comment)} className="hover:text-pixel-black">
@@ -132,9 +132,9 @@ function PostDetailInner() {
         <p className="mt-3 whitespace-pre-wrap text-sm text-pixel-black">{post.content}</p>
         <div className="mt-3 flex gap-4 text-xs text-pixel-black/50">
           <button onClick={likePost} className={post.isLiked ? 'text-pixel-blue' : 'hover:text-pixel-black'}>
-            ♥ {post.likeCount}
+            {post.likeCount} likes
           </button>
-          <span>💬 {post.commentCount}</span>
+          <span>{post.commentCount} comments</span>
         </div>
       </div>
 
