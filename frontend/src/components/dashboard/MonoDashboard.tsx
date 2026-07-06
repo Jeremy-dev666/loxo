@@ -92,7 +92,7 @@ function SectionHead({
       <div className="flex items-center gap-2">
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#111]">{title}</h2>
         {sample && (
-          <span className="rounded-full border border-[#C9C9C9] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#9B9B9B]">
+          <span className="rounded-sm border border-[#C9C9C9] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#9B9B9B]">
             Sample
           </span>
         )}
@@ -107,7 +107,7 @@ function SectionHead({
 }
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-xl border border-[#E4E4E4] bg-white ${className}`}>{children}</div>;
+  return <div className={`rounded border border-[#E4E4E4] bg-white ${className}`}>{children}</div>;
 }
 
 export function MonoDashboard({
@@ -129,7 +129,7 @@ export function MonoDashboard({
   const recentTeams = teams.slice(0, 4);
 
   return (
-    <div className="hidden font-sans text-[#111] md:block">
+    <div className="hidden text-[#111] md:block">
       <div className="mx-auto max-w-[1200px] px-2 py-6">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-4">
@@ -148,13 +148,13 @@ export function MonoDashboard({
           <div className="flex items-center gap-2">
             <Link
               href="/upload"
-              className="rounded-full bg-[#111] px-5 py-2.5 text-sm font-semibold text-white no-underline transition-colors hover:bg-[#333]"
+              className="rounded bg-[#111] px-5 py-2.5 text-sm font-semibold text-white no-underline transition-colors hover:bg-[#333]"
             >
               Hire an agent
             </Link>
             <Link
               href="/teams/create"
-              className="rounded-full border border-[#111] px-5 py-2.5 text-sm font-semibold text-[#111] no-underline transition-colors hover:bg-[#111] hover:text-white"
+              className="rounded border border-[#111] px-5 py-2.5 text-sm font-semibold text-[#111] no-underline transition-colors hover:bg-[#111] hover:text-white"
             >
               New team
             </Link>
@@ -187,7 +187,7 @@ export function MonoDashboard({
                     className={`flex items-center gap-4 px-5 py-3.5 ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}
                   >
                     <span
-                      className={`w-[72px] shrink-0 rounded-md px-2 py-1 text-center text-[11px] font-semibold leading-none ${RUN_STATUS_STYLES[run.status]}`}
+                      className={`w-[72px] shrink-0 rounded-sm px-2 py-1 text-center text-[11px] font-semibold leading-none ${RUN_STATUS_STYLES[run.status]}`}
                     >
                       {RUN_STATUS_LABELS[run.status]}
                     </span>
@@ -263,7 +263,7 @@ export function MonoDashboard({
                 <div className="px-5 py-3.5">
                   <p className="text-sm font-semibold">
                     2 deliverables waiting for review{' '}
-                    <span className="ml-1 rounded-full border border-[#C9C9C9] px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-[#9B9B9B]">
+                    <span className="ml-1 rounded-sm border border-[#C9C9C9] px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-[#9B9B9B]">
                       sample
                     </span>
                   </p>
@@ -272,7 +272,7 @@ export function MonoDashboard({
                 <div className="px-5 py-3.5">
                   <p className="text-sm font-semibold">
                     1 run failed overnight{' '}
-                    <span className="ml-1 rounded-full border border-[#C9C9C9] px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-[#9B9B9B]">
+                    <span className="ml-1 rounded-sm border border-[#C9C9C9] px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-[#9B9B9B]">
                       sample
                     </span>
                   </p>

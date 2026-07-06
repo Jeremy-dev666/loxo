@@ -61,14 +61,14 @@ function TraditionalSidebar({
   onToggle: () => void;
   onDeleteProject: (project: ProjectView) => void;
 }) {
-  const navItems: Array<{ href: string; label: string; icon: SidebarIcon; tone: string; exact?: boolean }> = [
-    { href: '/', label: 'Home', icon: 'home', tone: 'bg-pixel-green', exact: true },
-    { href: '/agents', label: 'My Agents', icon: 'agents', tone: 'bg-pixel-red' },
-    { href: '/teams', label: 'My Teams', icon: 'teams', tone: 'bg-pixel-blue' },
-    { href: '/roundtable', label: 'Roundtable', icon: 'roundtable', tone: 'bg-pixel-red' },
-    { href: '/market', label: 'Agent Market', icon: 'market', tone: 'bg-pixel-yellow' },
-    { href: '/community', label: 'Community', icon: 'community', tone: 'bg-pixel-green' },
-    { href: '/settings/providers', label: 'Providers', icon: 'settings', tone: 'bg-pixel-gray' },
+  const navItems: Array<{ href: string; label: string; icon: SidebarIcon; exact?: boolean }> = [
+    { href: '/', label: 'Home', icon: 'home', exact: true },
+    { href: '/agents', label: 'My Agents', icon: 'agents' },
+    { href: '/teams', label: 'My Teams', icon: 'teams' },
+    { href: '/roundtable', label: 'Roundtable', icon: 'roundtable' },
+    { href: '/market', label: 'Agent Market', icon: 'market' },
+    { href: '/community', label: 'Community', icon: 'community' },
+    { href: '/settings/providers', label: 'Providers', icon: 'settings' },
   ];
   const recentProjects = [...projects]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -94,24 +94,23 @@ function TraditionalSidebar({
     <>
       <aside
         aria-hidden={!open}
-        className="fixed left-0 top-0 z-[40] hidden h-screen flex-col border-r border-pixel-black bg-pixel-black text-pixel-white transition-[left,opacity] duration-300 ease-out md:flex"
+        className="fixed left-0 top-0 z-[40] hidden h-screen flex-col border-r border-[#E4E4E4] bg-white text-[#111] transition-[left,opacity] duration-300 ease-out md:flex"
         style={{
           width,
           left: open ? 0 : -width,
-          boxShadow: '6px 0 0 #26221B',
           opacity: open ? 1 : 0,
           pointerEvents: open ? 'auto' : 'none',
         }}
       >
-        <div className="border-b border-pixel-gray/50 px-4 py-4">
+        <div className="border-b border-[#F0F0F0] px-4 py-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
-              <span className="pixel-notch-sm flex h-9 w-9 shrink-0 items-center justify-center bg-pixel-yellow text-pixel-black">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[#111] text-white">
                 <BrandMark className="h-5 w-5" />
               </span>
               <span className="min-w-0">
-                <span className="brand-large block truncate text-pixel-white">SwarmDev</span>
-                <span className="block truncate font-pixel text-xs uppercase tracking-widest leading-none text-pixel-white/65">
+                <span className="brand-large block truncate text-[#111]">SwarmDev</span>
+                <span className="block truncate font-pixel text-xs uppercase tracking-widest leading-none text-[#9B9B9B]">
                   Agent team platform
                 </span>
               </span>
@@ -123,17 +122,16 @@ function TraditionalSidebar({
               onClick={onToggle}
               whileHover={{ x: -1 }}
               whileTap={{ x: -2, scale: 0.96 }}
-              className="flex h-10 w-10 shrink-0 items-center justify-center border border-pixel-white bg-pixel-black text-pixel-white transition-colors hover:border-pixel-yellow hover:text-pixel-yellow"
-              style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#E4E4E4] bg-white text-[#6B6B6B] transition-colors hover:border-[#111] hover:text-[#111]"
             >
-              <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true" shapeRendering="crispEdges">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" shapeRendering="crispEdges">
                 <path fill="currentColor" d="M14 5 7 12l7 7v-5h7v-4h-7V5Z" />
               </svg>
             </motion.button>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {navItems.map((item, index) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (
@@ -145,19 +143,13 @@ function TraditionalSidebar({
               >
                 <Link
                   href={item.href}
-                  className={`flex min-h-[56px] items-center gap-3 border px-3 font-pixel text-base no-underline transition-colors ${
+                  className={`flex min-h-[44px] items-center gap-3 rounded-sm px-3 font-pixel text-base no-underline transition-colors ${
                     active
-                      ? 'border-pixel-gray bg-pixel-white/10 text-pixel-white'
-                      : 'border-transparent text-pixel-white/70 hover:border-pixel-gray hover:bg-pixel-white/10 hover:text-pixel-white'
+                      ? 'bg-[#111] text-white'
+                      : 'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#111]'
                   }`}
                 >
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center border border-pixel-black ${item.tone} ${
-                      item.icon === 'market' ? 'text-pixel-black' : 'text-pixel-white'
-                    }`}
-                  >
-                    <SidebarIconGlyph icon={item.icon} />
-                  </span>
+                  <SidebarIconGlyph icon={item.icon} className="h-5 w-5 shrink-0" />
                   <span className="truncate">{item.label}</span>
                 </Link>
               </motion.div>
@@ -166,9 +158,11 @@ function TraditionalSidebar({
 
           {recentProjects.length > 0 && (
             <div className="pt-2">
-              <div className="my-3 h-[4px] border-y border-pixel-black bg-pixel-gray" aria-hidden="true" />
-              <p className="mb-2 px-1 font-pixel text-xs leading-none text-pixel-white/45">Recent projects</p>
-              <div className="space-y-1.5">
+              <div className="my-3 h-px bg-[#E4E4E4]" aria-hidden="true" />
+              <p className="mb-2 px-3 font-pixel text-[10px] uppercase tracking-[0.16em] leading-none text-[#9B9B9B]">
+                Recent projects
+              </p>
+              <div className="space-y-1">
                 {recentProjects.map((project, index) => {
                   const href = `/projects/${project.id}`;
                   const active = pathname === href;
@@ -182,19 +176,17 @@ function TraditionalSidebar({
                       <div className="group/sidebar-project relative">
                         <Link
                           href={href}
-                          className={`flex min-h-[48px] items-center gap-2 border px-2 pl-9 font-pixel text-sm no-underline transition-colors ${
+                          className={`flex min-h-[44px] items-center gap-2.5 rounded-sm px-3 font-pixel text-sm no-underline transition-colors ${
                             active
-                              ? 'border-pixel-gray bg-pixel-white/15 text-pixel-white'
-                              : 'border-transparent text-pixel-white/65 hover:border-pixel-gray hover:bg-pixel-white/10 hover:text-pixel-white'
+                              ? 'bg-[#111] text-white'
+                              : 'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#111]'
                           }`}
                           title={project.name}
                         >
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-pixel-black bg-pixel-gray text-pixel-white">
-                            <SidebarIconGlyph icon="projects" className="h-4 w-4" />
-                          </span>
+                          <SidebarIconGlyph icon="projects" className="h-4 w-4 shrink-0" />
                           <span className="min-w-0 flex-1">
                             <span className="block truncate leading-tight">{project.name}</span>
-                            <span className="block truncate text-[10px] leading-tight text-pixel-white/40">
+                            <span className="block truncate text-[10px] leading-tight opacity-60">
                               {project.teamIds.length} teams · {project.agentIds.length} agents
                             </span>
                           </span>
@@ -206,12 +198,11 @@ function TraditionalSidebar({
                             event.stopPropagation();
                             onDeleteProject(project);
                           }}
-                          className="pointer-events-none absolute left-1 top-1 flex h-7 w-7 items-center justify-center border border-pixel-black bg-pixel-red font-pixel text-xs font-bold leading-none text-pixel-white opacity-0 transition-opacity hover:brightness-95 group-hover/sidebar-project:pointer-events-auto group-hover/sidebar-project:opacity-100"
-                          style={{ boxShadow: '2px 2px 0 #26221B' }}
+                          className="pointer-events-none absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-sm border border-[#C9C9C9] bg-white font-pixel text-xs leading-none text-[#6B6B6B] opacity-0 transition-opacity hover:border-[#111] hover:text-[#111] group-hover/sidebar-project:pointer-events-auto group-hover/sidebar-project:opacity-100"
                           aria-label={`Delete project ${project.name}`}
                           title="Delete project"
                         >
-                          X
+                          ×
                         </button>
                       </div>
                     </motion.div>
@@ -222,8 +213,8 @@ function TraditionalSidebar({
           )}
         </nav>
 
-        <div className="border-t border-pixel-gray/50 p-3">
-          <p className="font-pixel text-xs leading-tight text-pixel-white/45">v0.1.0 · SwarmDev Labs</p>
+        <div className="border-t border-[#F0F0F0] p-3">
+          <p className="font-pixel text-xs leading-tight text-[#9B9B9B]">v0.1.0 · SwarmDev Labs</p>
         </div>
 
         <div
@@ -232,7 +223,7 @@ function TraditionalSidebar({
           aria-label="Resize sidebar"
           title="Drag to resize"
           onPointerDown={handleResizePointerDown}
-          className="absolute right-[-8px] top-0 h-full w-4 cursor-col-resize border-x border-pixel-black bg-pixel-yellow/80 opacity-0 transition-opacity hover:opacity-100"
+          className="absolute right-[-6px] top-0 h-full w-3 cursor-col-resize bg-[#E4E4E4] opacity-0 transition-opacity hover:opacity-100"
         />
       </aside>
 
@@ -246,10 +237,9 @@ function TraditionalSidebar({
           animate={{ x: 0, opacity: 1 }}
           whileHover={{ x: 2 }}
           whileTap={{ x: 0, scale: 0.96 }}
-          className="fixed left-0 top-[96px] z-[45] hidden h-16 w-9 items-center justify-center border-y border-r border-pixel-black bg-pixel-yellow text-pixel-black transition-colors hover:bg-pixel-green md:flex"
-          style={{ boxShadow: '3px 3px 0px 0px #26221B' }}
+          className="fixed left-0 top-[96px] z-[45] hidden h-14 w-8 items-center justify-center rounded-r-sm border border-l-0 border-[#E4E4E4] bg-white text-[#6B6B6B] transition-colors hover:border-[#111] hover:text-[#111] md:flex"
         >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true" shapeRendering="crispEdges">
+          <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" shapeRendering="crispEdges">
             <path fill="currentColor" d="M10 5v5H3v4h7v5l7-7-7-7Z" />
           </svg>
         </motion.button>
@@ -388,7 +378,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           className={`${isTraditionalMode ? 'mx-0 w-full max-w-none px-8 xl:px-10 2xl:px-12' : 'mx-auto max-w-7xl'} text-center font-pixel text-xs text-pixel-gray`}
         >
           <p>SwarmDev — Efficient AI Team Collaboration</p>
-          <p className="mt-1 uppercase tracking-widest text-pixel-yellow">Ready.</p>
+          <p className="mt-1 uppercase tracking-widest text-[#9B9B9B]">Ready.</p>
         </div>
       </footer>
       <Suspense fallback={null}>

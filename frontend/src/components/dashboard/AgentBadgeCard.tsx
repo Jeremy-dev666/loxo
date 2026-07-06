@@ -26,13 +26,13 @@ export function AgentBadgeCard({ agent }: { agent: Agent }) {
 
   return (
     <div className="w-[236px] shrink-0">
-      <div className="mx-auto h-3.5 w-9 rounded-t-md border border-b-0 border-[#111] bg-[#111]" aria-hidden />
+      <div className="mx-auto h-3.5 w-9 rounded-t-sm border border-b-0 border-[#111] bg-[#111]" aria-hidden />
       <Link
         href={`/agents/${agent.id}`}
-        className="group block rounded-xl border border-[#E4E4E4] bg-white px-4 pb-4 pt-3 no-underline transition-colors hover:border-[#111]"
+        className="group block rounded border border-[#E4E4E4] bg-white px-4 pb-4 pt-3 no-underline transition-colors hover:border-[#111]"
       >
         <div className="mx-auto mb-3 h-1.5 w-8 rounded-full bg-[#EFEFEF]" aria-hidden />
-        <span className="inline-block max-w-full truncate rounded-md bg-[#111] px-3 py-1 text-sm font-semibold leading-tight text-white">
+        <span className="inline-block max-w-full truncate rounded-sm bg-[#111] px-3 py-1 text-sm font-semibold leading-tight text-white">
           {agent.name}
         </span>
         <div className="flex h-28 items-center justify-center py-2 grayscale contrast-125">
@@ -45,7 +45,7 @@ export function AgentBadgeCard({ agent }: { agent: Agent }) {
         <div className="mt-3 flex items-center justify-between gap-2">
           <span className="text-[10px] uppercase tracking-[0.18em] text-[#9B9B9B]">SwarmDev</span>
           <span
-            className={`rounded-md px-2.5 py-1 text-[11px] font-semibold leading-none ${
+            className={`rounded-sm px-2.5 py-1 text-[11px] font-semibold leading-none ${
               onDuty ? 'bg-[#111] text-white' : 'border border-[#C9C9C9] text-[#6B6B6B]'
             }`}
           >
@@ -63,7 +63,7 @@ export function HireBadgeCard() {
     <div className="w-[236px] shrink-0 pt-[26px]">
       <Link
         href="/upload"
-        className="flex h-[calc(100%-26px)] min-h-[248px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#C9C9C9] bg-white text-[#6B6B6B] no-underline transition-colors hover:border-[#111] hover:text-[#111]"
+        className="flex h-[calc(100%-26px)] min-h-[248px] flex-col items-center justify-center gap-2 rounded border border-dashed border-[#C9C9C9] bg-white text-[#6B6B6B] no-underline transition-colors hover:border-[#111] hover:text-[#111]"
       >
         <span className="text-3xl leading-none">+</span>
         <span className="text-sm font-semibold">Hire an agent</span>

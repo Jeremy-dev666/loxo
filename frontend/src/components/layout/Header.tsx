@@ -40,8 +40,7 @@ function DisplayModeToggle() {
       onClick={() => setDisplayMode(nextMode)}
       whileHover={{ y: -1 }}
       whileTap={{ y: 1, scale: 0.96 }}
-      className="hidden h-8 w-8 items-center justify-center border border-pixel-black bg-pixel-white text-pixel-black transition-colors hover:border-pixel-yellow hover:text-pixel-yellow md:flex"
-      style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+      className="hidden h-8 w-8 items-center justify-center rounded-sm border border-[#E4E4E4] bg-white text-[#6B6B6B] transition-colors hover:border-[#111] hover:text-[#111] md:flex"
     >
       <DisplayModeIcon mode={displayMode} />
     </motion.button>
@@ -84,8 +83,8 @@ export function Header({
         {showHeaderBrand && (
           <div className="flex min-w-0 items-center gap-4">
             <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
-              <div className="pixel-notch-sm flex h-9 w-9 shrink-0 items-center justify-center bg-pixel-yellow">
-                <BrandMark className="h-5 w-5 text-pixel-black" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[#111]">
+                <BrandMark className="h-5 w-5 text-white" />
               </div>
               <h1 className="flex min-w-0 items-baseline gap-3">
                 <span className="brand-large whitespace-nowrap !text-pixel-black">SwarmDev</span>
@@ -104,10 +103,10 @@ export function Header({
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 border border-pixel-black bg-pixel-white px-2 py-1 transition-colors hover:border-pixel-yellow"
+                className="flex items-center gap-2 rounded-sm border border-[#E4E4E4] bg-white px-2 py-1 transition-colors hover:border-[#111]"
               >
-                <div className="flex h-6 w-6 items-center justify-center border border-pixel-black bg-pixel-yellow">
-                  <span className="font-pixel text-xs text-pixel-black">
+                <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-[#111]">
+                  <span className="font-pixel text-xs text-white">
                     {user.username.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -125,15 +124,13 @@ export function Header({
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="border border-pixel-black bg-pixel-white px-3 py-1 font-pixel text-sm uppercase text-pixel-black no-underline transition-colors hover:bg-pixel-cream"
-                style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+                className="rounded-sm border border-[#111] bg-white px-3 py-1 font-pixel text-sm uppercase text-[#111] no-underline transition-colors hover:bg-[#F5F5F5]"
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="border border-pixel-black bg-pixel-yellow px-3 py-1 font-pixel text-sm uppercase text-pixel-black no-underline transition-colors hover:bg-pixel-orange hover:text-pixel-white"
-                style={{ boxShadow: '1px 1px 0px 0px #26221B' }}
+                className="rounded-sm border border-[#111] bg-[#111] px-3 py-1 font-pixel text-sm uppercase text-white no-underline transition-colors hover:bg-[#333]"
               >
                 Sign up
               </Link>
