@@ -37,6 +37,7 @@ function EditorInner() {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [slackOpen, setSlackOpen] = useState(false);
+  const [showOrigin, setShowOrigin] = useState(false);
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -161,6 +162,16 @@ function EditorInner() {
         <span className="border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
           {team.workflow.execution.mode}
         </span>
+        {team.workflow.metadata?.origin && (
+          <button
+            type="button"
+            onClick={() => setShowOrigin((v) => !v)}
+            title="This workflow was confirmed out of a roundtable discussion"
+            className="border border-pixel-black bg-pixel-blue/15 px-1.5 py-0.5 font-pixel text-xs text-pixel-blue hover:bg-pixel-blue/25"
+          >
+            v{team.workflow.metadata.version ?? 1} · from roundtable {showOrigin ? '▴' : '▾'}
+          </button>
+        )}
         <button
           onClick={() => addNode('agent')}
           className="border border-pixel-black bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-yellow" style={{ boxShadow: '2px 2px 0 #26221B' }}
@@ -213,6 +224,31 @@ function EditorInner() {
           {generating ? '✨ Generating…' : '✨ Generate'}
         </button>
       </div>
+
+      {showOrigin && team.workflow.metadata?.origin && (
+        <div className="border border-pixel-black bg-pixel-cream px-3 py-2 font-pixel text-xs text-pixel-black">
+          <p>
+            Confirmed from roundtable “{team.workflow.metadata.origin.sessionTitle}” (draft rev{' '}
+            {team.workflow.metadata.origin.revision}
+            {team.workflow.metadata.origin.feedback
+              ? `, after feedback: ${team.workflow.metadata.origin.feedback}`
+              : ''}
+            ) on {new Date(team.workflow.metadata.origin.confirmedAt).toLocaleString()}.
+          </p>
+          {team.workflow.metadata.origin.notes.length > 0 && (
+            <ul className="mt-1 space-y-0.5 text-pixel-black/60">
+              {team.workflow.metadata.origin.notes.slice(0, 6).map((note, i) => (
+                <li key={i}>
+                  [{note.column}] {note.text} — {note.authorName}
+                </li>
+              ))}
+              {team.workflow.metadata.origin.notes.length > 6 && (
+                <li>…and {team.workflow.metadata.origin.notes.length - 6} more notes</li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
 
       {message && <p className="border border-pixel-yellow bg-pixel-yellow/15 px-2 py-1 font-pixel text-xs text-pixel-black">{message}</p>}
       {team.warnings.length > 0 && (

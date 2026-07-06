@@ -117,11 +117,12 @@ export const fetchDeliverables = (id: string) =>
 export const reviewDeliverable = (
   projectId: string,
   deliverableId: string,
-  status: 'accepted' | 'revision'
+  status: 'accepted' | 'revision',
+  note?: string
 ) =>
   apiFetch<{ deliverable: Deliverable }>(
     `/api/projects/${projectId}/deliverables/${deliverableId}`,
-    { method: 'PATCH', body: JSON.stringify({ status }) }
+    { method: 'PATCH', body: JSON.stringify(note ? { status, note } : { status }) }
   ).then((r) => r.deliverable);
 
 /** Authenticated binary fetch; saves via a temporary object URL. */

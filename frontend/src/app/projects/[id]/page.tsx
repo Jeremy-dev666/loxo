@@ -9,7 +9,9 @@ import {
   TaskBoard,
   type TrackedExecution,
 } from '@/components/projects/WorkflowTaskBoard';
+import { MemoPanel } from '@/components/projects/MemoPanel';
 import { useWorkflowEvents } from '@/hooks/useWorkflowEvents';
+import { deleteMemo, fetchMemos, type Memo } from '@/lib/memos';
 import {
   fetchDeliverables,
   fetchProject,
@@ -155,8 +157,9 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
   const [execution, setExecution] = useState<TrackedExecution | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
+  const [memos, setMemos] = useState<Memo[]>([]);
   const [reviewing, setReviewing] = useState<Set<string>>(new Set());
-  const [tab, setTab] = useState<'board' | 'deliverables'>('board');
+  const [tab, setTab] = useState<'board' | 'deliverables' | 'memory'>('board');
   const [previewPath, setPreviewPath] = useState<string | null>(null);
   const [showBindings, setShowBindings] = useState(false);
   const [filesRefresh, setFilesRefresh] = useState(0);
@@ -182,6 +185,10 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
 
   const refreshDeliverables = useCallback(() => {
     fetchDeliverables(projectId).then(setDeliverables).catch(() => {});
+  }, [projectId]);
+
+  const refreshMemos = useCallback(() => {
+    fetchMemos('project', projectId).then(setMemos).catch(() => {});
   }, [projectId]);
 
   const adoptExecution = useCallback(
@@ -212,12 +219,13 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
     openProject(projectId).then(setProject).catch(() => {});
     fetchTeams().then(setTeams).catch(() => setTeams([]));
     refreshDeliverables();
+    refreshMemos();
     fetchExecutions({ projectId })
       .then((executions) => {
         if (executions[0]) void adoptExecution(executions[0].id, { hydrateFeed: true });
       })
       .catch(() => {});
-  }, [projectId, refreshDeliverables, adoptExecution]);
+  }, [projectId, refreshDeliverables, refreshMemos, adoptExecution]);
 
   useEffect(() => {
     if (!activeTeamId && boundTeams[0]) setActiveTeamId(boundTeams[0].id);
@@ -264,9 +272,10 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
       if (delta.event.type === 'deliverable_created') refreshDeliverables();
       if (delta.event.type === 'execution_completed' || delta.event.type === 'execution_failed') {
         setFilesRefresh((n) => n + 1);
+        refreshMemos();
       }
     },
-    [projectId, adoptExecution, appendFeed, refreshDeliverables]
+    [projectId, adoptExecution, appendFeed, refreshDeliverables, refreshMemos]
   );
 
   const { connected } = useWorkflowEvents({ projectId, onEvent: onDelta });
@@ -338,9 +347,16 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
   };
 
   const review = async (deliverableId: string, status: 'accepted' | 'revision') => {
+    let note: string | undefined;
+    if (status === 'revision') {
+      // The reason feeds the agent's memo trail, so ask for it up front.
+      const input = window.prompt('Why is this being sent back? (optional, remembered by the team)');
+      if (input === null) return;
+      note = input.trim() || undefined;
+    }
     setReviewing((current) => new Set(current).add(deliverableId));
     try {
-      const updated = await reviewDeliverable(projectId, deliverableId, status);
+      const updated = await reviewDeliverable(projectId, deliverableId, status, note);
       setDeliverables((current) =>
         current.map((d) => (d.id === updated.id ? updated : d))
       );
@@ -352,6 +368,15 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
         next.delete(deliverableId);
         return next;
       });
+    }
+  };
+
+  const forgetMemo = async (memoId: string) => {
+    try {
+      await deleteMemo(memoId);
+      setMemos((current) => current.filter((m) => m.id !== memoId));
+    } catch {
+      // Poll refresh restores the true list.
     }
   };
 
@@ -484,17 +509,25 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
             >
               Deliverables{pendingCount > 0 ? ` (${pendingCount})` : ''}
             </button>
+            <button
+              onClick={() => setTab('memory')}
+              className={`flex-1 px-3 py-2 ${tab === 'memory' ? 'text-pixel-black' : 'text-pixel-black/50 hover:text-pixel-black'}`}
+            >
+              Memory{memos.length > 0 ? ` (${memos.length})` : ''}
+            </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
             {tab === 'board' ? (
               <TaskBoard execution={execution} />
-            ) : (
+            ) : tab === 'deliverables' ? (
               <DeliverablesPanel
                 deliverables={deliverables}
                 reviewing={reviewing}
                 onReview={review}
                 onOpenFile={(path) => setPreviewPath(path)}
               />
+            ) : (
+              <MemoPanel memos={memos} onDelete={forgetMemo} />
             )}
           </div>
         </div>
