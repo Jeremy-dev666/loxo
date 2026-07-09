@@ -131,7 +131,7 @@ async function openConversation(userWs: WebSocket): Promise<string> {
 }
 
 describe('machine-routed chat turns', () => {
-  it('runs a full turn on the fake daemon: deltas stream, reply persists, session resumes', async () => {
+  it('runs a full turn on the fake daemon: atomic reply persists, session resumes', async () => {
     const daemon = await connectFakeDaemon((start, send) => {
       send({ type: 'machine.turn.delta', payload: { turnId: start.turnId, text: 'Hello ' } });
       send({ type: 'machine.turn.delta', payload: { turnId: start.turnId, text: 'world' } });
@@ -160,7 +160,8 @@ describe('machine-routed chat turns', () => {
     );
     const reply = await waitForFrame(userWs, (f) => f.type === 'chat.reply');
     expect(reply.payload!.content).toBe('Hello world');
-    expect(deltas).toEqual(['Hello ', 'world']);
+    // Daemon-side deltas stay server-side; the client sees one whole reply.
+    expect(deltas).toEqual([]);
 
     expect(daemon.starts).toHaveLength(1);
     expect(daemon.starts[0]!.runtime).toBe('claude-code');

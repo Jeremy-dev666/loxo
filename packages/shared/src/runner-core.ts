@@ -292,11 +292,13 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
       // Non-interactive runs cannot answer permission prompts; without
       // acceptEdits every file write is auto-denied and agents cannot
       // produce workspace output. Command execution stays gated.
+      // Partial-message streaming is deliberately off: replies are treated as
+      // atomic messages. The parser still understands stream_event deltas if
+      // the flag is ever re-enabled.
       const args = [
         '-p',
         '--output-format',
         'stream-json',
-        '--include-partial-messages',
         '--verbose',
         '--permission-mode',
         'acceptEdits',

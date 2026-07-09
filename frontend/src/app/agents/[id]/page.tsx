@@ -321,7 +321,7 @@ function ChatPageInner() {
     [reloadConversations]
   );
 
-  const { connected, busy, liveMessages, streamText, error, sendMessage, stopTurn } = useAgentChat({
+  const { connected, busy, liveMessages, error, sendMessage, stopTurn } = useAgentChat({
     agentId,
     conversationId: activeId,
     onConversationCreated,
@@ -335,7 +335,7 @@ function ChatPageInner() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [allMessages.length, streamText]);
+  }, [allMessages.length]);
 
   const agentProvider = useMemo(
     () => providers.find((p) => p.id === agent?.providerId) ?? null,
@@ -531,24 +531,9 @@ function ChatPageInner() {
                 {allMessages.map((message) => (
                   <MessageBubble key={message.id} message={message} agentName={agent.name} />
                 ))}
-                {streamText && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[85%] md:max-w-[75%]">
-                      <p className="mb-1 font-pixel text-xs text-pixel-black/45">{agent.name}</p>
-                      <div
-                        className="border border-pixel-line bg-pixel-white px-4 py-2 opacity-90"
-                        style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
-                      >
-                        <div className="prose prose-sm max-w-none font-pixel prose-p:my-1">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamText}</ReactMarkdown>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {busy && !streamText && (
+                {busy && (
                   <p className="animate-pulse font-pixel text-xs text-pixel-black/50">
-                    {agent.name} is typing…
+                    {agent.name} is composing a reply…
                   </p>
                 )}
                 {allMessages.length === 0 && !busy && (
