@@ -366,7 +366,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           children
         )}
       </main>
-      <footer className="hidden border-t border-pixel-black bg-pixel-white py-3 transition-[padding] duration-300 ease-out md:block" style={effectiveSidebarOpen ? { paddingLeft: sidebarOffset } : undefined}>
+      <footer className="hidden border-t border-pixel-line bg-pixel-white py-3 transition-[padding] duration-300 ease-out md:block" style={effectiveSidebarOpen ? { paddingLeft: sidebarOffset } : undefined}>
         <div
           className="mx-0 w-full max-w-none px-8 text-center font-pixel text-xs text-pixel-gray xl:px-10 2xl:px-12"
         >

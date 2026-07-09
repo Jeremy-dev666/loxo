@@ -49,12 +49,12 @@ function GroupSection({
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
       <div
-        className="flex cursor-pointer items-center gap-4 border border-pixel-black p-4"
+        className="flex cursor-pointer items-center gap-4 border border-pixel-line p-4"
         style={{ background: group.color, boxShadow: '5px 5px 0px 0px rgba(17,17,17,0.10)' }}
         onClick={() => setExpanded(!expanded)}
       >
         <div
-          className="flex h-16 w-16 items-center justify-center rounded-full border border-pixel-black font-pixel text-2xl font-bold text-white md:h-12 md:w-12 md:text-xl"
+          className="flex h-16 w-16 items-center justify-center rounded-full border border-pixel-line font-pixel text-2xl font-bold text-white md:h-12 md:w-12 md:text-xl"
           style={{ background: group.color, filter: 'brightness(0.8)' }}
         >
           {group.name.charAt(0) || '?'}
@@ -71,7 +71,7 @@ function GroupSection({
                 e.stopPropagation();
                 onOpenAddAgent(group.id);
               }}
-              className="border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-cream md:py-1 md:text-xs"
+              className="border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-cream md:py-1 md:text-xs"
               style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
             >
               + Add agent
@@ -84,7 +84,7 @@ function GroupSection({
                 e.stopPropagation();
                 onDeleteGroup(group);
               }}
-              className="hidden border border-pixel-black bg-pixel-red px-3 py-2 font-pixel text-sm font-bold text-pixel-white transition-colors hover:bg-pixel-orange sm:block md:py-1 md:text-xs"
+              className="hidden border border-pixel-line bg-pixel-yellow px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-orange sm:block md:py-1 md:text-xs"
               style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
             >
               Delete den
@@ -103,7 +103,7 @@ function GroupSection({
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="border border-t-0 border-pixel-black bg-pixel-white/80 p-3 md:p-4">
+            <div className="border border-t-0 border-pixel-line bg-pixel-white/80 p-3 md:p-4">
               {agents.length > 0 ? (
                 <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {agents.map((agent, index) => (
@@ -125,7 +125,7 @@ function GroupSection({
                           <button
                             type="button"
                             onClick={() => onMoveOut(agent.id)}
-                            className="border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-cream md:px-2 md:py-1 md:text-xs"
+                            className="border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm font-bold text-pixel-black transition-colors hover:bg-pixel-cream md:px-2 md:py-1 md:text-xs"
                             style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                           >
                             Move out
@@ -238,7 +238,7 @@ function AgentsPageInner() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6 border-b border-pixel-black bg-pixel-white pb-4 pt-3 text-left md:mb-8 md:border-b-0 md:bg-transparent md:pb-0 md:pt-6 md:text-center"
+        className="mb-6 border-b border-pixel-line bg-pixel-white pb-4 pt-3 text-left md:mb-8 md:border-b-0 md:bg-transparent md:pb-0 md:pt-6 md:text-center"
       >
         <p className="font-pixel text-[1.25rem] leading-none text-pixel-black/55 md:hidden">MY AGENT DEN</p>
         <h1 className="md:brand-large mt-2 font-pixel text-[3rem] font-bold leading-none text-pixel-black md:mb-2">
@@ -257,7 +257,7 @@ function AgentsPageInner() {
         className="mb-6 grid grid-cols-3 gap-2 md:mb-8 md:flex md:flex-wrap md:justify-center md:gap-6"
       >
         <div
-          className="border border-pixel-black bg-pixel-white px-3 py-3 text-center md:px-6 md:text-left"
+          className="border border-pixel-line bg-pixel-white px-3 py-3 text-center md:px-6 md:text-left"
           style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-base leading-none text-pixel-black/60 md:text-xs">Total</p>
@@ -266,7 +266,7 @@ function AgentsPageInner() {
           </p>
         </div>
         <div
-          className="border border-pixel-black bg-pixel-green px-3 py-3 text-center md:px-6 md:text-left"
+          className="border border-pixel-line bg-pixel-green px-3 py-3 text-center md:px-6 md:text-left"
           style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-base leading-none text-pixel-white md:text-xs">Configured</p>
@@ -275,7 +275,7 @@ function AgentsPageInner() {
           </p>
         </div>
         <div
-          className="border border-pixel-black bg-pixel-gray px-3 py-3 text-center md:px-6 md:text-left"
+          className="border border-pixel-line bg-pixel-gray px-3 py-3 text-center md:px-6 md:text-left"
           style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-base leading-none text-pixel-white md:text-xs">Unconfigured</p>
@@ -357,17 +357,17 @@ function AgentsPageInner() {
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.92, y: 16 }}
                 onClick={(e) => e.stopPropagation()}
-                className="max-h-[80vh] w-full max-w-lg overflow-y-auto border border-pixel-black bg-pixel-white"
+                className="max-h-[80vh] w-full max-w-lg overflow-y-auto border border-pixel-line bg-pixel-white"
                 style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}
               >
                 <div
-                  className="flex items-center justify-between border-b border-pixel-black p-3 font-pixel text-xl text-pixel-white"
+                  className="flex items-center justify-between border-b border-pixel-line p-3 font-pixel text-xl text-pixel-white"
                   style={{ background: addTargetGroup.color }}
                 >
                   <span>Add agents to {addTargetGroup.name}</span>
                   <button
                     onClick={() => setAddTargetGroupId(null)}
-                    className="flex h-8 w-8 items-center justify-center border border-pixel-black bg-pixel-red text-pixel-white"
+                    className="flex h-8 w-8 items-center justify-center border border-pixel-line bg-pixel-black text-pixel-white"
                     style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
                   >
                     X
@@ -386,7 +386,7 @@ function AgentsPageInner() {
                       onClick={async () => {
                         await handleMove(agent.id, addTargetGroupId);
                       }}
-                      className="flex w-full items-center gap-3 border border-pixel-black bg-pixel-white p-2 text-left hover:bg-pixel-cream"
+                      className="flex w-full items-center gap-3 border border-pixel-line bg-pixel-white p-2 text-left hover:bg-pixel-cream"
                       style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                     >
                       <AgentSprite agent={agent} size="sm" showProviderStatus providerConfigured={!!agent.providerId} />
@@ -424,7 +424,7 @@ function AgentsPageInner() {
                   key={color}
                   type="button"
                   onClick={() => setNewGroupColor(color)}
-                  className={`h-9 w-9 border ${newGroupColor === color ? 'border-pixel-black' : 'border-transparent'}`}
+                  className={`h-9 w-9 border ${newGroupColor === color ? 'border-pixel-line' : 'border-transparent'}`}
                   style={{ background: color, boxShadow: newGroupColor === color ? '2px 2px 0 rgba(17,17,17,0.10)' : 'none' }}
                   aria-label={`Choose color ${color}`}
                 />

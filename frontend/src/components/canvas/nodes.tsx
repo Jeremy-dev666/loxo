@@ -17,7 +17,7 @@ export function setCanvasContext(ctx: CanvasContext): void {
   canvasContext = ctx;
 }
 
-const box = 'border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-xs shadow-pixel-sm';
+const box = 'border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-xs shadow-pixel-sm';
 
 export function StartNode({ data }: NodeProps) {
   return (
@@ -41,7 +41,7 @@ export function AgentNode({ id, data }: NodeProps) {
   const d = data as CanvasNodeData;
   const bound = canvasContext.agents.find((a) => a.id === d.agentId);
   return (
-    <div className={`${box} w-52 ${bound ? '!border-pixel-blue' : '!border-pixel-yellow'}`}>
+    <div className={`${box} w-52 ${bound ? '!border-pixel-line' : '!border-pixel-yellow'}`}>
       <div className="flex items-center justify-between">
         <input
           className="w-32 bg-transparent font-bold text-pixel-black outline-none"
@@ -56,7 +56,7 @@ export function AgentNode({ id, data }: NodeProps) {
         </button>
       </div>
       <select
-        className="nodrag mt-1 w-full border border-pixel-black bg-pixel-white px-1 py-0.5 text-pixel-black"
+        className="nodrag mt-1 w-full border border-pixel-line bg-pixel-white px-1 py-0.5 text-pixel-black"
         value={d.agentId ?? ''}
         onChange={(e) => canvasContext.updateNode(id, { agentId: e.target.value || undefined })}
       >
@@ -68,7 +68,7 @@ export function AgentNode({ id, data }: NodeProps) {
         ))}
       </select>
       <select
-        className="nodrag mt-1 w-full border border-pixel-black bg-pixel-white px-1 py-0.5 text-pixel-black"
+        className="nodrag mt-1 w-full border border-pixel-line bg-pixel-white px-1 py-0.5 text-pixel-black"
         value={d.kind ?? 'worker'}
         onChange={(e) => canvasContext.updateNode(id, { kind: e.target.value })}
       >
@@ -99,7 +99,7 @@ export function ConditionNode({ id, data }: NodeProps) {
         </button>
       </div>
       <input
-        className="nodrag mt-1 w-full border border-pixel-black bg-pixel-white px-1 py-0.5 text-pixel-black"
+        className="nodrag mt-1 w-full border border-pixel-line bg-pixel-white px-1 py-0.5 text-pixel-black"
         placeholder="pass criterion"
         value={d.expression ?? ''}
         onChange={(e) => canvasContext.updateNode(id, { expression: e.target.value })}

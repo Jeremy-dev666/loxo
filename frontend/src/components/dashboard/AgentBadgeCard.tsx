@@ -20,9 +20,16 @@ function roleFor(agent: Agent): string {
   return RUNTIME_ROLES[agent.runtime] ?? 'Agent';
 }
 
-/** Monochrome ID-badge card: clip, name bar, portrait, role, motto. */
+const STATUS_DOTS: Record<string, { dot: string; label: string }> = {
+  idle: { dot: 'bg-pixel-green', label: 'Idle' },
+  busy: { dot: 'bg-pixel-yellow animate-pulse', label: 'Busy' },
+  error: { dot: 'bg-pixel-red', label: 'Error' },
+};
+
+/** ID-badge card: clip, amber name bar, status dot, portrait, role, motto. */
 export function AgentBadgeCard({ agent }: { agent: Agent }) {
   const onDuty = Boolean(agent.providerId);
+  const status = STATUS_DOTS[agent.status] ?? STATUS_DOTS.idle!;
 
   return (
     <div className="w-[236px] shrink-0">
@@ -32,9 +39,16 @@ export function AgentBadgeCard({ agent }: { agent: Agent }) {
         className="group block rounded border border-[#E4E4E4] bg-white px-4 pb-4 pt-3 no-underline transition-colors hover:border-[#111]"
       >
         <div className="mx-auto mb-3 h-1.5 w-8 rounded-full bg-[#EFEFEF]" aria-hidden />
-        <span className="inline-block max-w-full truncate rounded-sm bg-[#111] px-3 py-1 text-sm font-semibold leading-tight text-white">
-          {agent.name}
-        </span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-block max-w-full truncate rounded-sm bg-pixel-yellow px-3 py-1 text-sm font-semibold leading-tight text-pixel-black">
+            {agent.name}
+          </span>
+          <span
+            className={`h-2.5 w-2.5 shrink-0 rounded-full ${status.dot}`}
+            title={status.label}
+            aria-label={`Status: ${status.label}`}
+          />
+        </div>
         <div className="flex h-28 items-center justify-center py-2 grayscale contrast-125">
           <AgentSprite agent={agent} size="lg" />
         </div>

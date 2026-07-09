@@ -22,12 +22,12 @@ export interface TrackedExecution {
 }
 
 const NODE_BADGES: Record<NodeStatus, { label: string; className: string }> = {
-  pending: { label: 'Waiting', className: 'text-pixel-black/50 border-pixel-black' },
+  pending: { label: 'Waiting', className: 'text-pixel-black/50 border-pixel-line' },
   ready: { label: 'Ready', className: 'text-pixel-black border-pixel-yellow' },
   running: { label: 'Running', className: 'text-pixel-black border-pixel-yellow animate-pulse' },
   succeeded: { label: 'Done', className: 'text-pixel-green border-pixel-green' },
   failed: { label: 'Failed', className: 'text-pixel-red border-pixel-red' },
-  skipped: { label: 'Skipped', className: 'text-pixel-black/40 border-pixel-black' },
+  skipped: { label: 'Skipped', className: 'text-pixel-black/40 border-pixel-line' },
 };
 
 const EXECUTION_BADGES: Record<ExecutionStatus, string> = {
@@ -66,7 +66,7 @@ export function TaskBoard({ execution }: { execution: TrackedExecution | null })
         </span>
       </div>
       <div className="h-1.5 overflow-hidden bg-pixel-cream">
-        <div className="h-full bg-pixel-red transition-all" style={{ width: `${percent}%` }} />
+        <div className="h-full bg-pixel-yellow transition-all" style={{ width: `${percent}%` }} />
       </div>
 
       <div className="space-y-2">
@@ -74,7 +74,7 @@ export function TaskBoard({ execution }: { execution: TrackedExecution | null })
           const state = execution.nodeStates[node.id];
           const badge = NODE_BADGES[state?.status ?? 'pending'];
           return (
-            <div key={node.id} className="border border-pixel-black bg-pixel-white p-2">
+            <div key={node.id} className="border border-pixel-line bg-pixel-white p-2">
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-sm">{state?.label ?? node.label}</span>
                 <span className={`shrink-0 border px-1.5 py-0.5 text-[11px] ${badge.className}`}>
@@ -139,7 +139,7 @@ export function DeliverablesPanel({
         const badge = DELIVERABLE_BADGES[deliverable.status] ?? DELIVERABLE_BADGES.pending!;
         const busy = reviewing.has(deliverable.id);
         return (
-          <div key={deliverable.id} className="border border-pixel-black bg-pixel-white p-2">
+          <div key={deliverable.id} className="border border-pixel-line bg-pixel-white p-2">
             <div className="flex items-center justify-between gap-2">
               <button
                 onClick={() => onOpenFile(deliverable.filePath)}

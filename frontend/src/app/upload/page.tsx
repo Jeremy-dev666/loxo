@@ -177,7 +177,7 @@ function UploadPageInner() {
         <motion.div
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="border border-pixel-black bg-pixel-white p-8 text-center"
+          className="border border-pixel-line bg-pixel-white p-8 text-center"
           style={{ boxShadow: '8px 8px 0 rgba(17,17,17,0.10)' }}
         >
           <h1 className="brand-large mb-2 text-pixel-black">Agent on board!</h1>
@@ -219,7 +219,7 @@ function UploadPageInner() {
             key={m}
             type="button"
             onClick={() => switchMode(m)}
-            className={`flex flex-col items-center gap-2 border border-pixel-black p-5 font-pixel transition-colors ${
+            className={`flex flex-col items-center gap-2 border border-pixel-line p-5 font-pixel transition-colors ${
               mode === m ? 'bg-pixel-blue text-pixel-white' : 'bg-pixel-white text-pixel-black hover:bg-pixel-cream'
             }`}
             style={{ boxShadow: mode === m ? '5px 5px 0 rgba(17,17,17,0.10)' : '3px 3px 0 rgba(17,17,17,0.10)' }}
@@ -233,7 +233,7 @@ function UploadPageInner() {
         ))}
       </div>
 
-      <div className="border border-pixel-black bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
+      <div className="border border-pixel-line bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
         {!hasSelection ? (
           <div className="py-8 text-center">
             <p className="mb-4 font-pixel text-sm text-pixel-black/60">
@@ -262,7 +262,7 @@ function UploadPageInner() {
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="flex items-center justify-between gap-3 border border-pixel-black bg-pixel-cream p-3">
+            <div className="flex items-center justify-between gap-3 border border-pixel-line bg-pixel-cream p-3">
               <div className="min-w-0">
                 <p className="truncate font-pixel text-sm font-bold text-pixel-black">
                   {mode === 'folder' ? `${folderFiles.length} files selected` : zipFile?.name}
@@ -272,7 +272,7 @@ function UploadPageInner() {
               <button
                 type="button"
                 onClick={resetSelection}
-                className="shrink-0 border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black hover:bg-pixel-cream"
+                className="shrink-0 border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black hover:bg-pixel-cream"
                 style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
               >
                 Reselect
@@ -304,7 +304,7 @@ function UploadPageInner() {
                       key={runtime}
                       type="button"
                       onClick={() => setSelectedRuntime(runtime)}
-                      className={`border border-pixel-black px-3 py-2 font-pixel text-sm transition-colors ${
+                      className={`border border-pixel-line px-3 py-2 font-pixel text-sm transition-colors ${
                         effectiveRuntime === runtime
                           ? 'bg-pixel-blue text-pixel-white'
                           : 'bg-pixel-white text-pixel-black hover:bg-pixel-cream'
@@ -328,7 +328,7 @@ function UploadPageInner() {
               <PixelInput value={description} onChange={setDescription} placeholder="What is this agent good at?" multiline rows={3} />
             </div>
 
-            <label className="flex cursor-pointer items-center gap-3 border border-pixel-black bg-pixel-cream p-3">
+            <label className="flex cursor-pointer items-center gap-3 border border-pixel-line bg-pixel-cream p-3">
               <input
                 type="checkbox"
                 checked={publishToMarket}
@@ -376,7 +376,7 @@ function UploadPageInner() {
 
             {isUploading && (
               <div className="space-y-2">
-                <div className="relative h-4 overflow-hidden border border-pixel-black bg-pixel-white">
+                <div className="relative h-4 overflow-hidden border border-pixel-line bg-pixel-white">
                   <motion.div className="h-full bg-pixel-green" animate={{ width: `${progress}%` }} />
                 </div>
                 <p className="text-center font-pixel text-xs text-pixel-black/55">Uploading… {progress}%</p>

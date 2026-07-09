@@ -8,7 +8,7 @@ import { BackButton } from '@/components/ui/BackButton';
 import { PixelButton } from '@/components/ui/PixelButton';
 import { deleteTeam, fetchTeams, type TeamView } from '@/lib/teams';
 
-const TEAM_TONES = ['bg-pixel-blue', 'bg-pixel-green', 'bg-pixel-red', 'bg-pixel-yellow'];
+const TEAM_TONES = ['bg-pixel-black', 'bg-pixel-yellow'];
 
 function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; onDelete: (team: TeamView) => void }) {
   const agents = team.workflow.nodes.filter((n) => n.type === 'agent');
@@ -22,15 +22,15 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="group/team-card relative flex h-full flex-col border border-pixel-black bg-pixel-white"
+      className="group/team-card relative flex h-full flex-col border border-pixel-line bg-pixel-white"
       style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}
     >
-      <div className={`flex items-center justify-between gap-2 border-b border-pixel-black p-3 ${tone}`}>
+      <div className={`flex items-center justify-between gap-2 border-b border-pixel-line p-3 ${tone}`}>
         <h2 className={`truncate font-pixel text-lg font-bold ${yellow ? 'text-pixel-black' : 'text-pixel-white'}`}>
           {team.name}
         </h2>
         <span
-          className={`shrink-0 border border-pixel-black px-1.5 py-0.5 font-pixel text-[10px] ${
+          className={`shrink-0 border border-pixel-line px-1.5 py-0.5 font-pixel text-[10px] ${
             yellow ? 'bg-pixel-black text-pixel-white' : 'bg-pixel-white text-pixel-black'
           }`}
         >
@@ -44,11 +44,11 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
         </p>
 
         <div className="mt-3 flex flex-wrap gap-1">
-          <span className="border border-pixel-black bg-pixel-blue px-2 py-0.5 font-pixel text-xs text-pixel-white">
+          <span className="border border-pixel-line bg-pixel-black px-2 py-0.5 font-pixel text-xs text-pixel-white">
             {agents.length} AGENTS
           </span>
           <span
-            className={`border border-pixel-black px-2 py-0.5 font-pixel text-xs ${
+            className={`border border-pixel-line px-2 py-0.5 font-pixel text-xs ${
               bound === agents.length && agents.length > 0
                 ? 'bg-pixel-green text-pixel-white'
                 : 'bg-pixel-yellow text-pixel-black'
@@ -57,7 +57,7 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
             {bound} BOUND
           </span>
           {conditions > 0 && (
-            <span className="border border-pixel-black bg-pixel-red px-2 py-0.5 font-pixel text-xs text-pixel-white">
+            <span className="border border-pixel-line bg-pixel-red px-2 py-0.5 font-pixel text-xs text-pixel-white">
               {conditions} GATES
             </span>
           )}

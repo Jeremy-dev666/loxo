@@ -4,7 +4,7 @@ import type { Memo } from '@/lib/memos';
 
 const SOURCE_STYLES: Record<Memo['source'], { label: string; chip: string }> = {
   retro: { label: 'Run retro', chip: 'bg-pixel-blue/20 text-pixel-blue' },
-  review: { label: 'Review', chip: 'bg-pixel-yellow/30 text-pixel-yellow' },
+  review: { label: 'Review', chip: 'bg-pixel-yellow/30 text-pixel-blue' },
 };
 
 function relativeTime(iso: string): string {
@@ -50,7 +50,7 @@ export function MemoPanel({
               type="button"
               onClick={() => onDelete(memo.id)}
               title="Forget this memo"
-              className="shrink-0 border border-pixel-black bg-pixel-white px-1.5 py-0.5 font-pixel text-[10px] text-pixel-black/60 opacity-0 transition-opacity hover:bg-pixel-red hover:text-pixel-white group-hover:opacity-100"
+              className="shrink-0 border border-pixel-line bg-pixel-white px-1.5 py-0.5 font-pixel text-[10px] text-pixel-black/60 opacity-0 transition-opacity hover:bg-pixel-red hover:text-pixel-white group-hover:opacity-100"
             >
               Forget
             </button>

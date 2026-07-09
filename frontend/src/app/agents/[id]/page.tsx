@@ -47,7 +47,7 @@ function MessageBubble({ message, agentName }: { message: LiveMessage | ChatMess
           {isUser ? 'You' : isError ? 'System' : agentName}
         </p>
         <div
-          className={`border border-pixel-black px-4 py-2 ${
+          className={`border border-pixel-line px-4 py-2 ${
             isUser
               ? 'bg-pixel-blue text-pixel-white'
               : isError
@@ -59,7 +59,7 @@ function MessageBubble({ message, agentName }: { message: LiveMessage | ChatMess
           {isUser || isError ? (
             <p className="whitespace-pre-wrap font-pixel text-sm">{message.content}</p>
           ) : (
-            <div className="prose prose-sm max-w-none font-pixel prose-headings:font-pixel prose-p:my-1 prose-pre:border prose-pre:border-pixel-black prose-pre:bg-pixel-black prose-pre:text-pixel-white">
+            <div className="prose prose-sm max-w-none font-pixel prose-headings:font-pixel prose-p:my-1 prose-pre:border prose-pre:border-pixel-line prose-pre:bg-pixel-black prose-pre:text-pixel-white">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
             </div>
           )}
@@ -95,12 +95,12 @@ function SessionsSidebar({
   };
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-pixel-black bg-pixel-white md:flex">
-      <div className="flex items-center justify-between border-b border-pixel-black bg-pixel-blue p-3">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-pixel-line bg-pixel-white md:flex">
+      <div className="flex items-center justify-between border-b border-pixel-line bg-pixel-blue p-3">
         <span className="font-pixel text-sm font-bold text-pixel-white">SESSIONS</span>
         <button
           onClick={onNew}
-          className="border border-pixel-black bg-pixel-white px-2 py-1 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-cream"
+          className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-cream"
           style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           + NEW
@@ -111,14 +111,14 @@ function SessionsSidebar({
           <div
             key={conversation.id}
             className={`cursor-pointer border-b border-pixel-black/10 px-3 py-2 ${
-              conversation.id === activeId ? 'border-l-2 border-l-pixel-red bg-pixel-yellow/30' : 'hover:bg-pixel-cream'
+              conversation.id === activeId ? 'border-l-2 border-l-pixel-black bg-pixel-yellow/30' : 'hover:bg-pixel-cream'
             }`}
             onClick={() => onSelect(conversation.id)}
           >
             {renamingId === conversation.id ? (
               <input
                 autoFocus
-                className="w-full border border-pixel-black bg-pixel-white px-1 py-0.5 font-pixel text-xs"
+                className="w-full border border-pixel-line bg-pixel-white px-1 py-0.5 font-pixel text-xs"
                 value={renameDraft}
                 onChange={(e) => setRenameDraft(e.target.value)}
                 onBlur={() => void saveRename(conversation.id)}
@@ -205,7 +205,7 @@ function MonitorView({
       {rows.map((row) => (
         <div
           key={row.label}
-          className="flex items-center justify-between border border-pixel-black bg-pixel-white px-4 py-3"
+          className="flex items-center justify-between border border-pixel-line bg-pixel-white px-4 py-3"
           style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           <span className="font-pixel text-sm text-pixel-black/60">{row.label}</span>
@@ -261,7 +261,7 @@ function SkillsView({ agentId }: { agentId: string }) {
       {skills.map((skill) => (
         <div
           key={skill.id}
-          className="border border-pixel-black bg-pixel-white px-4 py-3"
+          className="border border-pixel-line bg-pixel-white px-4 py-3"
           style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           <p className="font-pixel text-sm font-bold text-pixel-black">{skill.name}</p>
@@ -398,11 +398,11 @@ function ChatPageInner() {
   const providerConfigured = Boolean(agent.providerId);
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-pixel-cream md:h-[calc(100vh-10rem)] md:border md:border-pixel-black" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-pixel-cream md:h-[calc(100vh-10rem)] md:border md:border-pixel-line" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="shrink-0 border-b border-pixel-black bg-pixel-cream"
+        className="shrink-0 border-b border-pixel-line bg-pixel-cream"
       >
         <div className="relative px-3 py-2 md:px-4 md:py-3">
           <div className="flex items-center justify-between">
@@ -410,7 +410,7 @@ function ChatPageInner() {
               <button
                 type="button"
                 onClick={() => router.push('/agents')}
-                className="flex h-9 w-9 shrink-0 items-center justify-center border border-pixel-black bg-pixel-white text-pixel-black"
+                className="flex h-9 w-9 shrink-0 items-center justify-center border border-pixel-line bg-pixel-white text-pixel-black"
                 style={{ boxShadow: '1px 1px 0px 0px rgba(17,17,17,0.10)' }}
                 aria-label="Back to agents"
               >
@@ -422,7 +422,7 @@ function ChatPageInner() {
               <div className="relative">
                 <AgentSprite agent={agent} size="sm" />
                 <div
-                  className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border border-pixel-black ${
+                  className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border border-pixel-line ${
                     busy ? 'bg-pixel-yellow animate-pulse' : connected ? 'bg-pixel-green' : 'bg-pixel-gray'
                   }`}
                   title={busy ? 'Working' : connected ? 'Online' : 'Offline'}
@@ -436,7 +436,7 @@ function ChatPageInner() {
                     {RUNTIME_LABELS[agent.runtime] ?? agent.runtime}
                   </span>
                   <span
-                    className={`border border-pixel-black px-2 py-0.5 font-pixel text-xs ${
+                    className={`border border-pixel-line px-2 py-0.5 font-pixel text-xs ${
                       busy ? 'bg-pixel-black text-pixel-white' : 'bg-pixel-white text-pixel-black'
                     }`}
                   >
@@ -449,7 +449,7 @@ function ChatPageInner() {
             <div className="flex items-center gap-2 md:gap-4">
               {agentProvider && (
                 <select
-                  className="hidden border border-pixel-black bg-pixel-white px-2 py-1.5 font-pixel text-xs text-pixel-black md:block"
+                  className="hidden border border-pixel-line bg-pixel-white px-2 py-1.5 font-pixel text-xs text-pixel-black md:block"
                   style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                   value={agent.model ?? ''}
                   disabled={savingModel}
@@ -487,7 +487,7 @@ function ChatPageInner() {
           )}
         </div>
 
-        <div className="flex border-t border-pixel-black">
+        <div className="flex border-t border-pixel-line">
           {(
             [
               ['chat', 'Chat'],
@@ -498,7 +498,7 @@ function ChatPageInner() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-4 py-2 font-pixel text-sm transition-colors ${index < 2 ? 'border-r border-pixel-black' : ''} ${
+              className={`flex-1 px-4 py-2 font-pixel text-sm transition-colors ${index < 2 ? 'border-r border-pixel-line' : ''} ${
                 activeTab === tab
                   ? 'bg-pixel-black text-pixel-white'
                   : 'bg-pixel-white text-pixel-black hover:bg-pixel-black/10'
@@ -536,7 +536,7 @@ function ChatPageInner() {
                     <div className="max-w-[85%] md:max-w-[75%]">
                       <p className="mb-1 font-pixel text-xs text-pixel-black/45">{agent.name}</p>
                       <div
-                        className="border border-pixel-black bg-pixel-white px-4 py-2 opacity-90"
+                        className="border border-pixel-line bg-pixel-white px-4 py-2 opacity-90"
                         style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
                       >
                         <div className="prose prose-sm max-w-none font-pixel prose-p:my-1">
@@ -562,9 +562,9 @@ function ChatPageInner() {
 
               {error && <p className="px-4 pb-1 font-pixel text-xs text-pixel-red">{error}</p>}
 
-              <form onSubmit={submit} className="flex gap-2 border-t border-pixel-black bg-pixel-white p-3">
+              <form onSubmit={submit} className="flex gap-2 border-t border-pixel-line bg-pixel-white p-3">
                 <textarea
-                  className="max-h-40 min-h-[2.75rem] flex-1 resize-y border border-pixel-black bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue"
+                  className="max-h-40 min-h-[2.75rem] flex-1 resize-y border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue"
                   style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.10)' }}
                   placeholder={`Message ${agent.name}…`}
                   value={draft}

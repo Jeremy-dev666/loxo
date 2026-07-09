@@ -6,10 +6,10 @@ import { usePathname, useSearchParams } from 'next/navigation';
 type MobileTabKey = 'projects' | 'agents' | 'teams' | 'discover' | 'me';
 
 const MOBILE_TABS: Array<{ key: MobileTabKey; label: string; accent: string; href: string }> = [
-  { key: 'projects', label: 'Projects', accent: 'bg-pixel-blue', href: '/?mobileTab=projects' },
-  { key: 'agents', label: 'Agents', accent: 'bg-pixel-green', href: '/?mobileTab=contacts' },
+  { key: 'projects', label: 'Projects', accent: 'bg-pixel-yellow', href: '/?mobileTab=projects' },
+  { key: 'agents', label: 'Agents', accent: 'bg-pixel-yellow', href: '/?mobileTab=contacts' },
   { key: 'teams', label: 'Teams', accent: 'bg-pixel-yellow', href: '/?mobileTab=teams' },
-  { key: 'discover', label: 'Discover', accent: 'bg-pixel-red', href: '/?mobileTab=discover' },
+  { key: 'discover', label: 'Discover', accent: 'bg-pixel-yellow', href: '/?mobileTab=discover' },
   { key: 'me', label: 'Me', accent: 'bg-pixel-gray', href: '/?mobileTab=me' },
 ];
 
@@ -83,7 +83,7 @@ export function MobileAppNav() {
   return (
     <nav
       data-mobile-app-nav="true"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-pixel-black bg-pixel-white shadow-[0_-4px_0_0_rgba(17,17,17,0.10)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-pixel-line bg-pixel-white shadow-[0_-4px_0_0_rgba(17,17,17,0.10)] md:hidden"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       {MOBILE_TABS.map((tab) => {
@@ -97,11 +97,11 @@ export function MobileAppNav() {
             }`}
           >
             {active && (
-              <span className={`absolute left-2 right-2 top-1 h-1 border border-pixel-black ${tab.accent}`} />
+              <span className={`absolute left-2 right-2 top-1 h-1 border border-pixel-line ${tab.accent}`} />
             )}
             <span
               data-mobile-nav-icon="true"
-              className={`flex h-[28px] w-[28px] items-center justify-center border border-pixel-black ${
+              className={`flex h-[28px] w-[28px] items-center justify-center border border-pixel-line ${
                 active ? tab.accent : 'bg-pixel-white'
               }`}
               style={{ boxShadow: active ? '2px 2px 0 rgba(17,17,17,0.10)' : '1px 1px 0 rgba(16,16,16,0.35)' }}

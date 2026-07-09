@@ -35,7 +35,7 @@ export function Header({
   const showHeaderBrand = !traditionalMode || !traditionalSidebarOpen;
 
   return (
-    <header className={`border-b border-pixel-black bg-pixel-white px-4 py-2 ${traditionalMode ? 'md:px-0' : ''}`}>
+    <header className={`border-b border-pixel-line bg-pixel-white px-4 py-2 ${traditionalMode ? 'md:px-0' : ''}`}>
       <div
         className={
           traditionalMode

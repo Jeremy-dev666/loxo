@@ -16,7 +16,7 @@ import {
 } from '@/lib/providers';
 
 const inputClass =
-  'w-full border border-pixel-black bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
+  'w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
 
 function ProviderForm({ onCreated }: { onCreated: () => void }) {
   const [name, setName] = useState('');
@@ -55,7 +55,7 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3 border border-pixel-black bg-pixel-white shadow-pixel p-4">
+    <form onSubmit={submit} className="space-y-3 border border-pixel-line bg-pixel-white shadow-pixel p-4">
       <h2 className="font-medium">Add provider</h2>
       <div className="grid grid-cols-2 gap-3">
         <input
@@ -104,7 +104,7 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
       <button
         type="submit"
         disabled={saving}
-        className="bg-pixel-red px-4 py-2 text-sm font-medium text-pixel-white disabled:opacity-60"
+        className="bg-pixel-yellow px-4 py-2 text-sm font-medium text-pixel-black disabled:opacity-60"
       >
         {saving ? 'Saving…' : 'Save provider'}
       </button>
@@ -114,7 +114,7 @@ function ProviderForm({ onCreated }: { onCreated: () => void }) {
 
 function HealthBadge({ platform }: { platform: PlatformHealth }) {
   return (
-    <div className="border border-pixel-black bg-pixel-white shadow-pixel p-3">
+    <div className="border border-pixel-line bg-pixel-white shadow-pixel p-3">
       <div className="flex items-center justify-between">
         <span className="font-medium">{platform.label}</span>
         <span
@@ -177,16 +177,16 @@ function ProvidersPageInner() {
         {items.map((provider) => (
           <div
             key={provider.id}
-            className="flex items-center justify-between border border-pixel-black bg-pixel-white shadow-pixel px-4 py-3"
+            className="flex items-center justify-between border border-pixel-line bg-pixel-white shadow-pixel px-4 py-3"
           >
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-medium">{provider.name}</span>
-                <span className="border border-pixel-black bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+                <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
                   {provider.vendor}
                 </span>
                 {provider.isDefault && (
-                  <span className="bg-pixel-red/15 px-1.5 py-0.5 text-xs text-pixel-blue">
+                  <span className="bg-pixel-yellow/30 px-1.5 py-0.5 text-xs text-pixel-blue">
                     default
                   </span>
                 )}
@@ -200,7 +200,7 @@ function ProvidersPageInner() {
               {!provider.isDefault && (
                 <button
                   onClick={() => setDefault(provider)}
-                  className="border border-pixel-black bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
+                  className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
                 >
                   Make default
                 </button>
