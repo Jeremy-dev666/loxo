@@ -9,6 +9,7 @@ import {
   renameMachine,
   revokeMachine,
   startPairing,
+  updateMachineEnv,
 } from './machines.service';
 
 const pairStartSchema = z.object({
@@ -27,6 +28,17 @@ const pairApproveSchema = z.object({
 
 const renameSchema = z.object({
   name: z.string().min(1).max(64),
+});
+
+const envSchema = z.object({
+  env: z
+    .record(
+      z
+        .string()
+        .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, 'Env keys must look like SHELL_VARIABLE_NAMES'),
+      z.string().max(512)
+    )
+    .refine((env) => Object.keys(env).length <= 32, 'At most 32 variables'),
 });
 
 export const machinesRouter = Router();
@@ -84,6 +96,19 @@ machinesRouter.patch('/:id', requireAuth, async (req: AuthedRequest, res, next) 
       throw badRequest('invalid_input', parsed.error.issues[0]?.message ?? 'Invalid input');
     }
     const machine = await renameMachine(req.auth!.userId, String(req.params.id), parsed.data.name);
+    res.json({ machine });
+  } catch (error) {
+    next(error);
+  }
+});
+
+machinesRouter.put('/:id/env', requireAuth, async (req: AuthedRequest, res, next) => {
+  try {
+    const parsed = envSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw badRequest('invalid_input', parsed.error.issues[0]?.message ?? 'Invalid input');
+    }
+    const machine = await updateMachineEnv(req.auth!.userId, String(req.params.id), parsed.data.env);
     res.json({ machine });
   } catch (error) {
     next(error);

@@ -588,6 +588,8 @@ export const machines = pgTable('machines', {
   tokenHash: text('token_hash').notNull().unique(),
   /** Last runtime probe reported by the daemon on connect. */
   runtimes: jsonb('runtimes').$type<RuntimeProbe[]>().notNull().default([]),
+  /** AES-256-GCM envelope of a JSON env-var map injected into runtime processes. */
+  envEncrypted: text('env_encrypted'),
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

@@ -190,6 +190,56 @@ describe('machine-routed chat turns', () => {
     await Promise.all([wsClosed(userWs), wsClosed(daemon.ws)]);
   });
 
+  it('delivers machine env vars with the turn and stores them encrypted', async () => {
+    const envRes = await request(app)
+      .put(`/api/machines/${machineId}/env`)
+      .set(auth())
+      .send({ env: { HTTP_PROXY: 'http://127.0.0.1:7890', MY_TOKEN: 'secret-value' } });
+    expect(envRes.status).toBe(200);
+    expect(envRes.body.machine.env.HTTP_PROXY).toBe('http://127.0.0.1:7890');
+
+    // At rest the map is sealed, not plaintext.
+    const raw = await pool.query('SELECT env_encrypted FROM machines WHERE id = $1', [machineId]);
+    expect(raw.rows[0].env_encrypted).not.toContain('secret-value');
+    expect(raw.rows[0].env_encrypted).not.toContain('HTTP_PROXY');
+
+    const daemon = await connectFakeDaemon((start, send) => {
+      send({
+        type: 'machine.turn.result',
+        payload: { turnId: start.turnId, ok: true, text: 'done', durationMs: 1 },
+      });
+    });
+    const userWs = await wsConnect(`/ws?token=${token}`);
+    const conversationId = await openConversation(userWs);
+    userWs.send(
+      JSON.stringify({ type: 'chat.message', payload: { conversationId, content: 'env test' } })
+    );
+    await waitForFrame(userWs, (f) => f.type === 'chat.reply');
+    expect(daemon.starts[0]!.env).toEqual({
+      HTTP_PROXY: 'http://127.0.0.1:7890',
+      MY_TOKEN: 'secret-value',
+    });
+
+    // Clearing the map removes the ciphertext entirely.
+    await request(app).put(`/api/machines/${machineId}/env`).set(auth()).send({ env: {} });
+    const cleared = await pool.query('SELECT env_encrypted FROM machines WHERE id = $1', [
+      machineId,
+    ]);
+    expect(cleared.rows[0].env_encrypted).toBeNull();
+
+    userWs.close();
+    daemon.ws.close();
+    await Promise.all([wsClosed(userWs), wsClosed(daemon.ws)]);
+  });
+
+  it('rejects invalid env variable names', async () => {
+    const res = await request(app)
+      .put(`/api/machines/${machineId}/env`)
+      .set(auth())
+      .send({ env: { 'bad name!': 'x' } });
+    expect(res.status).toBe(400);
+  });
+
   it('surfaces an offline machine as a visible system message', async () => {
     const userWs = await wsConnect(`/ws?token=${token}`);
     const conversationId = await openConversation(userWs);

@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
 import type { RuntimeProbe } from '@swarmdev/shared';
+import { openSecret, sealSecret } from '../../crypto/secretbox';
 import { db } from '../../db/client';
 import { machines, type Machine } from '../../db/schema';
 import { badRequest, conflict, notFound } from '../../http/errors';
@@ -80,9 +81,19 @@ export interface MachineView {
   hostname: string | null;
   online: boolean;
   runtimes: RuntimeProbe[];
+  env: Record<string, string>;
   lastSeenAt: Date | null;
   revokedAt: Date | null;
   createdAt: Date;
+}
+
+function decryptEnv(envelope: string | null): Record<string, string> {
+  if (!envelope) return {};
+  try {
+    return JSON.parse(openSecret(envelope)) as Record<string, string>;
+  } catch {
+    return {};
+  }
 }
 
 function toView(row: Machine): MachineView {
@@ -93,6 +104,7 @@ function toView(row: Machine): MachineView {
     hostname: row.hostname,
     online: isMachineOnline(row.id),
     runtimes: row.runtimes,
+    env: decryptEnv(row.envEncrypted),
     lastSeenAt: row.lastSeenAt,
     revokedAt: row.revokedAt,
     createdAt: row.createdAt,
@@ -180,6 +192,35 @@ export async function renameMachine(
     .returning();
   if (!row) throw notFound('Machine not found');
   return toView(row);
+}
+
+export async function updateMachineEnv(
+  userId: string,
+  machineId: string,
+  env: Record<string, string>
+): Promise<MachineView> {
+  const [row] = await db
+    .update(machines)
+    .set({
+      envEncrypted: Object.keys(env).length > 0 ? sealSecret(JSON.stringify(env)) : null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(eq(machines.id, machineId), eq(machines.userId, userId), isNull(machines.revokedAt))
+    )
+    .returning();
+  if (!row) throw notFound('Machine not found');
+  return toView(row);
+}
+
+/** Internal use (turn dispatch): decrypted env for the runtime process. */
+export async function getMachineEnv(machineId: string): Promise<Record<string, string>> {
+  const [row] = await db
+    .select({ envEncrypted: machines.envEncrypted })
+    .from(machines)
+    .where(eq(machines.id, machineId))
+    .limit(1);
+  return decryptEnv(row?.envEncrypted ?? null);
 }
 
 /** Revocation is a tombstone, not a delete: agents may still reference the row. */

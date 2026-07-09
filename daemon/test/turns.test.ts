@@ -77,6 +77,17 @@ describe('startTurn', () => {
     expect(seen!.credentials?.apiKey).toBe('sk-test-123456789012');
   });
 
+  it('passes machine env through to the runner', async () => {
+    let seen: TurnRequest | undefined;
+    setTurnRunnerForTests(async (request) => {
+      seen = request;
+      return { text: 'ok', durationMs: 1 };
+    });
+    const { send } = collectFrames();
+    await startTurn(makeStart({ env: { HTTP_PROXY: 'http://127.0.0.1:7890' } }), send, noopLog);
+    expect(seen!.extraEnv).toEqual({ HTTP_PROXY: 'http://127.0.0.1:7890' });
+  });
+
   it('maps RunnerError kinds onto the wire failure', async () => {
     setTurnRunnerForTests(async () => {
       throw new RunnerError('boom', 'timeout');

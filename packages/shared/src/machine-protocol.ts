@@ -29,6 +29,8 @@ export interface MachineTurnStart {
   workdir?: string | null;
   timeoutMs: number;
   credentials?: { apiKey?: string; baseUrl?: string | null };
+  /** Machine-level env vars injected into the runtime process (proxy, tokens). */
+  env?: Record<string, string>;
 }
 
 export interface MachineTurnFailure {

@@ -6,6 +6,7 @@ import {
   type TurnResult,
 } from '@swarmdev/shared';
 import { getMachineSocket } from './machine-registry';
+import { getMachineEnv } from './machines.service';
 
 /**
  * In-flight remote turns. The daemon enforces the execution timeout itself;
@@ -29,18 +30,17 @@ export interface MachineTurnOptions {
   onChunk?: (text: string) => void;
 }
 
-export function runMachineTurn(
+export async function runMachineTurn(
   machineId: string,
-  input: Omit<MachineTurnStart, 'turnId'>,
+  input: Omit<MachineTurnStart, 'turnId' | 'env'>,
   options: MachineTurnOptions = {}
 ): Promise<TurnResult> {
   const socket = getMachineSocket(machineId);
   if (!socket) {
-    return Promise.reject(
-      new RunnerError('Machine is offline; start the daemon and try again', 'cli_failed')
-    );
+    throw new RunnerError('Machine is offline; start the daemon and try again', 'cli_failed');
   }
 
+  const env = await getMachineEnv(machineId);
   const turnId = randomUUID();
   return new Promise<TurnResult>((resolve, reject) => {
     const settle = (fn: () => void): void => {
@@ -77,7 +77,16 @@ export function runMachineTurn(
       { once: true }
     );
 
-    socket.send(JSON.stringify({ type: 'machine.turn.start', payload: { turnId, ...input } }));
+    socket.send(
+      JSON.stringify({
+        type: 'machine.turn.start',
+        payload: {
+          turnId,
+          ...input,
+          ...(Object.keys(env).length > 0 ? { env } : {}),
+        },
+      })
+    );
   });
 }
 

@@ -8,6 +8,7 @@ import {
   fetchMachines,
   renameMachine,
   revokeMachine,
+  updateMachineEnv,
   type MachineView,
 } from '@/lib/machines';
 
@@ -86,6 +87,98 @@ function formatLastSeen(iso: string | null): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+function EnvEditor({
+  machine,
+  onChanged,
+}: {
+  machine: MachineView;
+  onChanged: () => void;
+}) {
+  const [rows, setRows] = useState<Array<{ key: string; value: string }>>(() =>
+    Object.entries(machine.env).map(([key, value]) => ({ key, value }))
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setError(null);
+    const env: Record<string, string> = {};
+    for (const row of rows) {
+      const key = row.key.trim();
+      if (!key) continue;
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+        setError(`"${key}" is not a valid variable name (letters, digits, underscores).`);
+        return;
+      }
+      env[key] = row.value;
+    }
+    setSaving(true);
+    try {
+      await updateMachineEnv(machine.id, env);
+      onChanged();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save variables');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-2 border-t border-pixel-line/50 pt-3">
+      <p className="font-pixel text-xs text-pixel-black/60">
+        Environment variables for agent processes on this machine. Encrypted at rest, applied on
+        the next turn — no daemon restart needed. Example: on networks that need a proxy, set{' '}
+        <code className="bg-pixel-cream px-1">HTTP_PROXY</code> and{' '}
+        <code className="bg-pixel-cream px-1">HTTPS_PROXY</code> to{' '}
+        <code className="bg-pixel-cream px-1">http://127.0.0.1:7890</code>.
+      </p>
+      {rows.map((row, index) => (
+        <div key={index} className="flex gap-2">
+          <input
+            className={`${inputClass} !w-56`}
+            placeholder="NAME"
+            value={row.key}
+            onChange={(e) =>
+              setRows(rows.map((r, i) => (i === index ? { ...r, key: e.target.value } : r)))
+            }
+          />
+          <input
+            className={inputClass}
+            placeholder="value"
+            value={row.value}
+            onChange={(e) =>
+              setRows(rows.map((r, i) => (i === index ? { ...r, value: e.target.value } : r)))
+            }
+          />
+          <button
+            onClick={() => setRows(rows.filter((_, i) => i !== index))}
+            className="border border-pixel-line px-2 font-pixel text-xs text-pixel-black/60 hover:text-pixel-red"
+            title="Remove variable"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      {error && <p className="font-pixel text-xs text-pixel-red">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setRows([...rows, { key: '', value: '' }])}
+          className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black/70 hover:bg-pixel-cream"
+        >
+          + Add variable
+        </button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="bg-pixel-yellow px-3 py-1 font-pixel text-xs text-pixel-black disabled:opacity-60"
+        >
+          {saving ? 'Saving…' : 'Save variables'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MachineRow({
   machine,
   onChanged,
@@ -95,6 +188,7 @@ function MachineRow({
 }) {
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(machine.name);
+  const [showEnv, setShowEnv] = useState(false);
 
   const saveName = async () => {
     const trimmed = name.trim();
@@ -111,7 +205,8 @@ function MachineRow({
   };
 
   return (
-    <div className="flex items-center justify-between border border-pixel-line bg-pixel-white shadow-pixel px-4 py-3">
+    <div className="border border-pixel-line bg-pixel-white shadow-pixel px-4 py-3">
+      <div className="flex items-center justify-between">
       <div>
         <div className="flex items-center gap-2">
           <span
@@ -162,6 +257,12 @@ function MachineRow({
       </div>
       <div className="flex gap-2 text-xs">
         <button
+          onClick={() => setShowEnv(!showEnv)}
+          className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
+        >
+          Env{Object.keys(machine.env).length > 0 ? ` (${Object.keys(machine.env).length})` : ''}
+        </button>
+        <button
           onClick={() => setRenaming(true)}
           className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
         >
@@ -174,6 +275,8 @@ function MachineRow({
           Revoke
         </button>
       </div>
+      </div>
+      {showEnv && <EnvEditor machine={machine} onChanged={onChanged} />}
     </div>
   );
 }

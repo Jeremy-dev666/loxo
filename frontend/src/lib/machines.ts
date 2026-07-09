@@ -14,6 +14,7 @@ export interface MachineView {
   hostname: string | null;
   online: boolean;
   runtimes: RuntimeProbeView[];
+  env: Record<string, string>;
   lastSeenAt: string | null;
   revokedAt: string | null;
   createdAt: string;
@@ -36,3 +37,9 @@ export const renameMachine = (id: string, name: string) =>
 
 export const revokeMachine = (id: string) =>
   apiFetch<{ ok: boolean }>(`/api/machines/${id}`, { method: 'DELETE' });
+
+export const updateMachineEnv = (id: string, env: Record<string, string>) =>
+  apiFetch<{ machine: MachineView }>(`/api/machines/${id}/env`, {
+    method: 'PUT',
+    body: JSON.stringify({ env }),
+  }).then((r) => r.machine);

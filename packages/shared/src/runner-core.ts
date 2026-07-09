@@ -133,6 +133,8 @@ export interface TurnRequest {
   timeoutMs?: number;
   signal?: AbortSignal;
   onChunk?: (text: string) => void;
+  /** Extra env for the CLI process; adapter credential vars win on conflict. */
+  extraEnv?: Record<string, string>;
 }
 
 export interface TurnResult {
@@ -365,6 +367,7 @@ export async function runTurn(request: TurnRequest): Promise<TurnResult> {
       args: adapter.buildArgs(request),
       cwd: request.workspace,
       env: {
+        ...request.extraEnv,
         ...adapter.buildEnv(request),
         // Keep runtime state out of the workspace (layout invariant).
         XDG_STATE_HOME: request.stateDir,
