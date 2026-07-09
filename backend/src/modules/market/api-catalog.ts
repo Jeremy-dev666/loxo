@@ -182,6 +182,7 @@ export async function deployApiAgent(userId: string, presetId: string): Promise<
       name: preset.name,
       description: preset.description,
       runtime: 'api',
+      execution: 'api',
       model: preset.model,
       tags: ['api', ...preset.tags],
       manifest: {

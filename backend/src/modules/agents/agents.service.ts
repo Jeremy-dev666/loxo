@@ -3,6 +3,7 @@ import { db } from '../../db/client';
 import {
   agentGroups,
   agents,
+  machines,
   providers,
   slackIntegrations,
   type Agent,
@@ -40,6 +41,7 @@ export async function createAgent(userId: string, input: CreateAgentInput): Prom
       name: input.name,
       description: input.description ?? '',
       runtime: input.runtime,
+      execution: input.runtime === 'api' ? 'api' : 'server',
       tags: input.tags ?? [],
       manifest: input.manifest ?? {},
     })
@@ -105,6 +107,53 @@ export async function updateAgent(
 export interface AgentConfigInput {
   providerId?: string | null;
   model?: string | null;
+  execution?: 'server' | 'api' | 'machine';
+  machineId?: string | null;
+  machineWorkdir?: string | null;
+}
+
+/** Machine binding rules; returns the resolved binding columns. */
+async function resolveMachineBinding(
+  userId: string,
+  agent: Agent,
+  input: AgentConfigInput
+): Promise<{ execution: string; machineId: string | null; machineWorkdir: string | null }> {
+  const execution = input.execution ?? agent.execution;
+  const machineId = input.machineId === undefined ? agent.machineId : input.machineId;
+  const machineWorkdir =
+    input.machineWorkdir === undefined ? agent.machineWorkdir : input.machineWorkdir;
+
+  if ((agent.runtime === 'api') !== (execution === 'api')) {
+    throw badRequest(
+      'execution_mismatch',
+      agent.runtime === 'api'
+        ? 'API agents always execute via provider API'
+        : `Runtime ${agent.runtime} cannot use api execution`
+    );
+  }
+
+  if (execution !== 'machine') {
+    return { execution, machineId: null, machineWorkdir: null };
+  }
+
+  if (!machineId) {
+    throw badRequest('machine_required', 'Machine execution requires a paired machine');
+  }
+  const [machine] = await db
+    .select()
+    .from(machines)
+    .where(and(eq(machines.id, machineId), eq(machines.userId, userId), isNull(machines.revokedAt)))
+    .limit(1);
+  if (!machine) throw notFound('Machine not found');
+
+  const probe = machine.runtimes.find((r) => r.runtime === agent.runtime);
+  if (machine.runtimes.length > 0 && probe && !probe.available) {
+    throw badRequest(
+      'runtime_unavailable',
+      `Runtime ${agent.runtime} is not available on ${machine.name}`
+    );
+  }
+  return { execution, machineId, machineWorkdir };
 }
 
 /**
@@ -141,13 +190,22 @@ export async function updateAgentConfig(
     }
   }
 
+  const binding = await resolveMachineBinding(userId, agent, input);
+
   const [updated] = await db
     .update(agents)
-    .set({ providerId, model, updatedAt: new Date() })
+    .set({ providerId, model, ...binding, updatedAt: new Date() })
     .where(eq(agents.id, agentId))
     .returning();
 
-  if (providerId !== agent.providerId || model !== agent.model) {
+  // Execution location changes also invalidate CLI sessions: the session
+  // state lives on whichever host ran the previous turns.
+  if (
+    providerId !== agent.providerId ||
+    model !== agent.model ||
+    binding.execution !== agent.execution ||
+    binding.machineId !== agent.machineId
+  ) {
     const { clearRunnerSessionsForAgent } = await import('../chat/conversations.service');
     await clearRunnerSessionsForAgent(agentId);
   }

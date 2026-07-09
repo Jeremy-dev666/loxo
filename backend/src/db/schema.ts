@@ -100,6 +100,12 @@ export const agents = pgTable('agents', {
     onDelete: 'set null',
   }),
   status: text('status').notNull().default('idle'), // idle | busy | error | offline
+  /** Where turns execute: on this server, via provider API, or on a paired machine. */
+  execution: text('execution').notNull().default('server'), // server | api | machine
+  machineId: uuid('machine_id').references((): AnyPgColumn => machines.id, {
+    onDelete: 'set null',
+  }),
+  machineWorkdir: text('machine_workdir'),
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

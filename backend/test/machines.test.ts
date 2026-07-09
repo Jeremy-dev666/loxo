@@ -221,6 +221,80 @@ describe('machine management and presence', () => {
     expect(res.body.machine.name).toBe('Renamed box');
   });
 
+  it('binds a CLI agent to the machine and enforces the rules', async () => {
+    const created = await request(app)
+      .post('/api/agents')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ name: 'Local coder', runtime: 'claude-code' });
+    expect(created.status).toBe(201);
+    const agentId = created.body.agent.id;
+    expect(created.body.agent.execution).toBe('server');
+
+    // machine execution requires a machine id
+    const missing = await request(app)
+      .patch(`/api/agents/${agentId}/config`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ execution: 'machine' });
+    expect(missing.status).toBe(400);
+    expect(missing.body.code).toBe('machine_required');
+
+    const bound = await request(app)
+      .patch(`/api/agents/${agentId}/config`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ execution: 'machine', machineId, machineWorkdir: 'C:/work/demo' });
+    expect(bound.status).toBe(200);
+    expect(bound.body.agent.execution).toBe('machine');
+    expect(bound.body.agent.machineId).toBe(machineId);
+    expect(bound.body.agent.machineWorkdir).toBe('C:/work/demo');
+
+    // switching back to server clears the binding
+    const unbound = await request(app)
+      .patch(`/api/agents/${agentId}/config`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ execution: 'server' });
+    expect(unbound.status).toBe(200);
+    expect(unbound.body.agent.machineId).toBeNull();
+  });
+
+  it('rejects machine binding when the reported runtime is unavailable', async () => {
+    const created = await request(app)
+      .post('/api/agents')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ name: 'Codex local', runtime: 'codex' });
+    // The earlier runtimes report marks codex unavailable on this machine.
+    const res = await request(app)
+      .patch(`/api/agents/${created.body.agent.id}/config`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ execution: 'machine', machineId });
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('runtime_unavailable');
+  });
+
+  it('rejects api execution for CLI agents and vice versa', async () => {
+    const cli = await request(app)
+      .post('/api/agents')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ name: 'CLI one', runtime: 'claude-code' });
+    const cliRes = await request(app)
+      .patch(`/api/agents/${cli.body.agent.id}/config`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ execution: 'api' });
+    expect(cliRes.status).toBe(400);
+    expect(cliRes.body.code).toBe('execution_mismatch');
+
+    const api = await request(app)
+      .post('/api/agents')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ name: 'API one', runtime: 'api' });
+    expect(api.body.agent.execution).toBe('api');
+    const apiRes = await request(app)
+      .patch(`/api/agents/${api.body.agent.id}/config`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ execution: 'machine', machineId });
+    expect(apiRes.status).toBe(400);
+    expect(apiRes.body.code).toBe('execution_mismatch');
+  });
+
   it('revoke hides the machine, kills the socket, and blocks reconnects', async () => {
     const ws = await wsConnect(`/ws/machine?token=${machineToken}`);
     await waitFor(() => machineOnline(machineId));

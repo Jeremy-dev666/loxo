@@ -306,6 +306,7 @@ export async function cloneListingToAgent(
       name: overrides.name?.trim() || listing.name,
       description: listing.description,
       runtime: overrides.runtime ?? listing.runtime,
+      execution: (overrides.runtime ?? listing.runtime) === 'api' ? 'api' : 'server',
       tags: listing.tags,
       manifest: readManifestFromDir(sourceDir),
       sourceListingId: listing.id,
