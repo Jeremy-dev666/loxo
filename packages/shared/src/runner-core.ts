@@ -167,13 +167,17 @@ export function redactDiagnostic(text: string): string {
     .slice(0, 600);
 }
 
-// claude-code stream-json: newline-delimited JSON events. Assistant events
-// carry message content blocks; the final result event carries session_id.
+// claude-code stream-json: newline-delimited JSON events. With
+// --include-partial-messages, stream_event lines carry token-level text
+// deltas; assistant events repeat the complete message afterwards and the
+// final result event carries session_id.
 export interface ClaudeStreamState {
   chunks: string[];
   sessionRef?: string;
   resultText?: string;
   isError?: boolean;
+  /** Token deltas seen; suppresses the duplicate full-message assistant event. */
+  sawDelta?: boolean;
 }
 
 export function parseClaudeStreamLine(line: string, state: ClaudeStreamState): string | null {
@@ -184,7 +188,18 @@ export function parseClaudeStreamLine(line: string, state: ClaudeStreamState): s
     return null;
   }
 
-  if (event.type === 'assistant') {
+  if (event.type === 'stream_event') {
+    const inner = event.event as
+      | { type?: string; delta?: { type?: string; text?: string } }
+      | undefined;
+    if (inner?.type === 'content_block_delta' && inner.delta?.type === 'text_delta' && inner.delta.text) {
+      state.sawDelta = true;
+      state.chunks.push(inner.delta.text);
+      return inner.delta.text;
+    }
+  } else if (event.type === 'assistant') {
+    // Already streamed token-by-token; emitting again would duplicate text.
+    if (state.sawDelta) return null;
     const message = event.message as { content?: Array<{ type: string; text?: string }> };
     const text = (message?.content ?? [])
       .filter((block) => block.type === 'text' && block.text)
@@ -281,6 +296,7 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
         '-p',
         '--output-format',
         'stream-json',
+        '--include-partial-messages',
         '--verbose',
         '--permission-mode',
         'acceptEdits',
