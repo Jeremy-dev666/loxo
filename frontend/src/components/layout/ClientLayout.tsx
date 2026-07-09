@@ -1,10 +1,12 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Header, BrandMark } from '@/components/layout/Header';
+import appIcon from '@/app/icon.png';
+import { Header } from '@/components/layout/Header';
 import { MobileAppNav } from '@/components/layout/MobileAppNav';
 import { useAuthStore } from '@/store/auth';
 import { fetchProjects, deleteProject, type ProjectView } from '@/lib/projects';
@@ -105,8 +107,13 @@ function TraditionalSidebar({
         <div className="border-b border-[#F0F0F0] px-4 py-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[#111] text-white">
-                <BrandMark className="h-5 w-5" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[#111]">
+                <Image
+                  src={appIcon}
+                  alt="SwarmDev"
+                  className="h-7 w-7"
+                  style={{ imageRendering: 'pixelated' }}
+                />
               </span>
               <span className="min-w-0">
                 <span className="brand-large block truncate text-[#111]">SwarmDev</span>
