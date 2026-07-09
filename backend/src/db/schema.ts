@@ -565,3 +565,24 @@ export const teamMembers = pgTable('team_members', {
 });
 
 export type TeamMember = typeof teamMembers.$inferSelect;
+
+/**
+ * Paired daemon hosts that execute machine-bound agents. `tokenHash` is the
+ * SHA-256 of the machine token; the plaintext is shown once at pairing.
+ */
+export const machines = pgTable('machines', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  platform: text('platform'),
+  hostname: text('hostname'),
+  tokenHash: text('token_hash').notNull().unique(),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Machine = typeof machines.$inferSelect;

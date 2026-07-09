@@ -68,6 +68,7 @@ function TraditionalSidebar({
     { href: '/market', label: 'Agent Market', icon: 'market' },
     { href: '/community', label: 'Community', icon: 'community' },
     { href: '/settings/providers', label: 'Providers', icon: 'settings' },
+    { href: '/settings/machines', label: 'Machines', icon: 'settings' },
   ];
   const recentProjects = [...projects]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
