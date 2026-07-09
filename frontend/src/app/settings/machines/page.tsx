@@ -144,6 +144,21 @@ function MachineRow({
           {machine.hostname && `${machine.hostname} · `}
           {machine.online ? 'online' : `last seen ${formatLastSeen(machine.lastSeenAt)}`}
         </p>
+        {machine.runtimes.some((r) => r.available) && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {machine.runtimes
+              .filter((r) => r.available)
+              .map((r) => (
+                <span
+                  key={r.runtime}
+                  title={r.version ?? undefined}
+                  className="border border-pixel-line bg-pixel-cream px-1.5 py-0.5 font-pixel text-[10px] text-pixel-black/70"
+                >
+                  {r.runtime}
+                </span>
+              ))}
+          </div>
+        )}
       </div>
       <div className="flex gap-2 text-xs">
         <button

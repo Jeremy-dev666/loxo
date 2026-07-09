@@ -9,6 +9,7 @@ import {
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
+import type { RuntimeProbe } from '@swarmdev/shared';
 import type { WorkflowDsl } from '../modules/teams/workflow-dsl';
 
 export const users = pgTable('users', {
@@ -579,6 +580,8 @@ export const machines = pgTable('machines', {
   platform: text('platform'),
   hostname: text('hostname'),
   tokenHash: text('token_hash').notNull().unique(),
+  /** Last runtime probe reported by the daemon on connect. */
+  runtimes: jsonb('runtimes').$type<RuntimeProbe[]>().notNull().default([]),
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

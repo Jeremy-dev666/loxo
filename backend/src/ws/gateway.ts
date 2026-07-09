@@ -2,6 +2,7 @@ import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { verifyToken } from '../modules/auth/tokens';
+import { handleMachineFrame } from '../modules/machines/machine-channel';
 import {
   registerMachineSocket,
   unregisterMachineSocket,
@@ -100,8 +101,14 @@ export function attachWsGateway(server: Server): WsGateway {
         ws.send(JSON.stringify({ type: 'pong' }));
         return;
       }
-      // Machine sockets get their own frame family (stage 2); user channels are off-limits.
+      // Machine sockets get their own frame family; user channels are off-limits.
       if (ws.machineId) {
+        if (typeof message.type === 'string' && message.type.startsWith('machine.')) {
+          void handleMachineFrame(ws, ws.machineId, {
+            type: message.type,
+            payload: message.payload,
+          });
+        }
         return;
       }
       if (typeof message.type === 'string' && message.type.startsWith('chat.')) {

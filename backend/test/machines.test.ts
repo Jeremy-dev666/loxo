@@ -169,6 +169,49 @@ describe('machine management and presence', () => {
     await expect(wsConnect('/ws/machine?token=smk_bogus')).rejects.toThrow();
   });
 
+  it('stores runtimes reported by the daemon', async () => {
+    const ws = await wsConnect(`/ws/machine?token=${machineToken}`);
+    ws.send(
+      JSON.stringify({
+        type: 'machine.runtimes',
+        payload: {
+          runtimes: [
+            { runtime: 'claude-code', available: true, version: '2.1.0' },
+            { runtime: 'codex', available: false, version: null, error: 'codex is not on PATH' },
+          ],
+        },
+      })
+    );
+    await waitFor(async () => {
+      const res = await request(app)
+        .get('/api/machines')
+        .set('Authorization', `Bearer ${userToken}`);
+      const machine = res.body.machines.find((m: { id: string }) => m.id === machineId);
+      return machine?.runtimes?.length === 2;
+    });
+    ws.close();
+    await wsClosed(ws);
+
+    const res = await request(app).get('/api/machines').set('Authorization', `Bearer ${userToken}`);
+    const machine = res.body.machines.find((m: { id: string }) => m.id === machineId);
+    expect(machine.runtimes).toEqual([
+      { runtime: 'claude-code', available: true, version: '2.1.0' },
+      { runtime: 'codex', available: false, version: null, error: 'codex is not on PATH' },
+    ]);
+  });
+
+  it('answers an invalid machine frame with machine.error', async () => {
+    const ws = await wsConnect(`/ws/machine?token=${machineToken}`);
+    const reply = new Promise<{ type: string }>((resolve) => {
+      ws.on('message', (raw) => resolve(JSON.parse(raw.toString())));
+    });
+    ws.send(JSON.stringify({ type: 'machine.bogus', payload: {} }));
+    const frame = await reply;
+    expect(frame.type).toBe('machine.error');
+    ws.close();
+    await wsClosed(ws);
+  });
+
   it('renames the machine', async () => {
     const res = await request(app)
       .patch(`/api/machines/${machineId}`)

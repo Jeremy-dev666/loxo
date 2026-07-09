@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
+import type { RuntimeProbe } from '@swarmdev/shared';
 import { db } from '../../db/client';
 import { machines, type Machine } from '../../db/schema';
 import { badRequest, conflict, notFound } from '../../http/errors';
@@ -78,6 +79,7 @@ export interface MachineView {
   platform: string | null;
   hostname: string | null;
   online: boolean;
+  runtimes: RuntimeProbe[];
   lastSeenAt: Date | null;
   revokedAt: Date | null;
   createdAt: Date;
@@ -90,6 +92,7 @@ function toView(row: Machine): MachineView {
     platform: row.platform,
     hostname: row.hostname,
     online: isMachineOnline(row.id),
+    runtimes: row.runtimes,
     lastSeenAt: row.lastSeenAt,
     revokedAt: row.revokedAt,
     createdAt: row.createdAt,

@@ -1,11 +1,19 @@
 import { apiFetch } from './api';
 
+export interface RuntimeProbeView {
+  runtime: string;
+  available: boolean;
+  version: string | null;
+  error?: string;
+}
+
 export interface MachineView {
   id: string;
   name: string;
   platform: string | null;
   hostname: string | null;
   online: boolean;
+  runtimes: RuntimeProbeView[];
   lastSeenAt: string | null;
   revokedAt: string | null;
   createdAt: string;
