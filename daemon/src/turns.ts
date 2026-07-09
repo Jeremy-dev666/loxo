@@ -7,16 +7,21 @@ import {
   type MachineClientFrame,
   type MachineTurnStart,
 } from '@swarmdev/shared';
+import { resolveAllowedWorkdir } from './workdir';
 
 const active = new Map<string, AbortController>();
+
+type TurnRunner = typeof runTurn;
+let turnRunner: TurnRunner = runTurn;
+
+/** Test seam: script turn outcomes without spawning real CLI processes. */
+export function setTurnRunnerForTests(runner: TurnRunner | null): void {
+  turnRunner = runner ?? runTurn;
+}
 
 function ensureDir(dir: string): string {
   mkdirSync(dir, { recursive: true });
   return dir;
-}
-
-function defaultWorkspace(): string {
-  return join(homedir(), '.swarmdev', 'workspace');
 }
 
 export function activeTurnCount(): number {
@@ -26,16 +31,34 @@ export function activeTurnCount(): number {
 export async function startTurn(
   payload: MachineTurnStart,
   send: (frame: MachineClientFrame) => void,
-  log: (message: string) => void
+  log: (message: string) => void,
+  allowedWorkdirs: string[] = []
 ): Promise<void> {
+  const resolved = resolveAllowedWorkdir(payload.workdir, allowedWorkdirs);
+  if (!resolved) {
+    send({
+      type: 'machine.turn.result',
+      payload: {
+        turnId: payload.turnId,
+        ok: false,
+        error: {
+          kind: 'cli_failed',
+          message: `Working directory is not allowed on this machine: ${payload.workdir}. Allow it with: swarmdev-daemon allow <dir>`,
+        },
+      },
+    });
+    log(`Turn ${payload.turnId} rejected (workdir outside allowlist: ${payload.workdir})`);
+    return;
+  }
+
   const controller = new AbortController();
   active.set(payload.turnId, controller);
-  const workspace = ensureDir(payload.workdir?.trim() || defaultWorkspace());
+  const workspace = ensureDir(resolved);
   const stateDir = ensureDir(join(homedir(), '.swarmdev', 'state'));
   log(`Turn ${payload.turnId} started (runtime=${payload.runtime}, workdir=${workspace})`);
 
   try {
-    const result = await runTurn({
+    const result = await turnRunner({
       runtime: payload.runtime,
       workspace,
       stateDir,

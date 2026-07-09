@@ -53,7 +53,7 @@ export function runDaemon(config: DaemonConfig): void {
       if (frame.type === 'machine.error') {
         log(`Server error: ${frame.payload.code} ${frame.payload.message}`);
       } else if (frame.type === 'machine.turn.start') {
-        void startTurn(frame.payload, send, log);
+        void startTurn(frame.payload, send, log, config.allowedWorkdirs ?? []);
       } else if (frame.type === 'machine.turn.cancel') {
         cancelTurn(frame.payload.turnId);
       }

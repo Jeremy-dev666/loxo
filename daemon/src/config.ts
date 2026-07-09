@@ -6,6 +6,8 @@ export interface DaemonConfig {
   serverUrl: string;
   machineToken: string;
   machineId: string;
+  /** Extra roots agents may use as working directories; workspace root is always allowed. */
+  allowedWorkdirs?: string[];
 }
 
 export const CONFIG_PATH =
