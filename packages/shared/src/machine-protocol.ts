@@ -18,15 +18,41 @@ export interface RuntimeProbe {
   error?: string;
 }
 
+/** One remote turn dispatched to a daemon. Server paths never cross the wire. */
+export interface MachineTurnStart {
+  turnId: string;
+  runtime: MachineRuntime;
+  prompt: string;
+  model?: string | null;
+  sessionRef?: string | null;
+  /** Absolute working directory on the machine; daemon default when absent. */
+  workdir?: string | null;
+  timeoutMs: number;
+  credentials?: { apiKey?: string; baseUrl?: string | null };
+}
+
+export interface MachineTurnFailure {
+  kind: 'timeout' | 'aborted' | 'cli_failed' | 'bad_output';
+  message: string;
+}
+
+export type MachineTurnResult =
+  | { turnId: string; ok: true; text: string; sessionRef?: string; durationMs: number }
+  | { turnId: string; ok: false; error: MachineTurnFailure };
+
 /** Frames sent by the daemon over /ws/machine. */
 export type MachineClientFrame =
   | { type: 'ping' }
-  | { type: 'machine.runtimes'; payload: { runtimes: RuntimeProbe[] } };
+  | { type: 'machine.runtimes'; payload: { runtimes: RuntimeProbe[] } }
+  | { type: 'machine.turn.delta'; payload: { turnId: string; text: string } }
+  | { type: 'machine.turn.result'; payload: MachineTurnResult };
 
 /** Frames sent by the server to the daemon. */
 export type MachineServerFrame =
   | { type: 'pong' }
-  | { type: 'machine.error'; payload: { code: string; message: string } };
+  | { type: 'machine.error'; payload: { code: string; message: string } }
+  | { type: 'machine.turn.start'; payload: MachineTurnStart }
+  | { type: 'machine.turn.cancel'; payload: { turnId: string } };
 
 export interface PairStartResponse {
   deviceCode: string;

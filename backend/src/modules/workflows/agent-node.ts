@@ -4,6 +4,7 @@ import { getAgent } from '../agents/agents.service';
 import type { CliRuntime } from '../agents/runtime-detect';
 import { getProviderCredentials } from '../providers/providers.service';
 import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
+import { dispatchAgentTurn } from '../runner/dispatch';
 import { executeApiTurn, resolveApiModel, type ApiProtocol } from '../runner/api-turn';
 import { buildWorkflowNodePrompt } from '../runner/turn-context';
 import type { Agent } from '../../db/schema';
@@ -130,17 +131,21 @@ async function runAgentNode(request: AgentNodeRequest): Promise<AgentNodeResult>
   });
 
   const before = snapshotWorkspace(request.paths.workspace);
-  const result = await turnExecutor({
-    runtime: agent.runtime as CliRuntime,
-    workspace: request.paths.workspace,
-    stateDir,
-    prompt,
-    model: agent.model,
-    credentials: credentials ?? undefined,
-    sessionRef: null,
-    timeoutMs: request.timeoutSec * 1000,
-    signal: request.signal,
-  });
+  const result = await dispatchAgentTurn(
+    agent,
+    {
+      runtime: agent.runtime as CliRuntime,
+      workspace: request.paths.workspace,
+      stateDir,
+      prompt,
+      model: agent.model,
+      credentials: credentials ?? undefined,
+      sessionRef: null,
+      timeoutMs: request.timeoutSec * 1000,
+      signal: request.signal,
+    },
+    turnExecutor
+  );
   const after = snapshotWorkspace(request.paths.workspace);
 
   return {

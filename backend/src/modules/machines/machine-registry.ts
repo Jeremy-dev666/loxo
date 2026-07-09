@@ -22,6 +22,10 @@ export function isMachineOnline(machineId: string): boolean {
   return sockets.has(machineId);
 }
 
+export function getMachineSocket(machineId: string): WebSocket | undefined {
+  return sockets.get(machineId);
+}
+
 export function terminateMachineSocket(machineId: string): void {
   const ws = sockets.get(machineId);
   if (ws) {

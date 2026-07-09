@@ -3,6 +3,7 @@ import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { verifyToken } from '../modules/auth/tokens';
 import { handleMachineFrame } from '../modules/machines/machine-channel';
+import { failTurnsForMachine } from '../modules/machines/machine-turns';
 import {
   registerMachineSocket,
   unregisterMachineSocket,
@@ -81,6 +82,7 @@ export function attachWsGateway(server: Server): WsGateway {
       void touchMachineLastSeen(ws.machineId);
       ws.on('close', () => {
         unregisterMachineSocket(ws.machineId!, ws);
+        failTurnsForMachine(ws.machineId!);
         void touchMachineLastSeen(ws.machineId!);
       });
     }

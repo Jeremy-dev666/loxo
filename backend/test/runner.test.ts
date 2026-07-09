@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { execProcess } from '../src/modules/runner/process-exec';
+import { execProcess } from '@swarmdev/shared';
 import {
   extractPlainReply,
   parseClaudeStreamLine,
