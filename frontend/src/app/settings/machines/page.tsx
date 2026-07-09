@@ -99,6 +99,12 @@ function EnvEditor({
   );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  const editRows = (next: Array<{ key: string; value: string }>) => {
+    setRows(next);
+    setSavedAt(null);
+  };
 
   const save = async () => {
     setError(null);
@@ -114,7 +120,9 @@ function EnvEditor({
     }
     setSaving(true);
     try {
-      await updateMachineEnv(machine.id, env);
+      const updated = await updateMachineEnv(machine.id, env);
+      setRows(Object.entries(updated.env).map(([key, value]) => ({ key, value })));
+      setSavedAt(Date.now());
       onChanged();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save variables');
@@ -139,7 +147,7 @@ function EnvEditor({
             placeholder="NAME"
             value={row.key}
             onChange={(e) =>
-              setRows(rows.map((r, i) => (i === index ? { ...r, key: e.target.value } : r)))
+              editRows(rows.map((r, i) => (i === index ? { ...r, key: e.target.value } : r)))
             }
           />
           <input
@@ -147,11 +155,11 @@ function EnvEditor({
             placeholder="value"
             value={row.value}
             onChange={(e) =>
-              setRows(rows.map((r, i) => (i === index ? { ...r, value: e.target.value } : r)))
+              editRows(rows.map((r, i) => (i === index ? { ...r, value: e.target.value } : r)))
             }
           />
           <button
-            onClick={() => setRows(rows.filter((_, i) => i !== index))}
+            onClick={() => editRows(rows.filter((_, i) => i !== index))}
             className="border border-pixel-line px-2 font-pixel text-xs text-pixel-black/60 hover:text-pixel-red"
             title="Remove variable"
           >
@@ -160,9 +168,9 @@ function EnvEditor({
         </div>
       ))}
       {error && <p className="font-pixel text-xs text-pixel-red">{error}</p>}
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <button
-          onClick={() => setRows([...rows, { key: '', value: '' }])}
+          onClick={() => editRows([...rows, { key: '', value: '' }])}
           className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black/70 hover:bg-pixel-cream"
         >
           + Add variable
@@ -172,8 +180,13 @@ function EnvEditor({
           disabled={saving}
           className="bg-pixel-yellow px-3 py-1 font-pixel text-xs text-pixel-black disabled:opacity-60"
         >
-          {saving ? 'Saving…' : 'Save variables'}
+          {saving ? 'Saving…' : savedAt ? 'Saved' : 'Save variables'}
         </button>
+        {savedAt && (
+          <span className="font-pixel text-xs text-pixel-green">
+            Saved. Applies from the next agent turn.
+          </span>
+        )}
       </div>
     </div>
   );
