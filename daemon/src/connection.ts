@@ -2,6 +2,7 @@ import WebSocket from 'ws';
 import type { MachineClientFrame, MachineServerFrame } from '@swarmdev/shared';
 import type { DaemonConfig } from './config';
 import { detectRuntimes } from './runtimes';
+import { cancelTurn, startTurn } from './turns';
 
 const RECONNECT_MIN_MS = 1_000;
 const RECONNECT_MAX_MS = 30_000;
@@ -51,6 +52,10 @@ export function runDaemon(config: DaemonConfig): void {
       }
       if (frame.type === 'machine.error') {
         log(`Server error: ${frame.payload.code} ${frame.payload.message}`);
+      } else if (frame.type === 'machine.turn.start') {
+        void startTurn(frame.payload, send, log);
+      } else if (frame.type === 'machine.turn.cancel') {
+        cancelTurn(frame.payload.turnId);
       }
     });
 
