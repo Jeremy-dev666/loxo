@@ -9,7 +9,10 @@ import {
 } from '@hello-pangea/dnd';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { IssueCard } from '@/components/issues/IssueCard';
+import { IssueDrawer } from '@/components/issues/IssueDrawer';
 import { ApiError } from '@/lib/api';
+import { fetchAgents, type Agent } from '@/lib/agents';
+import { fetchGoals, type Goal } from '@/lib/goals';
 import {
   CLIENT_TRANSITIONS,
   STATUS_META,
@@ -54,8 +57,11 @@ function orderAt(cards: Issue[], index: number, draggedId: string): number {
 function BoardPage() {
   const [board, setBoard] = useState<Board>(EMPTY_BOARD);
   const [projects, setProjects] = useState<ProjectView[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [projectFilter, setProjectFilter] = useState<string>('');
   const [dragSource, setDragSource] = useState<IssueStatus | null>(null);
+  const [openIssue, setOpenIssue] = useState<Issue | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -67,11 +73,18 @@ function BoardPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    Promise.all([fetchBoard(projectFilter || undefined), fetchProjects()])
-      .then(([boardRes, projectsRes]) => {
+    Promise.all([
+      fetchBoard(projectFilter || undefined),
+      fetchProjects(),
+      fetchAgents().catch(() => [] as Agent[]),
+      fetchGoals().catch(() => ({ goals: [] as Goal[] })),
+    ])
+      .then(([boardRes, projectsRes, agentList, goalsRes]) => {
         if (cancelled) return;
         setBoard(boardRes.board);
         setProjects(projectsRes);
+        setAgents(agentList);
+        setGoals(goalsRes.goals);
       })
       .catch((err) => !cancelled && setError(err instanceof Error ? err.message : 'Load failed'))
       .finally(() => !cancelled && setLoading(false));
@@ -152,6 +165,7 @@ function BoardPage() {
           <IssueCard
             issue={issue}
             dragging={dragSnapshot.isDragging}
+            onOpen={setOpenIssue}
             onToggleBlocked={
               issue.status === 'in_progress' || issue.status === 'blocked'
                 ? toggleBlocked
@@ -287,6 +301,17 @@ function BoardPage() {
             {renderBacklogZone()}
           </div>
         </DragDropContext>
+      )}
+
+      {openIssue && (
+        <IssueDrawer
+          issueId={openIssue.id}
+          projectName={projects.find((p) => p.id === openIssue.projectId)?.name}
+          agents={agents}
+          goals={goals}
+          onClose={() => setOpenIssue(null)}
+          onChanged={() => void refresh()}
+        />
       )}
     </div>
   );

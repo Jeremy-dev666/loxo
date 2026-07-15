@@ -6,18 +6,20 @@ interface IssueCardProps {
   issue: Issue;
   /** Present on blocked/in_progress cards: toggles the blocked loop. */
   onToggleBlocked?: (issue: Issue) => void;
+  onOpen?: (issue: Issue) => void;
   dragging?: boolean;
 }
 
-export function IssueCard({ issue, onToggleBlocked, dragging = false }: IssueCardProps) {
+export function IssueCard({ issue, onToggleBlocked, onOpen, dragging = false }: IssueCardProps) {
   const blocked = issue.status === 'blocked';
   const spine = STATUS_META[issue.status].swatch;
 
   return (
     <div
+      onClick={() => onOpen?.(issue)}
       className={`group relative border border-pixel-line bg-pixel-white transition-colors ${
         dragging ? 'border-pixel-black' : 'hover:border-pixel-gray'
-      }`}
+      } ${onOpen ? 'cursor-pointer' : ''}`}
       style={{
         boxShadow: dragging
           ? '4px 4px 0px 0px rgba(17,17,17,0.18)'
