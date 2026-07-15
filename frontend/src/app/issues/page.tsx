@@ -177,15 +177,18 @@ function BoardPage() {
     </Draggable>
   );
 
+  /** Station plate: black tag with the status signal, like a kitchen rail label. */
   const columnHeader = (status: IssueStatus, count: number) => {
     const meta = STATUS_META[status];
     return (
       <div className="mb-2 flex items-center gap-2">
-        <span className={`h-2 w-2 ${meta.swatch}`} aria-hidden />
-        <span className="font-pixel text-xs uppercase tracking-wide text-pixel-black">
-          {meta.label}
+        <span className="flex items-center gap-1.5 bg-pixel-black px-2 py-0.5">
+          <span className={`h-2 w-2 ${meta.swatch}`} aria-hidden />
+          <span className="font-pixel text-[11px] uppercase tracking-[0.15em] text-pixel-white">
+            {meta.label}
+          </span>
         </span>
-        <span className="font-pixel text-xs text-pixel-gray">{count}</span>
+        <span className="font-pixel text-xs text-pixel-gray">x {count}</span>
       </div>
     );
   };
@@ -214,7 +217,7 @@ function BoardPage() {
               {cards.map(renderCard)}
               {provided.placeholder}
               {cards.length === 0 && (
-                <p className="m-auto font-pixel text-xs text-pixel-gray">No issues</p>
+                <p className="m-auto font-pixel text-[10px] uppercase tracking-[0.15em] text-pixel-gray">no tickets</p>
               )}
             </div>
           )}
@@ -245,7 +248,7 @@ function BoardPage() {
               {provided.placeholder}
               {cards.length === 0 && (
                 <p className="col-span-full m-auto font-pixel text-xs text-pixel-gray">
-                  No issues waiting to be planned
+                  NO TICKETS WAITING
                 </p>
               )}
             </div>
