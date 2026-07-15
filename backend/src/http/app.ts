@@ -10,6 +10,7 @@ import { memosRouter } from '../modules/memory/memos.routes';
 import { marketRouter } from '../modules/market/market.routes';
 import { roundtableRouter } from '../modules/roundtable/roundtable.routes';
 import { communityRouter } from '../modules/community/community.routes';
+import { goalsRouter } from '../modules/goals/goals.routes';
 import { projectsRouter } from '../modules/projects/projects.routes';
 import { teamsRouter } from '../modules/teams/teams.routes';
 import { workflowsRouter } from '../modules/workflows/workflows.routes';
@@ -55,6 +56,7 @@ export function createApp(): express.Express {
   app.use('/api/community', communityRouter);
   app.use('/api/teams', teamsRouter);
   app.use('/api/projects', projectsRouter);
+  app.use('/api/goals', goalsRouter);
   app.use('/api/workflows', workflowsRouter);
   app.use('/api/integrations', integrationsRouter);
   app.use('/api/machines', machinesRouter);
