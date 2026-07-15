@@ -42,7 +42,7 @@ const config: Config = {
         'bounce-pixel': 'bounce-pixel 1s ease-in-out infinite',
         float: 'float 3s ease-in-out infinite',
         // Thermal printer feed: stepped, line-by-line, deliberately jerky.
-        'print-feed': 'print-feed 1.5s steps(18, end) both',
+        'print-feed': 'print-feed 4.5s steps(54, end) both',
         'blink-steps': 'blink-steps 0.9s steps(2, start) infinite',
       },
       keyframes: {

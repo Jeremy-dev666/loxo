@@ -98,7 +98,7 @@ export function IssueReceipt({
   // Reduced-motion users never get an animationend event; time out the feed.
   useEffect(() => {
     if (!printEntrance) return;
-    const t = setTimeout(() => setFed(true), 1700);
+    const t = setTimeout(() => setFed(true), 4800);
     return () => clearTimeout(t);
   }, [printEntrance]);
 
