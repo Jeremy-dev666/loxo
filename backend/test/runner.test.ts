@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { execProcess } from '../src/modules/runner/process-exec';
+import { execProcess } from '@swarmdev/shared';
 import {
   extractPlainReply,
   parseClaudeStreamLine,
@@ -33,6 +33,50 @@ describe('parseClaudeStreamLine', () => {
     expect(parseClaudeStreamLine('not json', state)).toBeNull();
     parseClaudeStreamLine(JSON.stringify({ type: 'result', is_error: true, result: 'boom' }), state);
     expect(state.isError).toBe(true);
+  });
+
+  it('streams token-level deltas from partial message events', () => {
+    const state: ClaudeStreamState = { chunks: [] };
+    const delta = (text: string) =>
+      JSON.stringify({
+        type: 'stream_event',
+        event: { type: 'content_block_delta', delta: { type: 'text_delta', text } },
+      });
+
+    expect(parseClaudeStreamLine(delta('Hel'), state)).toBe('Hel');
+    expect(parseClaudeStreamLine(delta('lo'), state)).toBe('lo');
+    expect(state.chunks.join('')).toBe('Hello');
+
+    // Thinking deltas and other stream events are not user-visible text.
+    expect(
+      parseClaudeStreamLine(
+        JSON.stringify({
+          type: 'stream_event',
+          event: { type: 'content_block_delta', delta: { type: 'thinking_delta', thinking: 'x' } },
+        }),
+        state
+      )
+    ).toBeNull();
+  });
+
+  it('suppresses the duplicate assistant event after token deltas', () => {
+    const state: ClaudeStreamState = { chunks: [] };
+    parseClaudeStreamLine(
+      JSON.stringify({
+        type: 'stream_event',
+        event: { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Hello' } },
+      }),
+      state
+    );
+    const repeated = parseClaudeStreamLine(
+      JSON.stringify({
+        type: 'assistant',
+        message: { content: [{ type: 'text', text: 'Hello' }] },
+      }),
+      state
+    );
+    expect(repeated).toBeNull();
+    expect(state.chunks.join('')).toBe('Hello');
   });
 });
 

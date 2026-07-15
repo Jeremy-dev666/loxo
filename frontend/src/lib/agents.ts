@@ -5,6 +5,8 @@ import { useAuthStore } from '@/store/auth';
 export const RUNTIMES = ['claude-code', 'codex', 'opencode', 'hermes', 'openclaw', 'api'] as const;
 export type Runtime = (typeof RUNTIMES)[number];
 
+export type AgentExecution = 'server' | 'api' | 'machine';
+
 export interface Agent {
   id: string;
   name: string;
@@ -16,6 +18,9 @@ export interface Agent {
   model: string | null;
   avatarFile: string | null;
   status: string;
+  execution: AgentExecution;
+  machineId: string | null;
+  machineWorkdir: string | null;
   createdAt: string;
 }
 
@@ -53,7 +58,16 @@ export const updateAgent = (id: string, input: Partial<Pick<Agent, 'name' | 'des
     body: JSON.stringify(input),
   }).then((r) => r.agent);
 
-export const updateAgentConfig = (id: string, input: { providerId?: string | null; model?: string | null }) =>
+export const updateAgentConfig = (
+  id: string,
+  input: {
+    providerId?: string | null;
+    model?: string | null;
+    execution?: AgentExecution;
+    machineId?: string | null;
+    machineWorkdir?: string | null;
+  }
+) =>
   apiFetch<{ agent: Agent }>(`/api/agents/${id}/config`, {
     method: 'PATCH',
     body: JSON.stringify(input),

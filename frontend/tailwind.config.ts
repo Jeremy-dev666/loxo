@@ -23,6 +23,10 @@ const config: Config = {
         'pixel-green': '#2F8A4C',
         'pixel-blue': '#A9721C',
         'pixel-yellow': '#F2B03D',
+        // Issue-status signals, same muted register as the legacy accents:
+        // steel = ready-to-work (todo), plum = under review.
+        'pixel-steel': '#3E6B99',
+        'pixel-plum': '#7A5B99',
       },
       fontFamily: {
         pixel: ['"Departure Mono"', 'VT323', 'monospace'],
@@ -37,6 +41,9 @@ const config: Config = {
         shake: 'shake 0.3s ease-in-out infinite',
         'bounce-pixel': 'bounce-pixel 1s ease-in-out infinite',
         float: 'float 3s ease-in-out infinite',
+        // Thermal printer feed: stepped, line-by-line, deliberately jerky.
+        'print-feed': 'print-feed 4.5s steps(54, end) both',
+        'blink-steps': 'blink-steps 0.9s steps(2, start) infinite',
       },
       keyframes: {
         shake: {
@@ -47,6 +54,14 @@ const config: Config = {
         'bounce-pixel': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-4px)' },
+        },
+        'print-feed': {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        'blink-steps': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0)' },

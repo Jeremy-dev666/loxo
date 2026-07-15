@@ -7,7 +7,7 @@ import { getConversation, openConversation } from '../modules/chat/conversations
  *   client → chat.open   {agentId, conversationId?}
  *   client → chat.message{conversationId, content}
  *   client → chat.stop   {conversationId}
- *   server → chat.ready | chat.saved | chat.delta | chat.reply | chat.error
+ *   server → chat.ready | chat.saved | chat.reply | chat.error
  */
 export interface ChatFrame {
   type: string;
@@ -58,9 +58,9 @@ export async function handleChatFrame(
           return;
         }
 
-        const outcome = await runChatTurn(userId, conversationId, content, {
-          onChunk: (text) => send(ws, 'chat.delta', { conversationId, text }),
-        });
+        // Replies are delivered whole, not streamed: messages are atomic units
+        // (agents consume complete messages; drafts reference room versions).
+        const outcome = await runChatTurn(userId, conversationId, content, {});
         // chat.saved after the turn resolves the whole persistence path; the
         // client already renders the user message optimistically.
         send(ws, 'chat.saved', { conversationId, messageId: outcome.userMessage.id });

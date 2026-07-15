@@ -150,7 +150,7 @@ describe('websocket chat', () => {
     await expect(connect('token=garbage')).rejects.toThrow();
   });
 
-  it('runs a full turn: open → message → delta → reply, all persisted', async () => {
+  it('runs a full turn: open → message → reply, all persisted, no partial frames', async () => {
     // Earlier tests leave empty conversations that chat.open would reuse.
     await pool.query('DELETE FROM conversations');
     setTurnExecutorForTests(async (req) => {
@@ -173,8 +173,8 @@ describe('websocket chat', () => {
     const frames = await framesPromise;
     ws.close();
 
-    const deltas = frames.filter((f) => f.type === 'chat.delta');
-    expect(deltas.map((f) => f.payload!.text).join('')).toBe('partial answer');
+    // Replies are atomic by design: no chat.delta frames reach the client.
+    expect(frames.some((f) => f.type === 'chat.delta')).toBe(false);
     const reply = frames.find((f) => f.type === 'chat.reply')!;
     expect(reply.payload!.content).toBe('partial answer');
 
@@ -195,7 +195,7 @@ describe('websocket chat', () => {
   });
 
   it('keeps a manual title when messages arrive', async () => {
-    setTurnExecutorForTests(async () => ({ text: 'ok', sessionRef: null, durationMs: 1 }));
+    setTurnExecutorForTests(async () => ({ text: 'ok', sessionRef: undefined, durationMs: 1 }));
     const created = await request(app)
       .post('/api/conversations')
       .set(auth())

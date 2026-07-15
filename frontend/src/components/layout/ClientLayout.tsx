@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Header, BrandMark } from '@/components/layout/Header';
+import { BrandMark, Header } from '@/components/layout/Header';
 import { MobileAppNav } from '@/components/layout/MobileAppNav';
 import { useAuthStore } from '@/store/auth';
 import { fetchProjects, deleteProject, type ProjectView } from '@/lib/projects';
@@ -62,14 +62,18 @@ function TraditionalSidebar({
 }) {
   const navItems: Array<{ href: string; label: string; icon: SidebarIcon; exact?: boolean }> = [
     { href: '/', label: 'Home', icon: 'home', exact: true },
+    { href: '/issues', label: 'Issues', icon: 'teams' },
+    { href: '/goals', label: 'Goals', icon: 'roundtable' },
     { href: '/agents', label: 'My Agents', icon: 'agents' },
     { href: '/teams', label: 'My Teams', icon: 'teams' },
     { href: '/roundtable', label: 'Roundtable', icon: 'roundtable' },
     { href: '/market', label: 'Agent Market', icon: 'market' },
     { href: '/community', label: 'Community', icon: 'community' },
     { href: '/settings/providers', label: 'Providers', icon: 'settings' },
+    { href: '/settings/machines', label: 'Machines', icon: 'settings' },
   ];
-  const recentProjects = [...projects]
+  const recentProjects = projects
+    .filter((p) => p.kind !== 'default')
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 7);
 
@@ -104,8 +108,8 @@ function TraditionalSidebar({
         <div className="border-b border-[#F0F0F0] px-4 py-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[#111] text-white">
-                <BrandMark className="h-5 w-5" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[#111]">
+                <BrandMark className="h-5 w-5 text-white" />
               </span>
               <span className="min-w-0">
                 <span className="brand-large block truncate text-[#111]">SwarmDev</span>

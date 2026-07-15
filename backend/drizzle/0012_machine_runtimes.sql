@@ -1,0 +1,1 @@
+ALTER TABLE "machines" ADD COLUMN "runtimes" jsonb DEFAULT '[]'::jsonb NOT NULL;

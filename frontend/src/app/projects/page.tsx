@@ -139,7 +139,10 @@ function ProjectsPageInner() {
   const [showCreate, setShowCreate] = useState(false);
 
   const reload = useCallback(() => {
-    fetchProjects().then(setProjects).catch(() => setProjects([]));
+    // The built-in default project is an issue fallback, not a managed project.
+    fetchProjects()
+      .then((all) => setProjects(all.filter((p) => p.kind !== 'default')))
+      .catch(() => setProjects([]));
   }, []);
 
   useEffect(() => {

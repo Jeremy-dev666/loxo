@@ -562,7 +562,9 @@ function HomePageInner() {
     ]);
     setAgents(agentList);
     setProjects(
-      [...projectList].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      projectList
+        .filter((p) => p.kind !== 'default')
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     );
     setTeams(teamList);
     setDataReady(true);

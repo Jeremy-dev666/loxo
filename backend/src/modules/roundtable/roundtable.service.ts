@@ -9,6 +9,7 @@ import type { CliRuntime } from '../agents/runtime-detect';
 import { getProviderCredentials } from '../providers/providers.service';
 import { executeApiTurn, resolveApiModel, type ApiProtocol } from '../runner/api-turn';
 import { runTurn } from '../runner/runner';
+import { dispatchAgentTurn } from '../runner/dispatch';
 import { sanitizeInjected } from '../runner/turn-context';
 import { generateWorkflow } from '../teams/dsl-generator';
 import { createTeam, getTeam, saveWorkflow, updateTeamMeta, type TeamView } from '../teams/teams.service';
@@ -513,7 +514,7 @@ async function runAgentReply(
   const turnStateDir = path.join(runtime.state, `turn-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(turnStateDir, { recursive: true });
 
-  const result = await runTurn({
+  const result = await dispatchAgentTurn(agent, {
     runtime: agent.runtime as CliRuntime,
     workspace: runtime.workspace,
     stateDir: turnStateDir,

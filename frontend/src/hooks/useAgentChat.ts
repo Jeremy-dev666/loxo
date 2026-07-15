@@ -25,7 +25,6 @@ interface UseAgentChatResult {
   connected: boolean;
   busy: boolean;
   liveMessages: LiveMessage[];
-  streamText: string;
   error: string | null;
   sendMessage: (content: string) => void;
   stopTurn: () => void;
@@ -34,8 +33,8 @@ interface UseAgentChatResult {
 
 /**
  * Chat over the shared /ws socket. REST supplies history; this hook only
- * tracks messages produced during the current connection plus the streaming
- * buffer for the in-flight turn.
+ * tracks messages produced during the current connection. Replies arrive as
+ * whole messages by design — no token streaming.
  */
 export function useAgentChat({
   agentId,
@@ -47,7 +46,6 @@ export function useAgentChat({
   const [connected, setConnected] = useState(false);
   const [busy, setBusy] = useState(false);
   const [liveMessages, setLiveMessages] = useState<LiveMessage[]>([]);
-  const [streamText, setStreamText] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -57,7 +55,6 @@ export function useAgentChat({
 
   const resetLive = useCallback(() => {
     setLiveMessages([]);
-    setStreamText('');
     setError(null);
   }, []);
 
@@ -112,14 +109,8 @@ export function useAgentChat({
             }
             break;
           }
-          case 'chat.delta':
-            if (payload.conversationId === activeConversationRef.current) {
-              setStreamText((current) => current + String(payload.text ?? ''));
-            }
-            break;
           case 'chat.reply':
             if (payload.conversationId === activeConversationRef.current) {
-              setStreamText('');
               setBusy(false);
               setLiveMessages((current) => [
                 ...current,
@@ -136,7 +127,6 @@ export function useAgentChat({
             break;
           case 'chat.error':
             setBusy(false);
-            setStreamText('');
             setError(String(payload.message ?? 'Chat failed'));
             onTurnComplete?.();
             break;
@@ -200,5 +190,5 @@ export function useAgentChat({
     }
   }, []);
 
-  return { connected, busy, liveMessages, streamText, error, sendMessage, stopTurn, resetLive };
+  return { connected, busy, liveMessages, error, sendMessage, stopTurn, resetLive };
 }

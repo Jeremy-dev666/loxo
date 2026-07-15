@@ -176,10 +176,56 @@ export async function updateProject(
 }
 
 export async function deleteProject(userId: string, projectId: string): Promise<void> {
-  const deleted = await db
-    .delete(projects)
+  const [target] = await db
+    .select({ kind: projects.kind })
+    .from(projects)
     .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
-    .returning({ id: projects.id });
-  if (deleted.length === 0) throw notFound('Project not found');
+    .limit(1);
+  if (!target) throw notFound('Project not found');
+  if (target.kind === 'default') {
+    throw badRequest('default_project_protected', 'The default project cannot be deleted');
+  }
+
+  await db
+    .delete(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
   removeDir(projectRoot(userId, projectId));
+}
+
+const DEFAULT_PROJECT_NAME = 'Default Project';
+
+/**
+ * Returns the user's built-in default project, creating it on first use.
+ * Concurrent first calls are settled by the projects_user_default partial
+ * unique index: losers no-op on conflict and re-read the winner's row.
+ */
+export async function getOrCreateDefaultProject(userId: string): Promise<Project> {
+  const [existing] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.userId, userId), eq(projects.kind, 'default')))
+    .limit(1);
+  if (existing) return existing;
+
+  const [inserted] = await db
+    .insert(projects)
+    .values({
+      userId,
+      name: DEFAULT_PROJECT_NAME,
+      description: 'Fallback project for issues created without one',
+      kind: 'default',
+    })
+    .onConflictDoNothing()
+    .returning();
+  if (inserted) {
+    writeMetadata(userId, inserted);
+    return inserted;
+  }
+
+  const [winner] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.userId, userId), eq(projects.kind, 'default')))
+    .limit(1);
+  return winner!;
 }

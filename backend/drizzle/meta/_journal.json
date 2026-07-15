@@ -78,6 +78,55 @@
       "when": 1783325128546,
       "tag": "0010_memos",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783574405707,
+      "tag": "0011_machines",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1783576501604,
+      "tag": "0012_machine_runtimes",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1783577171406,
+      "tag": "0013_agent_execution",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1783584237409,
+      "tag": "0014_machine_env",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1784094162478,
+      "tag": "0015_issues",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1784095302270,
+      "tag": "0016_inbox-unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1784102579265,
+      "tag": "0017_default-project",
+      "breakpoints": true
     }
   ]
 }

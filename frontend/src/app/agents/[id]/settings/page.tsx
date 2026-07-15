@@ -16,6 +16,7 @@ import {
   type Diagnostics,
   type SkillSummary,
 } from '@/lib/agents';
+import { fetchMachines, type MachineView } from '@/lib/machines';
 import { fetchProviders, type ProviderView } from '@/lib/providers';
 import { SlackIntegrationCard } from '@/components/integrations/SlackIntegrationCard';
 
@@ -42,6 +43,8 @@ function SettingsInner() {
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [providers, setProviders] = useState<ProviderView[]>([]);
+  const [machines, setMachines] = useState<MachineView[]>([]);
+  const [workdir, setWorkdir] = useState('');
   const [skills, setSkills] = useState<SkillSummary[]>([]);
   const [diagnostics, setDiagnostics] = useState<Diagnostics | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -56,6 +59,7 @@ function SettingsInner() {
         setAgent(a);
         setName(a.name);
         setDescription(a.description);
+        setWorkdir(a.machineWorkdir ?? '');
       })
       .catch(() => router.replace('/agents'));
     fetchSkills(agentId).then(setSkills).catch(() => {});
@@ -64,6 +68,7 @@ function SettingsInner() {
   useEffect(reload, [reload]);
   useEffect(() => {
     fetchProviders().then(setProviders).catch(() => {});
+    fetchMachines().then(setMachines).catch(() => {});
   }, []);
 
   const eligibleProviders = useMemo(() => {
@@ -106,6 +111,19 @@ function SettingsInner() {
     setMessage(null);
     try {
       setAgent(await updateAgentConfig(agentId, { model: model || null }));
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Update failed');
+    }
+  };
+
+  const changeExecution = async (input: {
+    execution?: 'server' | 'machine';
+    machineId?: string | null;
+    machineWorkdir?: string | null;
+  }) => {
+    setMessage(null);
+    try {
+      setAgent(await updateAgentConfig(agentId, input));
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Update failed');
     }
@@ -210,6 +228,66 @@ function SettingsInner() {
           </p>
         )}
       </section>
+
+      {agent.runtime !== 'api' && (
+        <section className={sectionClass} style={sectionStyle}>
+          <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Execution</h2>
+          <div className="flex gap-2">
+            {(['server', 'machine'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() =>
+                  mode === agent.execution
+                    ? undefined
+                    : changeExecution(
+                        mode === 'server'
+                          ? { execution: 'server' }
+                          : {
+                              execution: 'machine',
+                              machineId: machines.find((m) => m.online)?.id ?? machines[0]?.id ?? null,
+                            }
+                      )
+                }
+                className={`${chipButtonClass} ${agent.execution === mode ? '!bg-pixel-yellow' : ''}`}
+                style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
+              >
+                {mode === 'server' ? 'On this server' : 'On a paired machine'}
+              </button>
+            ))}
+          </div>
+          {agent.execution === 'machine' && (
+            <>
+              <select
+                className={inputClass}
+                value={agent.machineId ?? ''}
+                onChange={(e) => changeExecution({ execution: 'machine', machineId: e.target.value || null })}
+              >
+                {machines.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                    {m.online ? '' : ' (offline)'}
+                  </option>
+                ))}
+              </select>
+              <input
+                className={inputClass}
+                placeholder="Working directory on the machine (optional)"
+                value={workdir}
+                onChange={(e) => setWorkdir(e.target.value)}
+                onBlur={() =>
+                  workdir !== (agent.machineWorkdir ?? '') &&
+                  changeExecution({ execution: 'machine', machineWorkdir: workdir.trim() || null })
+                }
+              />
+            </>
+          )}
+          {agent.execution === 'machine' && machines.length === 0 && (
+            <p className="font-pixel text-xs text-pixel-black/55">
+              No machines paired. Add one under Settings → Machines.
+            </p>
+          )}
+        </section>
+      )}
 
       <section className={sectionClass} style={sectionStyle}>
         <div className="flex items-center justify-between">

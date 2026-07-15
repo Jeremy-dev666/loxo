@@ -1,5 +1,9 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
+  doublePrecision,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -9,6 +13,7 @@ import {
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
+import type { RuntimeProbe } from '@swarmdev/shared';
 import type { WorkflowDsl } from '../modules/teams/workflow-dsl';
 
 export const users = pgTable('users', {
@@ -16,6 +21,8 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   username: text('username').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
+  /** Monotonic per-user issue number source; incremented inside the create-issue transaction. */
+  issueCounter: integer('issue_counter').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -99,6 +106,12 @@ export const agents = pgTable('agents', {
     onDelete: 'set null',
   }),
   status: text('status').notNull().default('idle'), // idle | busy | error | offline
+  /** Where turns execute: on this server, via provider API, or on a paired machine. */
+  execution: text('execution').notNull().default('server'), // server | api | machine
+  machineId: uuid('machine_id').references((): AnyPgColumn => machines.id, {
+    onDelete: 'set null',
+  }),
+  machineWorkdir: text('machine_workdir'),
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -167,16 +180,29 @@ export type Team = typeof teams.$inferSelect;
  * teams/agents via join tables (deliberate deviation from JSON-array
  * columns). `updatedAt` is the recency key maintained by touchProject.
  */
-export const projects = pgTable('projects', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  description: text('description').notNull().default(''),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export type ProjectKind = 'normal' | 'default';
+
+export const projects = pgTable(
+  'projects',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    /** 'default' marks the per-user fallback project; created lazily, cannot be deleted. */
+    kind: text('kind').$type<ProjectKind>().notNull().default('normal'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // At most one default project per user; makes lazy creation race-safe.
+    uniqueIndex('projects_user_default')
+      .on(t.userId)
+      .where(sql`${t.kind} = 'default'`),
+  ]
+);
 
 export type Project = typeof projects.$inferSelect;
 
@@ -565,3 +591,141 @@ export const teamMembers = pgTable('team_members', {
 });
 
 export type TeamMember = typeof teamMembers.$inferSelect;
+
+/**
+ * Paired daemon hosts that execute machine-bound agents. `tokenHash` is the
+ * SHA-256 of the machine token; the plaintext is shown once at pairing.
+ */
+export const machines = pgTable('machines', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  platform: text('platform'),
+  hostname: text('hostname'),
+  tokenHash: text('token_hash').notNull().unique(),
+  /** Last runtime probe reported by the daemon on connect. */
+  runtimes: jsonb('runtimes').$type<RuntimeProbe[]>().notNull().default([]),
+  /** AES-256-GCM envelope of a JSON env-var map injected into runtime processes. */
+  envEncrypted: text('env_encrypted'),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Machine = typeof machines.$inferSelect;
+
+export type GoalStatus = 'active' | 'achieved' | 'archived';
+
+/**
+ * The "why" axis of work. Goals form an optional hierarchy via parentGoalId;
+ * issues attach to a goal independently of their project (two parallel axes).
+ */
+export const goals = pgTable('goals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description').notNull().default(''),
+  status: text('status').$type<GoalStatus>().notNull().default('active'),
+  parentGoalId: uuid('parent_goal_id').references((): AnyPgColumn => goals.id, {
+    onDelete: 'set null',
+  }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Goal = typeof goals.$inferSelect;
+
+export type IssueStatus =
+  | 'backlog'
+  | 'todo'
+  | 'in_progress'
+  | 'in_review'
+  | 'blocked'
+  | 'done'
+  | 'cancelled';
+
+/**
+ * Unit of work. Status transitions are enforced by a static transition table
+ * in the issues service, never by direct writes. Assignee and reviewer are
+ * each a single principal: agent or user, checked at the database level.
+ * issueNumber is unique per user and drawn from users.issueCounter.
+ */
+export const issues = pgTable(
+  'issues',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    goalId: uuid('goal_id').references(() => goals.id, { onDelete: 'set null' }),
+    issueNumber: integer('issue_number').notNull(),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    status: text('status').$type<IssueStatus>().notNull().default('backlog'),
+    assigneeAgentId: uuid('assignee_agent_id').references(() => agents.id, {
+      onDelete: 'set null',
+    }),
+    assigneeUserId: uuid('assignee_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    reviewerAgentId: uuid('reviewer_agent_id').references(() => agents.id, {
+      onDelete: 'set null',
+    }),
+    reviewerUserId: uuid('reviewer_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    /** Position within a kanban column; fractional values allow reorder without renumbering. */
+    boardOrder: doublePrecision('board_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('issues_user_number').on(t.userId, t.issueNumber),
+    index('issues_user_status').on(t.userId, t.status),
+    index('issues_project_status').on(t.projectId, t.status),
+    index('issues_assignee_agent').on(t.assigneeAgentId, t.status),
+    check(
+      'issues_assignee_single_principal',
+      sql`NOT (${t.assigneeAgentId} IS NOT NULL AND ${t.assigneeUserId} IS NOT NULL)`
+    ),
+    check(
+      'issues_reviewer_single_principal',
+      sql`NOT (${t.reviewerAgentId} IS NOT NULL AND ${t.reviewerUserId} IS NOT NULL)`
+    ),
+  ]
+);
+
+export type Issue = typeof issues.$inferSelect;
+
+export type IssueCommentAuthorType = 'human' | 'agent';
+
+/**
+ * Issue activity timeline. Author columns mirror the dual-principal pattern;
+ * rows are pruned with their issue, author links survive as null for display.
+ */
+export const issueComments = pgTable(
+  'issue_comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    authorType: text('author_type').$type<IssueCommentAuthorType>().notNull(),
+    authorUserId: uuid('author_user_id').references(() => users.id, { onDelete: 'set null' }),
+    authorAgentId: uuid('author_agent_id').references(() => agents.id, { onDelete: 'set null' }),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('issue_comments_issue_created').on(t.issueId, t.createdAt)]
+);
+
+export type IssueComment = typeof issueComments.$inferSelect;
