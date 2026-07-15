@@ -63,6 +63,7 @@ function TraditionalSidebar({
   const navItems: Array<{ href: string; label: string; icon: SidebarIcon; exact?: boolean }> = [
     { href: '/', label: 'Home', icon: 'home', exact: true },
     { href: '/issues', label: 'Issues', icon: 'teams' },
+    { href: '/issues?project=inbox', label: 'Inbox', icon: 'teams' },
     { href: '/agents', label: 'My Agents', icon: 'agents' },
     { href: '/teams', label: 'My Teams', icon: 'teams' },
     { href: '/roundtable', label: 'Roundtable', icon: 'roundtable' },
@@ -71,7 +72,8 @@ function TraditionalSidebar({
     { href: '/settings/providers', label: 'Providers', icon: 'settings' },
     { href: '/settings/machines', label: 'Machines', icon: 'settings' },
   ];
-  const recentProjects = [...projects]
+  const recentProjects = projects
+    .filter((p) => p.kind !== 'inbox')
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 7);
 

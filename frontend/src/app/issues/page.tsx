@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   DragDropContext,
   Draggable,
@@ -52,9 +53,19 @@ function orderAt(cards: Issue[], index: number, draggedId: string): number {
 }
 
 function BoardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const wantsInbox = searchParams.get('project') === 'inbox';
   const [board, setBoard] = useState<Board>(EMPTY_BOARD);
   const [projects, setProjects] = useState<ProjectView[]>([]);
   const [projectFilter, setProjectFilter] = useState<string>('');
+
+  // Sidebar "Inbox" deep link: resolve the inbox project once it is known.
+  useEffect(() => {
+    if (!wantsInbox) return;
+    const inbox = projects.find((p) => p.kind === 'inbox');
+    if (inbox) setProjectFilter(inbox.id);
+  }, [wantsInbox, projects]);
   const [dragSource, setDragSource] = useState<IssueStatus | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -207,7 +218,11 @@ function BoardPage() {
         <h1 className="font-pixel text-xl text-pixel-black">Issues</h1>
         <select
           value={projectFilter}
-          onChange={(e) => setProjectFilter(e.target.value)}
+          onChange={(e) => {
+            setProjectFilter(e.target.value);
+            // A manual pick overrides the deep link; clear it from the URL.
+            if (wantsInbox) router.replace('/issues');
+          }}
           className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
         >
           <option value="">All projects</option>
@@ -255,7 +270,9 @@ function BoardPage() {
 export default function IssuesPage() {
   return (
     <RequireAuth>
-      <BoardPage />
+      <Suspense fallback={null}>
+        <BoardPage />
+      </Suspense>
     </RequireAuth>
   );
 }
