@@ -42,9 +42,15 @@ function principalValue(agentId: string | null, userId: string | null): string {
   return '';
 }
 
-/** Torn-paper edge: a row of triangle teeth, flipped for the bottom. */
+/**
+ * Torn-paper edge. Top edge: paper sits low, teeth point up. Bottom edge
+ * needs the inverse form (transparent-first) so the teeth point down;
+ * swapping gradient angles alone is a no-op since the pair is mirrored.
+ */
 function TornEdge({ bottom = false }: { bottom?: boolean }) {
-  const teeth = `linear-gradient(${bottom ? '' : '-'}45deg, ${PAPER} 5px, transparent 0), linear-gradient(${bottom ? '-' : ''}45deg, ${PAPER} 5px, transparent 0)`;
+  const teeth = bottom
+    ? `linear-gradient(45deg, transparent 5px, ${PAPER} 0), linear-gradient(-45deg, transparent 5px, ${PAPER} 0)`
+    : `linear-gradient(45deg, ${PAPER} 5px, transparent 0), linear-gradient(-45deg, ${PAPER} 5px, transparent 0)`;
   return (
     <div
       aria-hidden

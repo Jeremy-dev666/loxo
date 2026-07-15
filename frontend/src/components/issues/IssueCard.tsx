@@ -67,12 +67,12 @@ export function IssueCard({ issue, onToggleBlocked, onOpen, dragging = false }: 
           )}
         </div>
       </div>
-      {/* Torn bottom edge */}
+      {/* Torn bottom edge: transparent-first so the teeth point down. */}
       <div
         aria-hidden
         className="h-[6px] w-full"
         style={{
-          background: `linear-gradient(45deg, ${PAPER} 3px, transparent 0), linear-gradient(-45deg, ${PAPER} 3px, transparent 0)`,
+          background: `linear-gradient(45deg, transparent 3px, ${PAPER} 0), linear-gradient(-45deg, transparent 3px, ${PAPER} 0)`,
           backgroundPosition: 'left top',
           backgroundRepeat: 'repeat-x',
           backgroundSize: '6px 6px',
