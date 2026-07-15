@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import type { Agent } from '@/lib/agents';
 import type { Goal } from '@/lib/goals';
+import { BracketButton, PAPER, Rule, TornEdge } from './receipt-parts';
 import {
   CLIENT_TRANSITIONS,
   STATUS_META,
@@ -28,8 +29,6 @@ interface IssueReceiptProps {
   onChanged: () => void;
 }
 
-const PAPER = '#FDFCF7';
-
 function formatTime(iso: string): string {
   const d = new Date(iso);
   const p = (n: number) => String(n).padStart(2, '0');
@@ -40,29 +39,6 @@ function principalValue(agentId: string | null, userId: string | null): string {
   if (agentId) return `agent:${agentId}`;
   if (userId) return `user:${userId}`;
   return '';
-}
-
-/**
- * Torn-paper edge. Top edge: paper sits low, teeth point up. Bottom edge
- * needs the inverse form (transparent-first) so the teeth point down;
- * swapping gradient angles alone is a no-op since the pair is mirrored.
- */
-function TornEdge({ bottom = false }: { bottom?: boolean }) {
-  const teeth = bottom
-    ? `linear-gradient(45deg, transparent 5px, ${PAPER} 0), linear-gradient(-45deg, transparent 5px, ${PAPER} 0)`
-    : `linear-gradient(45deg, ${PAPER} 5px, transparent 0), linear-gradient(-45deg, ${PAPER} 5px, transparent 0)`;
-  return (
-    <div
-      aria-hidden
-      className="h-[10px] w-full shrink-0"
-      style={{
-        background: teeth,
-        backgroundPosition: bottom ? 'left top' : 'left bottom',
-        backgroundRepeat: 'repeat-x',
-        backgroundSize: '10px 10px',
-      }}
-    />
-  );
 }
 
 /** Deterministic pseudo-barcode drawn from the issue id. */
@@ -85,14 +61,6 @@ function Barcode({ seed }: { seed: string }) {
   );
 }
 
-function Rule({ dashed = false }: { dashed?: boolean }) {
-  return (
-    <div
-      className={`my-3 border-t ${dashed ? 'border-dashed border-pixel-gray/70' : 'border-t-2 border-pixel-black'}`}
-    />
-  );
-}
-
 /** Receipt key-value row: label, dotted leader, right-aligned value. */
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -106,31 +74,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 const VALUE_SELECT =
   'max-w-[55%] cursor-pointer appearance-none border-b border-transparent bg-transparent text-right font-pixel text-xs text-pixel-black hover:border-pixel-black focus:border-pixel-black focus:outline-none';
-
-function BracketButton({
-  children,
-  onClick,
-  danger = false,
-  disabled = false,
-}: {
-  children: string;
-  onClick: () => void;
-  danger?: boolean;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`font-pixel text-xs uppercase tracking-wide disabled:opacity-40 ${
-        danger ? 'text-pixel-red hover:bg-pixel-red' : 'text-pixel-black hover:bg-pixel-black'
-      } px-1 hover:text-pixel-white`}
-    >
-      [ {children} ]
-    </button>
-  );
-}
 
 export function IssueReceipt({
   issueId,

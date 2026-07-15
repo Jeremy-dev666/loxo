@@ -10,6 +10,7 @@ import {
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { IssueCard } from '@/components/issues/IssueCard';
 import { IssueReceipt } from '@/components/issues/IssueReceipt';
+import { NewTicketModal } from '@/components/issues/NewTicketModal';
 import { ApiError } from '@/lib/api';
 import { fetchAgents, type Agent } from '@/lib/agents';
 import { fetchGoals, type Goal } from '@/lib/goals';
@@ -62,6 +63,7 @@ function BoardPage() {
   const [projectFilter, setProjectFilter] = useState<string>('');
   const [dragSource, setDragSource] = useState<IssueStatus | null>(null);
   const [openIssue, setOpenIssue] = useState<Issue | null>(null);
+  const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -262,6 +264,13 @@ function BoardPage() {
     <div className="flex h-full min-h-0 flex-col px-4 py-4">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <h1 className="font-pixel text-xl text-pixel-black">Issues</h1>
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="bg-pixel-black px-2 py-1 font-pixel text-xs uppercase tracking-wide text-pixel-white hover:bg-pixel-orange hover:text-pixel-black"
+        >
+          [ NEW TICKET ]
+        </button>
         <select
           value={projectFilter}
           onChange={(e) => setProjectFilter(e.target.value)}
@@ -304,6 +313,20 @@ function BoardPage() {
             {renderBacklogZone()}
           </div>
         </DragDropContext>
+      )}
+
+      {creating && (
+        <NewTicketModal
+          projects={projects}
+          goals={goals}
+          initialProjectId={projectFilter || undefined}
+          onClose={() => setCreating(false)}
+          onCreated={(issue) => {
+            setCreating(false);
+            setOpenIssue(issue);
+            void refresh();
+          }}
+        />
       )}
 
       {openIssue && (
