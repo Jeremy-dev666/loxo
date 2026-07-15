@@ -23,6 +23,10 @@ const config: Config = {
         'pixel-green': '#2F8A4C',
         'pixel-blue': '#A9721C',
         'pixel-yellow': '#F2B03D',
+        // Issue-status signals, same muted register as the legacy accents:
+        // steel = ready-to-work (todo), plum = under review.
+        'pixel-steel': '#3E6B99',
+        'pixel-plum': '#7A5B99',
       },
       fontFamily: {
         pixel: ['"Departure Mono"', 'VT323', 'monospace'],

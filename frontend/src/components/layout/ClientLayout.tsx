@@ -1,12 +1,10 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import appIcon from '@/app/icon.png';
-import { Header } from '@/components/layout/Header';
+import { BrandMark, Header } from '@/components/layout/Header';
 import { MobileAppNav } from '@/components/layout/MobileAppNav';
 import { useAuthStore } from '@/store/auth';
 import { fetchProjects, deleteProject, type ProjectView } from '@/lib/projects';
@@ -64,6 +62,7 @@ function TraditionalSidebar({
 }) {
   const navItems: Array<{ href: string; label: string; icon: SidebarIcon; exact?: boolean }> = [
     { href: '/', label: 'Home', icon: 'home', exact: true },
+    { href: '/issues', label: 'Issues', icon: 'teams' },
     { href: '/agents', label: 'My Agents', icon: 'agents' },
     { href: '/teams', label: 'My Teams', icon: 'teams' },
     { href: '/roundtable', label: 'Roundtable', icon: 'roundtable' },
@@ -108,12 +107,7 @@ function TraditionalSidebar({
           <div className="flex items-center gap-3">
             <Link href="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[#111]">
-                <Image
-                  src={appIcon}
-                  alt="SwarmDev"
-                  className="h-7 w-7"
-                  style={{ imageRendering: 'pixelated' }}
-                />
+                <BrandMark className="h-5 w-5 text-white" />
               </span>
               <span className="min-w-0">
                 <span className="brand-large block truncate text-[#111]">SwarmDev</span>
