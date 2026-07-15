@@ -1,0 +1,436 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { useAuthStore } from '@/store/auth';
+import type { Agent } from '@/lib/agents';
+import type { Goal } from '@/lib/goals';
+import {
+  CLIENT_TRANSITIONS,
+  STATUS_META,
+  addComment,
+  deleteIssue,
+  fetchComments,
+  fetchIssue,
+  moveIssue,
+  updateIssue,
+  type Issue,
+  type IssueComment,
+  type IssueStatus,
+} from '@/lib/issues';
+
+interface IssueReceiptProps {
+  issueId: string;
+  projectName?: string;
+  agents: Agent[];
+  goals: Goal[];
+  onClose: () => void;
+  /** Fired after any mutation so the board behind can refresh. */
+  onChanged: () => void;
+}
+
+const PAPER = '#FDFCF7';
+
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function principalValue(agentId: string | null, userId: string | null): string {
+  if (agentId) return `agent:${agentId}`;
+  if (userId) return `user:${userId}`;
+  return '';
+}
+
+/** Torn-paper edge: a row of triangle teeth, flipped for the bottom. */
+function TornEdge({ bottom = false }: { bottom?: boolean }) {
+  const teeth = `linear-gradient(${bottom ? '' : '-'}45deg, ${PAPER} 5px, transparent 0), linear-gradient(${bottom ? '-' : ''}45deg, ${PAPER} 5px, transparent 0)`;
+  return (
+    <div
+      aria-hidden
+      className="h-[10px] w-full shrink-0"
+      style={{
+        background: teeth,
+        backgroundPosition: bottom ? 'left top' : 'left bottom',
+        backgroundRepeat: 'repeat-x',
+        backgroundSize: '10px 10px',
+      }}
+    />
+  );
+}
+
+/** Deterministic pseudo-barcode drawn from the issue id. */
+function Barcode({ seed }: { seed: string }) {
+  const bars = seed
+    .replace(/-/g, '')
+    .slice(0, 28)
+    .split('')
+    .map((ch, i) => ({ w: (ch.charCodeAt(0) % 3) + 1, gap: i % 4 === 3 ? 3 : 1 }));
+  return (
+    <div className="flex h-7 items-stretch justify-center" aria-hidden>
+      {bars.map((b, i) => (
+        <span
+          key={i}
+          className="bg-pixel-black"
+          style={{ width: b.w, marginRight: b.gap }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Rule({ dashed = false }: { dashed?: boolean }) {
+  return (
+    <div
+      className={`my-3 border-t ${dashed ? 'border-dashed border-pixel-gray/70' : 'border-t-2 border-pixel-black'}`}
+    />
+  );
+}
+
+/** Receipt key-value row: label, dotted leader, right-aligned value. */
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-end gap-1">
+      <span className="shrink-0 font-pixel text-xs uppercase text-pixel-gray">{label}</span>
+      <span className="mb-[3px] min-w-4 flex-1 border-b border-dotted border-pixel-gray/50" />
+      {children}
+    </div>
+  );
+}
+
+const VALUE_SELECT =
+  'max-w-[55%] cursor-pointer appearance-none border-b border-transparent bg-transparent text-right font-pixel text-xs text-pixel-black hover:border-pixel-black focus:border-pixel-black focus:outline-none';
+
+function BracketButton({
+  children,
+  onClick,
+  danger = false,
+  disabled = false,
+}: {
+  children: string;
+  onClick: () => void;
+  danger?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`font-pixel text-xs uppercase tracking-wide disabled:opacity-40 ${
+        danger ? 'text-pixel-red hover:bg-pixel-red' : 'text-pixel-black hover:bg-pixel-black'
+      } px-1 hover:text-pixel-white`}
+    >
+      [ {children} ]
+    </button>
+  );
+}
+
+export function IssueReceipt({
+  issueId,
+  projectName,
+  agents,
+  goals,
+  onClose,
+  onChanged,
+}: IssueReceiptProps) {
+  const me = useAuthStore((s) => s.user);
+  const [issue, setIssue] = useState<Issue | null>(null);
+  const [comments, setComments] = useState<IssueComment[]>([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [draft, setDraft] = useState('');
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    const [{ issue: fetched }, { comments: timeline }] = await Promise.all([
+      fetchIssue(issueId),
+      fetchComments(issueId),
+    ]);
+    setIssue(fetched);
+    setTitle(fetched.title);
+    setDescription(fetched.description);
+    setComments(timeline);
+  }, [issueId]);
+
+  useEffect(() => {
+    load().catch((err) => setError(err instanceof Error ? err.message : 'Load failed'));
+  }, [load]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const mutate = useCallback(
+    async (action: () => Promise<unknown>) => {
+      setError('');
+      try {
+        await action();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Update failed');
+      }
+      await load().catch(() => undefined);
+      onChanged();
+    },
+    [load, onChanged]
+  );
+
+  if (!issue) {
+    return (
+      <div className="fixed inset-0 z-[60] bg-pixel-black/40" onClick={onClose} />
+    );
+  }
+
+  const meta = STATUS_META[issue.status];
+  const legalMoves = CLIENT_TRANSITIONS[issue.status].filter((s) => s !== 'cancelled');
+  const canCancel = CLIENT_TRANSITIONS[issue.status].includes('cancelled');
+  const agentName = (id: string | null) => agents.find((a) => a.id === id)?.name ?? 'agent';
+  const orderNo = `ORD-${String(issue.issueNumber).padStart(4, '0')}`;
+
+  const saveTitle = () => {
+    const next = title.trim();
+    if (!next || next === issue.title) {
+      setTitle(issue.title);
+      return;
+    }
+    void mutate(() => updateIssue(issue.id, { title: next }));
+  };
+
+  const saveDescription = () => {
+    if (description === issue.description) return;
+    void mutate(() => updateIssue(issue.id, { description }));
+  };
+
+  const changePrincipal = (slot: 'assignee' | 'reviewer', value: string) => {
+    const patch =
+      value === ''
+        ? null
+        : value.startsWith('agent:')
+          ? { agentId: value.slice(6) }
+          : { userId: value.slice(5) };
+    void mutate(() => updateIssue(issue.id, { [slot]: patch }));
+  };
+
+  const postComment = () => {
+    const body = draft.trim();
+    if (!body) return;
+    setDraft('');
+    void mutate(() => addComment(issue.id, body));
+  };
+
+  const cancelIssue = () => {
+    if (window.confirm(`Cancel ${orderNo}? This cannot be undone.`)) {
+      void mutate(() => moveIssue(issue.id, { status: 'cancelled' }));
+    }
+  };
+
+  const removeIssue = async () => {
+    if (!window.confirm(`Delete ${orderNo} and its activity permanently?`)) return;
+    setError('');
+    try {
+      await deleteIssue(issue.id);
+      onChanged();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Delete failed');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-pixel-black/40" onClick={onClose} />
+      <div
+        className="relative flex max-h-[88vh] w-[400px] flex-col"
+        style={{ filter: 'drop-shadow(3px 5px 0px rgba(17,17,17,0.25))' }}
+      >
+        <TornEdge />
+        <div
+          className="min-h-0 flex-1 overflow-y-auto px-5 py-3"
+          style={{ backgroundColor: PAPER }}
+        >
+          {/* Header */}
+          <div className="text-center">
+            <p className="font-pixel text-base tracking-[0.3em] text-pixel-black">SWARMDEV</p>
+            <p className="mt-0.5 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
+              * work order *
+            </p>
+            <p className="mt-1 font-pixel text-[10px] text-pixel-gray">
+              {orderNo} · {formatTime(issue.createdAt)}
+            </p>
+          </div>
+
+          <Rule />
+
+          <textarea
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={saveTitle}
+            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), (e.target as HTMLTextAreaElement).blur())}
+            rows={2}
+            className="w-full resize-none border border-transparent bg-transparent text-center font-pixel text-sm uppercase leading-snug text-pixel-black hover:border-pixel-gray/40 focus:border-pixel-black focus:outline-none"
+          />
+
+          {/* Status stamp */}
+          <div className="my-2 flex justify-center">
+            <div className={`rotate-[-2deg] border-2 px-2 py-0.5 ${meta.text}`}
+              style={{ borderColor: 'currentColor' }}
+            >
+              <select
+                value={issue.status}
+                onChange={(e) =>
+                  e.target.value !== issue.status &&
+                  void mutate(() => moveIssue(issue.id, { status: e.target.value as IssueStatus }))
+                }
+                disabled={legalMoves.length === 0}
+                className="cursor-pointer appearance-none bg-transparent text-center font-pixel text-xs font-bold uppercase tracking-[0.15em] focus:outline-none disabled:cursor-default"
+              >
+                <option value={issue.status}>{meta.label}</option>
+                {legalMoves.map((s) => (
+                  <option key={s} value={s} className="text-pixel-black">
+                    {`-> ${STATUS_META[s].label}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {error && (
+            <p className="my-1 text-center font-pixel text-[10px] uppercase text-pixel-red">
+              ! {error}
+            </p>
+          )}
+
+          <Rule dashed />
+
+          {/* Details */}
+          <div className="flex flex-col gap-1.5">
+            <Row label="Project">
+              <span className="max-w-[55%] truncate font-pixel text-xs text-pixel-black">
+                {projectName ?? '-'}
+              </span>
+            </Row>
+            <Row label="Goal">
+              <select
+                value={issue.goalId ?? ''}
+                onChange={(e) =>
+                  void mutate(() => updateIssue(issue.id, { goalId: e.target.value || null }))
+                }
+                className={VALUE_SELECT}
+              >
+                <option value="">None</option>
+                {goals.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.title}
+                  </option>
+                ))}
+              </select>
+            </Row>
+            <Row label="Assignee">
+              <select
+                value={principalValue(issue.assigneeAgentId, issue.assigneeUserId)}
+                onChange={(e) => changePrincipal('assignee', e.target.value)}
+                className={VALUE_SELECT}
+              >
+                <option value="">None</option>
+                {me && <option value={`user:${me.id}`}>{me.username} (me)</option>}
+                {agents.map((a) => (
+                  <option key={a.id} value={`agent:${a.id}`}>
+                    {a.name} (agent)
+                  </option>
+                ))}
+              </select>
+            </Row>
+            <Row label="Reviewer">
+              <select
+                value={principalValue(issue.reviewerAgentId, issue.reviewerUserId)}
+                onChange={(e) => changePrincipal('reviewer', e.target.value)}
+                className={VALUE_SELECT}
+              >
+                <option value="">None</option>
+                {me && <option value={`user:${me.id}`}>{me.username} (me)</option>}
+                {agents.map((a) => (
+                  <option key={a.id} value={`agent:${a.id}`}>
+                    {a.name} (agent)
+                  </option>
+                ))}
+              </select>
+            </Row>
+          </div>
+
+          <Rule dashed />
+
+          {/* Description */}
+          <p className="mb-1 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
+            Description
+          </p>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onBlur={saveDescription}
+            rows={3}
+            placeholder="(none)"
+            className="w-full resize-y border border-transparent bg-transparent font-pixel text-xs leading-relaxed text-pixel-black hover:border-pixel-gray/40 focus:border-pixel-black focus:outline-none"
+          />
+
+          <Rule dashed />
+
+          {/* Activity */}
+          <p className="mb-2 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
+            Activity log
+          </p>
+          <div className="flex flex-col gap-2">
+            {comments.map((c) => (
+              <div key={c.id} className="font-pixel text-xs">
+                <span className="text-pixel-gray">{formatTime(c.createdAt).slice(6)}</span>{' '}
+                <span className={c.authorType === 'agent' ? 'text-pixel-orange' : 'text-pixel-black'}>
+                  {c.authorType === 'agent' ? agentName(c.authorAgentId).toUpperCase() : 'YOU'}
+                </span>
+                <p className="whitespace-pre-wrap break-words pl-4 text-pixel-black">{c.body}</p>
+              </div>
+            ))}
+            {comments.length === 0 && (
+              <p className="font-pixel text-xs text-pixel-gray">(no entries)</p>
+            )}
+          </div>
+          <div className="mt-2 flex items-end gap-1">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={2}
+              placeholder="Add entry..."
+              className="min-w-0 flex-1 resize-none border border-dashed border-pixel-gray/60 bg-transparent p-1.5 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
+            />
+            <BracketButton onClick={postComment} disabled={!draft.trim()}>
+              POST
+            </BracketButton>
+          </div>
+
+          <Rule dashed />
+
+          {/* Danger + footer */}
+          <div className="flex justify-center gap-4">
+            {canCancel && (
+              <BracketButton onClick={cancelIssue}>CANCEL ISSUE</BracketButton>
+            )}
+            <BracketButton danger onClick={() => void removeIssue()}>
+              DELETE
+            </BracketButton>
+          </div>
+
+          <Rule />
+
+          <Barcode seed={issue.id} />
+          <p className="mt-1 text-center font-pixel text-[10px] tracking-[0.25em] text-pixel-gray">
+            {orderNo}
+          </p>
+          <p className="mb-1 mt-2 text-center font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
+            * * * keep this ticket * * *
+          </p>
+        </div>
+        <TornEdge bottom />
+      </div>
+    </div>
+  );
+}

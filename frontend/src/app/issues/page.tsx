@@ -9,7 +9,7 @@ import {
 } from '@hello-pangea/dnd';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { IssueCard } from '@/components/issues/IssueCard';
-import { IssueDrawer } from '@/components/issues/IssueDrawer';
+import { IssueReceipt } from '@/components/issues/IssueReceipt';
 import { ApiError } from '@/lib/api';
 import { fetchAgents, type Agent } from '@/lib/agents';
 import { fetchGoals, type Goal } from '@/lib/goals';
@@ -304,7 +304,7 @@ function BoardPage() {
       )}
 
       {openIssue && (
-        <IssueDrawer
+        <IssueReceipt
           issueId={openIssue.id}
           projectName={projects.find((p) => p.id === openIssue.projectId)?.name}
           agents={agents}
