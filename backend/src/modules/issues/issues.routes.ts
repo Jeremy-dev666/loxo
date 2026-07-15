@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { badRequest } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
+import { addHumanComment, listComments } from './comments.service';
 import {
   createIssue,
   deleteIssue,
@@ -109,6 +110,27 @@ issuesRouter.post('/:id/move', async (req: AuthedRequest, res, next) => {
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) throw badRequest('invalid_input', 'Invalid move');
     res.json({ issue: await moveIssue(req.auth!.userId, String(req.params.id), parsed.data) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.get('/:id/comments', async (req: AuthedRequest, res, next) => {
+  try {
+    res.json({ comments: await listComments(req.auth!.userId, String(req.params.id)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/comments', async (req: AuthedRequest, res, next) => {
+  try {
+    const schema = z.object({ body: z.string().trim().min(1).max(20000) });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw badRequest('invalid_input', 'Comment body is required');
+    res.status(201).json({
+      comment: await addHumanComment(req.auth!.userId, String(req.params.id), parsed.data.body),
+    });
   } catch (error) {
     next(error);
   }
