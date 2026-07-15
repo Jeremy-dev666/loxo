@@ -176,10 +176,56 @@ export async function updateProject(
 }
 
 export async function deleteProject(userId: string, projectId: string): Promise<void> {
-  const deleted = await db
-    .delete(projects)
+  const [target] = await db
+    .select({ kind: projects.kind })
+    .from(projects)
     .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
-    .returning({ id: projects.id });
-  if (deleted.length === 0) throw notFound('Project not found');
+    .limit(1);
+  if (!target) throw notFound('Project not found');
+  if (target.kind === 'inbox') {
+    throw badRequest('inbox_protected', 'The inbox project cannot be deleted');
+  }
+
+  await db
+    .delete(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
   removeDir(projectRoot(userId, projectId));
+}
+
+const INBOX_NAME = 'Inbox';
+
+/**
+ * Returns the user's built-in inbox project, creating it on first use.
+ * Concurrent first calls are settled by the projects_user_inbox partial
+ * unique index: losers no-op on conflict and re-read the winner's row.
+ */
+export async function getOrCreateInboxProject(userId: string): Promise<Project> {
+  const [existing] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.userId, userId), eq(projects.kind, 'inbox')))
+    .limit(1);
+  if (existing) return existing;
+
+  const [inserted] = await db
+    .insert(projects)
+    .values({
+      userId,
+      name: INBOX_NAME,
+      description: 'Default project for quick-captured issues',
+      kind: 'inbox',
+    })
+    .onConflictDoNothing()
+    .returning();
+  if (inserted) {
+    writeMetadata(userId, inserted);
+    return inserted;
+  }
+
+  const [winner] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.userId, userId), eq(projects.kind, 'inbox')))
+    .limit(1);
+  return winner!;
 }

@@ -182,18 +182,27 @@ export type Team = typeof teams.$inferSelect;
  */
 export type ProjectKind = 'normal' | 'inbox';
 
-export const projects = pgTable('projects', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  description: text('description').notNull().default(''),
-  /** 'inbox' marks the per-user default project; created lazily, cannot be deleted. */
-  kind: text('kind').$type<ProjectKind>().notNull().default('normal'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const projects = pgTable(
+  'projects',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    /** 'inbox' marks the per-user default project; created lazily, cannot be deleted. */
+    kind: text('kind').$type<ProjectKind>().notNull().default('normal'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // At most one inbox per user; makes lazy creation race-safe.
+    uniqueIndex('projects_user_inbox')
+      .on(t.userId)
+      .where(sql`${t.kind} = 'inbox'`),
+  ]
+);
 
 export type Project = typeof projects.$inferSelect;
 

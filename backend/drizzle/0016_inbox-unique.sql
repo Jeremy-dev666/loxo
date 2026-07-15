@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "projects_user_inbox" ON "projects" USING btree ("user_id") WHERE "projects"."kind" = 'inbox';
