@@ -21,6 +21,8 @@ import {
 
 interface IssueReceiptProps {
   issueId: string;
+  /** Play the thermal-printer feed entrance (used right after creation). */
+  printEntrance?: boolean;
   projectName?: string;
   agents: Agent[];
   goals: Goal[];
@@ -65,7 +67,7 @@ function Barcode({ seed }: { seed: string }) {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-end gap-1">
-      <span className="shrink-0 font-pixel text-xs uppercase text-pixel-gray">{label}</span>
+      <span className="shrink-0 font-pixel text-sm uppercase text-pixel-gray">{label}</span>
       <span className="mb-[3px] min-w-4 flex-1 border-b border-dotted border-pixel-gray/50" />
       {children}
     </div>
@@ -73,10 +75,11 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 const VALUE_SELECT =
-  'max-w-[55%] cursor-pointer appearance-none border-b border-transparent bg-transparent text-right font-pixel text-xs text-pixel-black hover:border-pixel-black focus:border-pixel-black focus:outline-none';
+  'max-w-[55%] cursor-pointer appearance-none border-b border-transparent bg-transparent text-right font-pixel text-sm text-pixel-black hover:border-pixel-black focus:border-pixel-black focus:outline-none';
 
 export function IssueReceipt({
   issueId,
+  printEntrance = false,
   projectName,
   agents,
   goals,
@@ -90,6 +93,14 @@ export function IssueReceipt({
   const [description, setDescription] = useState('');
   const [draft, setDraft] = useState('');
   const [error, setError] = useState('');
+  const [fed, setFed] = useState(!printEntrance);
+
+  // Reduced-motion users never get an animationend event; time out the feed.
+  useEffect(() => {
+    if (!printEntrance) return;
+    const t = setTimeout(() => setFed(true), 1700);
+    return () => clearTimeout(t);
+  }, [printEntrance]);
 
   const load = useCallback(async () => {
     const [{ issue: fetched }, { comments: timeline }] = await Promise.all([
@@ -128,9 +139,23 @@ export function IssueReceipt({
 
   if (!issue) {
     return (
-      <div className="fixed inset-0 z-[60] bg-pixel-black/40" onClick={onClose} />
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-pixel-black/40" onClick={onClose} />
+        {printEntrance && (
+          <div className="relative w-[470px]">
+            <div className="h-4 bg-pixel-black px-3">
+              <div className="mt-[6px] h-[3px] bg-pixel-cream/30" />
+            </div>
+            <p className="mt-3 animate-blink-steps text-center font-pixel text-xs uppercase tracking-[0.3em] text-pixel-white">
+              printing...
+            </p>
+          </div>
+        )}
+      </div>
     );
   }
+
+  const feeding = printEntrance && !fed;
 
   const meta = STATUS_META[issue.status];
   const legalMoves = CLIENT_TRANSITIONS[issue.status].filter((s) => s !== 'cancelled');
@@ -191,17 +216,27 @@ export function IssueReceipt({
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-pixel-black/40" onClick={onClose} />
       <div
-        className="relative flex max-h-[88vh] w-[400px] flex-col"
+        className="relative flex max-h-[90vh] w-[470px] flex-col"
         style={{ filter: 'drop-shadow(3px 5px 0px rgba(17,17,17,0.25))' }}
       >
+        {feeding && (
+          <div className="relative z-10 -mx-3 h-4 bg-pixel-black px-3">
+            <div className="mt-[6px] h-[3px] bg-pixel-cream/30" />
+          </div>
+        )}
+        <div className={`flex min-h-0 flex-col ${feeding ? 'overflow-hidden' : ''}`}>
+          <div
+            className={`flex min-h-0 flex-col ${feeding ? 'animate-print-feed motion-reduce:animate-none' : ''}`}
+            onAnimationEnd={() => setFed(true)}
+          >
         <TornEdge />
         <div
-          className="min-h-0 flex-1 overflow-y-auto px-5 py-3"
+          className="min-h-0 flex-1 overflow-y-auto px-6 py-3"
           style={{ backgroundColor: PAPER }}
         >
           {/* Header */}
           <div className="text-center">
-            <p className="font-pixel text-base tracking-[0.3em] text-pixel-black">SWARMDEV</p>
+            <p className="font-pixel text-lg tracking-[0.3em] text-pixel-black">SWARMDEV</p>
             <p className="mt-0.5 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
               * work order *
             </p>
@@ -218,7 +253,7 @@ export function IssueReceipt({
             onBlur={saveTitle}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), (e.target as HTMLTextAreaElement).blur())}
             rows={2}
-            className="w-full resize-none border border-transparent bg-transparent text-center font-pixel text-sm uppercase leading-snug text-pixel-black hover:border-pixel-gray/40 focus:border-pixel-black focus:outline-none"
+            className="w-full resize-none border border-transparent bg-transparent text-center font-pixel text-base uppercase leading-snug text-pixel-black hover:border-pixel-gray/40 focus:border-pixel-black focus:outline-none"
           />
 
           {/* Status stamp */}
@@ -256,7 +291,7 @@ export function IssueReceipt({
           {/* Details */}
           <div className="flex flex-col gap-1.5">
             <Row label="Project">
-              <span className="max-w-[55%] truncate font-pixel text-xs text-pixel-black">
+              <span className="max-w-[55%] truncate font-pixel text-sm text-pixel-black">
                 {projectName ?? '-'}
               </span>
             </Row>
@@ -320,7 +355,7 @@ export function IssueReceipt({
             onBlur={saveDescription}
             rows={3}
             placeholder="(none)"
-            className="w-full resize-y border border-transparent bg-transparent font-pixel text-xs leading-relaxed text-pixel-black hover:border-pixel-gray/40 focus:border-pixel-black focus:outline-none"
+            className="w-full resize-y border border-transparent bg-transparent font-pixel text-sm leading-relaxed text-pixel-black hover:border-pixel-gray/40 focus:border-pixel-black focus:outline-none"
           />
 
           <Rule dashed />
@@ -331,12 +366,12 @@ export function IssueReceipt({
           </p>
           <div className="flex flex-col gap-2">
             {comments.map((c) => (
-              <div key={c.id} className="font-pixel text-xs">
+              <div key={c.id} className="font-pixel text-sm">
                 <span className="text-pixel-gray">{formatTime(c.createdAt).slice(6)}</span>{' '}
                 <span className={c.authorType === 'agent' ? 'text-pixel-orange' : 'text-pixel-black'}>
                   {c.authorType === 'agent' ? agentName(c.authorAgentId).toUpperCase() : 'YOU'}
                 </span>
-                <p className="whitespace-pre-wrap break-words pl-4 text-pixel-black">{c.body}</p>
+                <p className="whitespace-pre-wrap break-words pl-4 text-sm text-pixel-black">{c.body}</p>
               </div>
             ))}
             {comments.length === 0 && (
@@ -379,6 +414,8 @@ export function IssueReceipt({
           </p>
         </div>
         <TornEdge bottom />
+          </div>
+        </div>
       </div>
     </div>
   );

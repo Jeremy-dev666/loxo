@@ -63,6 +63,7 @@ function BoardPage() {
   const [projectFilter, setProjectFilter] = useState<string>('');
   const [dragSource, setDragSource] = useState<IssueStatus | null>(null);
   const [openIssue, setOpenIssue] = useState<Issue | null>(null);
+  const [printEntrance, setPrintEntrance] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -167,7 +168,10 @@ function BoardPage() {
           <IssueCard
             issue={issue}
             dragging={dragSnapshot.isDragging}
-            onOpen={setOpenIssue}
+            onOpen={(i) => {
+              setPrintEntrance(false);
+              setOpenIssue(i);
+            }}
             onToggleBlocked={
               issue.status === 'in_progress' || issue.status === 'blocked'
                 ? toggleBlocked
@@ -323,6 +327,7 @@ function BoardPage() {
           onClose={() => setCreating(false)}
           onCreated={(issue) => {
             setCreating(false);
+            setPrintEntrance(true);
             setOpenIssue(issue);
             void refresh();
           }}
@@ -332,6 +337,7 @@ function BoardPage() {
       {openIssue && (
         <IssueReceipt
           issueId={openIssue.id}
+          printEntrance={printEntrance}
           projectName={projects.find((p) => p.id === openIssue.projectId)?.name}
           agents={agents}
           goals={goals}

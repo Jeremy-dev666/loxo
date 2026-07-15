@@ -16,7 +16,7 @@ interface NewTicketModalProps {
 }
 
 const FIELD =
-  'w-full border border-dashed border-pixel-gray/60 bg-transparent p-1.5 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none';
+  'w-full border border-dashed border-pixel-gray/60 bg-transparent p-2 font-pixel text-sm text-pixel-black focus:border-pixel-black focus:outline-none';
 
 export function NewTicketModal({
   projects,
@@ -67,16 +67,16 @@ export function NewTicketModal({
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-pixel-black/40" onClick={onClose} />
       <div
-        className="relative flex max-h-[88vh] w-[400px] flex-col"
+        className="relative flex max-h-[90vh] w-[470px] flex-col"
         style={{ filter: 'drop-shadow(3px 5px 0px rgba(17,17,17,0.25))' }}
       >
         <TornEdge />
         <div
-          className="min-h-0 flex-1 overflow-y-auto px-5 py-3"
+          className="min-h-0 flex-1 overflow-y-auto px-6 py-3"
           style={{ backgroundColor: PAPER }}
         >
           <div className="text-center">
-            <p className="font-pixel text-base tracking-[0.3em] text-pixel-black">SWARMDEV</p>
+            <p className="font-pixel text-lg tracking-[0.3em] text-pixel-black">SWARMDEV</p>
             <p className="mt-0.5 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
               * new work order *
             </p>

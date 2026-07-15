@@ -41,6 +41,9 @@ const config: Config = {
         shake: 'shake 0.3s ease-in-out infinite',
         'bounce-pixel': 'bounce-pixel 1s ease-in-out infinite',
         float: 'float 3s ease-in-out infinite',
+        // Thermal printer feed: stepped, line-by-line, deliberately jerky.
+        'print-feed': 'print-feed 1.5s steps(18, end) both',
+        'blink-steps': 'blink-steps 0.9s steps(2, start) infinite',
       },
       keyframes: {
         shake: {
@@ -51,6 +54,14 @@ const config: Config = {
         'bounce-pixel': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-4px)' },
+        },
+        'print-feed': {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        'blink-steps': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
