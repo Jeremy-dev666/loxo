@@ -143,7 +143,7 @@ function BoardPage() {
       <div
         key={status}
         className={`flex min-h-0 flex-col transition-opacity duration-150 ${
-          options?.rail ? 'w-56 shrink-0' : 'w-64 shrink-0'
+          options?.rail ? 'min-w-[200px] flex-[0.7]' : 'min-w-[240px] flex-1'
         } ${dimmed ? 'opacity-35' : ''}`}
       >
         <div className="mb-2 flex items-center gap-2">
@@ -240,7 +240,7 @@ function BoardPage() {
           onDragStart={(start) => setDragSource(start.source.droppableId as IssueStatus)}
           onDragEnd={onDragEnd}
         >
-          <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto pb-4">
+          <div className="flex min-h-[70vh] flex-1 gap-4 overflow-x-auto pb-4">
             {renderColumn('backlog', board.backlog, { rail: true })}
             <span className="w-px shrink-0 self-stretch bg-pixel-line" aria-hidden />
             {BOARD_COLUMNS.map((status) => renderColumn(status, columnCards(board, status)))}
