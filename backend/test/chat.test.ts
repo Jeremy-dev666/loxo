@@ -195,7 +195,7 @@ describe('websocket chat', () => {
   });
 
   it('keeps a manual title when messages arrive', async () => {
-    setTurnExecutorForTests(async () => ({ text: 'ok', sessionRef: null, durationMs: 1 }));
+    setTurnExecutorForTests(async () => ({ text: 'ok', sessionRef: undefined, durationMs: 1 }));
     const created = await request(app)
       .post('/api/conversations')
       .set(auth())
