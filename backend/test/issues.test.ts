@@ -66,12 +66,12 @@ describe('issue creation', () => {
     expect(issue.issueNumber).toBeGreaterThan(0);
   });
 
-  it('falls back to the inbox when no project is given', async () => {
+  it('falls back to the default project when none is given', async () => {
     const issue = await create({ title: 'Quick capture' });
     const projectRes = await request(app)
       .get(`/api/projects/${issue.projectId}`)
       .set(auth());
-    expect(projectRes.body.project.kind).toBe('inbox');
+    expect(projectRes.body.project.kind).toBe('default');
   });
 
   it('rejects a foreign project', async () => {

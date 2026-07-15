@@ -10,7 +10,7 @@ import {
   type IssueStatus,
 } from '../../db/schema';
 import { badRequest, notFound } from '../../http/errors';
-import { getOrCreateInboxProject } from '../projects/projects.service';
+import { getOrCreateDefaultProject } from '../projects/projects.service';
 import { isTransitionAllowed, TERMINAL_STATUSES } from './issue-transitions';
 
 export interface AssignmentPatch {
@@ -97,7 +97,7 @@ export async function createIssue(
   if (projectId) {
     await assertOwnedProject(userId, projectId);
   } else {
-    projectId = (await getOrCreateInboxProject(userId)).id;
+    projectId = (await getOrCreateDefaultProject(userId)).id;
   }
   if (input.goalId) await assertOwnedGoal(userId, input.goalId);
 

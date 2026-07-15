@@ -139,9 +139,9 @@ function ProjectsPageInner() {
   const [showCreate, setShowCreate] = useState(false);
 
   const reload = useCallback(() => {
-    // The built-in inbox is an issue-capture bucket, not a managed project.
+    // The built-in default project is an issue fallback, not a managed project.
     fetchProjects()
-      .then((all) => setProjects(all.filter((p) => p.kind !== 'inbox')))
+      .then((all) => setProjects(all.filter((p) => p.kind !== 'default')))
       .catch(() => setProjects([]));
   }, []);
 

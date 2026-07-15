@@ -6,8 +6,8 @@ export interface ProjectView {
   id: string;
   name: string;
   description: string;
-  /** 'inbox' is the built-in default project; presented as its own thing in UI. */
-  kind: 'normal' | 'inbox';
+  /** 'default' is the built-in fallback project for issues created without one. */
+  kind: 'normal' | 'default';
   teamIds: string[];
   agentIds: string[];
   createdAt: string;

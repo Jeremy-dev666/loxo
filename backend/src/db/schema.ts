@@ -180,7 +180,7 @@ export type Team = typeof teams.$inferSelect;
  * teams/agents via join tables (deliberate deviation from JSON-array
  * columns). `updatedAt` is the recency key maintained by touchProject.
  */
-export type ProjectKind = 'normal' | 'inbox';
+export type ProjectKind = 'normal' | 'default';
 
 export const projects = pgTable(
   'projects',
@@ -191,16 +191,16 @@ export const projects = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
-    /** 'inbox' marks the per-user default project; created lazily, cannot be deleted. */
+    /** 'default' marks the per-user fallback project; created lazily, cannot be deleted. */
     kind: text('kind').$type<ProjectKind>().notNull().default('normal'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    // At most one inbox per user; makes lazy creation race-safe.
-    uniqueIndex('projects_user_inbox')
+    // At most one default project per user; makes lazy creation race-safe.
+    uniqueIndex('projects_user_default')
       .on(t.userId)
-      .where(sql`${t.kind} = 'inbox'`),
+      .where(sql`${t.kind} = 'default'`),
   ]
 );
 

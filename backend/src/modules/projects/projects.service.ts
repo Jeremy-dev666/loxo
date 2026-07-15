@@ -182,8 +182,8 @@ export async function deleteProject(userId: string, projectId: string): Promise<
     .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
     .limit(1);
   if (!target) throw notFound('Project not found');
-  if (target.kind === 'inbox') {
-    throw badRequest('inbox_protected', 'The inbox project cannot be deleted');
+  if (target.kind === 'default') {
+    throw badRequest('default_project_protected', 'The default project cannot be deleted');
   }
 
   await db
@@ -192,18 +192,18 @@ export async function deleteProject(userId: string, projectId: string): Promise<
   removeDir(projectRoot(userId, projectId));
 }
 
-const INBOX_NAME = 'Inbox';
+const DEFAULT_PROJECT_NAME = 'Default Project';
 
 /**
- * Returns the user's built-in inbox project, creating it on first use.
- * Concurrent first calls are settled by the projects_user_inbox partial
+ * Returns the user's built-in default project, creating it on first use.
+ * Concurrent first calls are settled by the projects_user_default partial
  * unique index: losers no-op on conflict and re-read the winner's row.
  */
-export async function getOrCreateInboxProject(userId: string): Promise<Project> {
+export async function getOrCreateDefaultProject(userId: string): Promise<Project> {
   const [existing] = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.userId, userId), eq(projects.kind, 'inbox')))
+    .where(and(eq(projects.userId, userId), eq(projects.kind, 'default')))
     .limit(1);
   if (existing) return existing;
 
@@ -211,9 +211,9 @@ export async function getOrCreateInboxProject(userId: string): Promise<Project> 
     .insert(projects)
     .values({
       userId,
-      name: INBOX_NAME,
-      description: 'Default project for quick-captured issues',
-      kind: 'inbox',
+      name: DEFAULT_PROJECT_NAME,
+      description: 'Fallback project for issues created without one',
+      kind: 'default',
     })
     .onConflictDoNothing()
     .returning();
@@ -225,7 +225,7 @@ export async function getOrCreateInboxProject(userId: string): Promise<Project> 
   const [winner] = await db
     .select()
     .from(projects)
-    .where(and(eq(projects.userId, userId), eq(projects.kind, 'inbox')))
+    .where(and(eq(projects.userId, userId), eq(projects.kind, 'default')))
     .limit(1);
   return winner!;
 }

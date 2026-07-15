@@ -563,7 +563,7 @@ function HomePageInner() {
     setAgents(agentList);
     setProjects(
       projectList
-        .filter((p) => p.kind !== 'inbox')
+        .filter((p) => p.kind !== 'default')
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     );
     setTeams(teamList);
