@@ -136,23 +136,56 @@ function BoardPage() {
     [applyMove]
   );
 
-  const renderColumn = (status: IssueStatus, cards: Issue[], options?: { rail?: boolean }) => {
+  const renderCard = (issue: Issue, index: number) => (
+    <Draggable
+      key={issue.id}
+      draggableId={issue.id}
+      index={index}
+      isDragDisabled={issue.status === 'done' || issue.status === 'cancelled'}
+    >
+      {(dragProvided, dragSnapshot) => (
+        <div
+          ref={dragProvided.innerRef}
+          {...dragProvided.draggableProps}
+          {...dragProvided.dragHandleProps}
+        >
+          <IssueCard
+            issue={issue}
+            dragging={dragSnapshot.isDragging}
+            onToggleBlocked={
+              issue.status === 'in_progress' || issue.status === 'blocked'
+                ? toggleBlocked
+                : undefined
+            }
+          />
+        </div>
+      )}
+    </Draggable>
+  );
+
+  const columnHeader = (status: IssueStatus, count: number) => {
     const meta = STATUS_META[status];
+    return (
+      <div className="mb-2 flex items-center gap-2">
+        <span className={`h-2 w-2 ${meta.swatch}`} aria-hidden />
+        <span className="font-pixel text-xs uppercase tracking-wide text-pixel-black">
+          {meta.label}
+        </span>
+        <span className="font-pixel text-xs text-pixel-gray">{count}</span>
+      </div>
+    );
+  };
+
+  const renderColumn = (status: IssueStatus, cards: Issue[]) => {
     const dimmed = legalTargets !== null && !legalTargets.has(status);
     return (
       <div
         key={status}
-        className={`flex min-h-0 flex-col transition-opacity duration-150 ${
-          options?.rail ? 'min-w-[200px] flex-[0.7]' : 'min-w-[240px] flex-1'
-        } ${dimmed ? 'opacity-35' : ''}`}
+        className={`flex min-h-0 min-w-[240px] flex-1 flex-col transition-opacity duration-150 ${
+          dimmed ? 'opacity-35' : ''
+        }`}
       >
-        <div className="mb-2 flex items-center gap-2">
-          <span className={`h-2 w-2 ${meta.swatch}`} aria-hidden />
-          <span className="font-pixel text-xs uppercase tracking-wide text-pixel-black">
-            {meta.label}
-          </span>
-          <span className="font-pixel text-xs text-pixel-gray">{cards.length}</span>
-        </div>
+        {columnHeader(status, cards.length)}
         <Droppable droppableId={status} isDropDisabled={dimmed}>
           {(provided, snapshot) => (
             <div
@@ -164,35 +197,42 @@ function BoardPage() {
                   : 'border-pixel-line bg-pixel-cream/40'
               }`}
             >
-              {cards.map((issue, index) => (
-                <Draggable
-                  key={issue.id}
-                  draggableId={issue.id}
-                  index={index}
-                  isDragDisabled={issue.status === 'done' || issue.status === 'cancelled'}
-                >
-                  {(dragProvided, dragSnapshot) => (
-                    <div
-                      ref={dragProvided.innerRef}
-                      {...dragProvided.draggableProps}
-                      {...dragProvided.dragHandleProps}
-                    >
-                      <IssueCard
-                        issue={issue}
-                        dragging={dragSnapshot.isDragging}
-                        onToggleBlocked={
-                          issue.status === 'in_progress' || issue.status === 'blocked'
-                            ? toggleBlocked
-                            : undefined
-                        }
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
+              {cards.map(renderCard)}
               {provided.placeholder}
               {cards.length === 0 && (
                 <p className="m-auto font-pixel text-xs text-pixel-gray">No issues</p>
+              )}
+            </div>
+          )}
+        </Droppable>
+      </div>
+    );
+  };
+
+  /** Full-width bottom pool; cards flow in a wrapping grid, not one long column. */
+  const renderBacklogZone = () => {
+    const cards = board.backlog;
+    const dimmed = legalTargets !== null && !legalTargets.has('backlog');
+    return (
+      <div className={`transition-opacity duration-150 ${dimmed ? 'opacity-35' : ''}`}>
+        {columnHeader('backlog', cards.length)}
+        <Droppable droppableId="backlog" direction="horizontal" isDropDisabled={dimmed}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`grid min-h-[96px] grid-cols-2 content-start gap-2 border p-2 md:grid-cols-3 xl:grid-cols-4 ${
+                snapshot.isDraggingOver
+                  ? 'border-pixel-black bg-pixel-cream'
+                  : 'border-pixel-line bg-pixel-cream/40'
+              }`}
+            >
+              {cards.map(renderCard)}
+              {provided.placeholder}
+              {cards.length === 0 && (
+                <p className="col-span-full m-auto font-pixel text-xs text-pixel-gray">
+                  No issues waiting to be planned
+                </p>
               )}
             </div>
           )}
@@ -240,10 +280,11 @@ function BoardPage() {
           onDragStart={(start) => setDragSource(start.source.droppableId as IssueStatus)}
           onDragEnd={onDragEnd}
         >
-          <div className="flex min-h-[70vh] flex-1 gap-4 overflow-x-auto pb-4">
-            {renderColumn('backlog', board.backlog, { rail: true })}
-            <span className="w-px shrink-0 self-stretch bg-pixel-line" aria-hidden />
-            {BOARD_COLUMNS.map((status) => renderColumn(status, columnCards(board, status)))}
+          <div className="flex min-h-0 flex-1 flex-col gap-4 pb-4">
+            <div className="flex min-h-[52vh] gap-4 overflow-x-auto">
+              {BOARD_COLUMNS.map((status) => renderColumn(status, columnCards(board, status)))}
+            </div>
+            {renderBacklogZone()}
           </div>
         </DragDropContext>
       )}
