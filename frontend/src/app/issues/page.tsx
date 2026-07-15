@@ -262,7 +262,7 @@ function BoardPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col px-4 py-4">
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-5 flex flex-wrap items-center gap-3 border-b border-pixel-line pb-4">
         <h1 className="font-pixel text-xl text-pixel-black">Issues</h1>
         <button
           type="button"
