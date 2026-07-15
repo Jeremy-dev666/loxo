@@ -6,6 +6,8 @@ export interface ProjectView {
   id: string;
   name: string;
   description: string;
+  /** 'inbox' is the built-in default project; presented as its own thing in UI. */
+  kind: 'normal' | 'inbox';
   teamIds: string[];
   agentIds: string[];
   createdAt: string;

@@ -211,11 +211,21 @@ function BoardPage() {
           className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
         >
           <option value="">All projects</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
+          {projects
+            .filter((p) => p.kind === 'inbox')
+            .map((p) => (
+              <option key={p.id} value={p.id}>
+                Inbox (unfiled)
+              </option>
+            ))}
+          <option disabled>────────</option>
+          {projects
+            .filter((p) => p.kind !== 'inbox')
+            .map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
         </select>
         {error && (
           <span className="border border-pixel-red bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-red">
