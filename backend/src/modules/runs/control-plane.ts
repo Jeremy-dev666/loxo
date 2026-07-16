@@ -1,10 +1,24 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from '../../db/client';
-import { agents, issues, runs, type Agent, type Issue, type IssueStatus, type Run } from '../../db/schema';
+import {
+  agents,
+  issues,
+  runs,
+  type Agent,
+  type Issue,
+  type IssueStatus,
+  type ReviewDecision,
+  type Run,
+} from '../../db/schema';
 import { badRequest, unauthorized } from '../../http/errors';
 import { addAgentComment, listComments } from '../issues/comments.service';
 import { moveIssue } from '../issues/issues.service';
 import { isTransitionAllowed } from '../issues/issue-transitions';
+import {
+  countAgentRejections,
+  createReview,
+  REVIEW_CYCLE_CAP,
+} from '../issues/reviews.service';
 import { verifyRunToken } from './run-token';
 
 /**
@@ -120,6 +134,75 @@ export async function submitResult(ctx: RunToolContext, summary: string): Promis
   return advanceTo(ctx, 'in_review');
 }
 
+export interface ReviewVerdictOutcome {
+  status: IssueStatus;
+  halted: boolean;
+  note: string;
+}
+
+/**
+ * Reviewer verdict from a review run. Asymmetric authority: an agent
+ * rejection reopens work (until the automated-cycle fuse blows), but an
+ * agent approval only records a recommendation — closing stays human.
+ */
+export async function submitReviewVerdict(
+  ctx: RunToolContext,
+  decision: ReviewDecision,
+  feedback: string
+): Promise<ReviewVerdictOutcome> {
+  if (ctx.run.trigger !== 'review') {
+    throw badRequest('not_a_review_run', 'Only review runs can submit review verdicts');
+  }
+
+  if (decision === 'approved') {
+    await createReview(
+      ctx.run.userId,
+      ctx.issue.id,
+      {
+        decision,
+        body: feedback,
+        reviewer: { agentId: ctx.agent.id },
+        runId: ctx.run.id,
+      },
+      { applyTransition: false }
+    );
+    return {
+      status: 'in_review',
+      halted: false,
+      note: 'Approval recorded as a recommendation; final sign-off stays with a human.',
+    };
+  }
+
+  const priorRejections = await countAgentRejections(ctx.issue.id);
+  const halted = priorRejections >= REVIEW_CYCLE_CAP;
+  await createReview(
+    ctx.run.userId,
+    ctx.issue.id,
+    {
+      decision,
+      body: feedback,
+      reviewer: { agentId: ctx.agent.id },
+      runId: ctx.run.id,
+    },
+    { applyTransition: !halted }
+  );
+  if (halted) {
+    await addAgentComment(
+      ctx.run.userId,
+      ctx.issue.id,
+      ctx.agent.id,
+      `[REVIEW HALTED] ${REVIEW_CYCLE_CAP} automated review cycles reached; a human reviewer needs to take over.`
+    );
+    return {
+      status: 'in_review',
+      halted: true,
+      note: 'Automated review cycles exhausted; the issue stays in review for a human.',
+    };
+  }
+  const issue = await freshIssue(ctx);
+  return { status: issue.status, halted: false, note: 'Changes requested; the assignee has been re-woken.' };
+}
+
 function requireString(args: Record<string, unknown>, key: string): string {
   const value = args[key];
   if (typeof value !== 'string' || !value.trim()) {
@@ -146,12 +229,13 @@ export interface ControlPlaneToolDef {
 }
 
 /**
- * In-process flavor of the five control-plane tools for the api lane; same
+ * In-process flavor of the control-plane tools for the api lane; same
  * implementations the MCP endpoint wraps, minus the token round-trip since
- * the executor already holds the run context.
+ * the executor already holds the run context. Review runs get the reviewer
+ * set (read, comment, verdict); worker runs get the worker set.
  */
 export function buildControlPlaneToolDefs(ctx: RunToolContext): ControlPlaneToolDef[] {
-  return [
+  const shared: ControlPlaneToolDef[] = [
     {
       name: 'get_issue',
       description:
@@ -172,6 +256,37 @@ export function buildControlPlaneToolDefs(ctx: RunToolContext): ControlPlaneTool
         return 'Comment posted';
       },
     },
+  ];
+
+  if (ctx.run.trigger === 'review') {
+    return [
+      ...shared,
+      {
+        name: 'submit_review',
+        description:
+          'Deliver your review verdict. approved records a recommendation (a human closes the issue); changes_requested reopens work with your feedback.',
+        parameters: {
+          type: 'object',
+          properties: {
+            decision: { type: 'string', enum: ['approved', 'changes_requested'] },
+            feedback: { type: 'string' },
+          },
+          required: ['decision', 'feedback'],
+        },
+        execute: async (args) => {
+          const decision = requireString(args, 'decision') as ReviewDecision;
+          if (decision !== 'approved' && decision !== 'changes_requested') {
+            throw badRequest('invalid_input', `Unknown decision "${decision}"`);
+          }
+          const outcome = await submitReviewVerdict(ctx, decision, requireString(args, 'feedback'));
+          return JSON.stringify(outcome);
+        },
+      },
+    ];
+  }
+
+  return [
+    ...shared,
     {
       name: 'update_issue_status',
       description:

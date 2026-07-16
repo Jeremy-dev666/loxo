@@ -13,9 +13,30 @@ import { badRequest, notFound } from '../../http/errors';
 import { getOrCreateDefaultProject } from '../projects/projects.service';
 import { requestWake } from '../runs/wake';
 import { isTransitionAllowed, TERMINAL_STATUSES } from './issue-transitions';
+import { countAgentRejections, REVIEW_CYCLE_CAP } from './reviews.service';
 
 /** Statuses where an agent assignee is expected to act; backlog means "not ready yet". */
 const WAKE_STATUSES: IssueStatus[] = ['todo', 'in_progress'];
+
+/**
+ * Reviewer wake on entering review. Skipped when the reviewer is also the
+ * assignee (self-review is noise) and once the automated-cycle fuse has
+ * blown — after that, reviews on this issue are human-only.
+ */
+async function wakeReviewerAgent(issue: Issue): Promise<void> {
+  if (!issue.reviewerAgentId || issue.reviewerAgentId === issue.assigneeAgentId) return;
+  try {
+    if ((await countAgentRejections(issue.id)) >= REVIEW_CYCLE_CAP) return;
+    await requestWake(issue.userId, {
+      agentId: issue.reviewerAgentId,
+      issueId: issue.id,
+      trigger: 'review',
+      reason: `Review requested on issue #${issue.issueNumber}: ${issue.title}`,
+    });
+  } catch (error) {
+    console.error(`Reviewer wake for issue ${issue.id} failed:`, error);
+  }
+}
 
 /** Wake-ups are post-commit side effects; a failed wake never fails the write. */
 async function wakeAssignedAgent(issue: Issue, reason: string): Promise<void> {
@@ -288,6 +309,9 @@ export async function moveIssue(
       updated!,
       `Issue #${updated!.issueNumber} moved to ${input.status}: ${updated!.title}`
     );
+  }
+  if (changingStatus && input.status === 'in_review') {
+    await wakeReviewerAgent(updated!);
   }
   return updated!;
 }

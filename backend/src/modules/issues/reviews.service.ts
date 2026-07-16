@@ -22,6 +22,32 @@ export interface CreateReviewInput {
   runId?: string | null;
 }
 
+export interface CreateReviewOptions {
+  /**
+   * Agent approvals record a recommendation but leave the issue in review —
+   * closing an issue stays a human decision. Rejections always transition.
+   */
+  applyTransition?: boolean;
+}
+
+/** Automated reject cycles allowed per issue before a human must take over. */
+export const REVIEW_CYCLE_CAP = 3;
+
+/** Agent-issued changes_requested verdicts on an issue, ever. */
+export async function countAgentRejections(issueId: string): Promise<number> {
+  const rows = await db
+    .select({ id: issueReviews.id })
+    .from(issueReviews)
+    .where(
+      and(
+        eq(issueReviews.issueId, issueId),
+        eq(issueReviews.reviewerType, 'agent'),
+        eq(issueReviews.decision, 'changes_requested')
+      )
+    );
+  return rows.length;
+}
+
 const DECISION_LABEL: Record<ReviewDecision, string> = {
   approved: '[APPROVED]',
   changes_requested: '[CHANGES REQUESTED]',
@@ -46,7 +72,8 @@ async function findOwnedIssue(userId: string, issueId: string): Promise<Issue> {
 export async function createReview(
   userId: string,
   issueId: string,
-  input: CreateReviewInput
+  input: CreateReviewInput,
+  options: CreateReviewOptions = {}
 ): Promise<IssueReview> {
   const issue = await findOwnedIssue(userId, issueId);
   if (issue.status !== 'in_review') {
@@ -115,9 +142,11 @@ export async function createReview(
 
   // in_review -> done | in_progress are both legal transitions; moving to
   // in_progress re-wakes the assignee through the existing move hook.
-  await moveIssue(userId, issueId, {
-    status: input.decision === 'approved' ? 'done' : 'in_progress',
-  });
+  if (options.applyTransition !== false) {
+    await moveIssue(userId, issueId, {
+      status: input.decision === 'approved' ? 'done' : 'in_progress',
+    });
+  }
 
   return review!;
 }

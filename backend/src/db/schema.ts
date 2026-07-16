@@ -738,7 +738,7 @@ export const issueComments = pgTable(
 
 export type IssueComment = typeof issueComments.$inferSelect;
 
-export type RunTrigger = 'assignment' | 'manual' | 'comment' | 'chat' | 'workflow';
+export type RunTrigger = 'assignment' | 'manual' | 'comment' | 'chat' | 'workflow' | 'review';
 
 export type RunStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
 

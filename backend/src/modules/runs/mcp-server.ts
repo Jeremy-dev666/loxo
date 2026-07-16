@@ -9,6 +9,7 @@ import {
   getIssueSnapshot,
   resolveRunContext,
   submitResult,
+  submitReviewVerdict,
   updateIssueStatus,
   type RunToolContext,
 } from './control-plane';
@@ -67,6 +68,23 @@ function buildControlPlaneServer(ctx: RunToolContext): McpServer {
         return text('Comment posted');
       })
   );
+
+  if (ctx.run.trigger === 'review') {
+    server.registerTool(
+      'submit_review',
+      {
+        description:
+          'Deliver your review verdict. approved records a recommendation (a human closes the issue); changes_requested reopens work with your feedback.',
+        inputSchema: {
+          decision: z.enum(['approved', 'changes_requested']),
+          feedback: z.string().min(1).max(20000),
+        },
+      },
+      async ({ decision, feedback }) =>
+        guarded(async () => text(await submitReviewVerdict(ctx, decision, feedback)))
+    );
+    return server;
+  }
 
   server.registerTool(
     'update_issue_status',

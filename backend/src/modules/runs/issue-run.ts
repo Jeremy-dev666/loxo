@@ -8,7 +8,7 @@ import { resolveApiModel, type ApiProtocol } from '../runner/api-turn';
 import { executeApiToolLoop } from '../runner/api-tool-loop';
 import { buildControlPlaneToolDefs } from './control-plane';
 import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
-import { buildIssueRunPrompt } from '../runner/turn-context';
+import { buildIssueRunPrompt, buildReviewRunPrompt } from '../runner/turn-context';
 import type { CliRuntime } from '../agents/runtime-detect';
 import { config } from '../../config';
 import { issueRunToken } from './run-token';
@@ -57,7 +57,8 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
   const mcpCapable = MCP_RUNTIMES.has(agent.runtime) && agent.execution !== 'machine';
   const hasControlPlane = agent.runtime === 'api' || mcpCapable;
 
-  const prompt = buildIssueRunPrompt({
+  const buildPrompt = run.trigger === 'review' ? buildReviewRunPrompt : buildIssueRunPrompt;
+  const prompt = buildPrompt({
     agent,
     issueNumber: issue.issueNumber,
     title: issue.title,
