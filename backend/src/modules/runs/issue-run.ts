@@ -4,7 +4,9 @@ import { listComments } from '../issues/comments.service';
 import { collectNodeMemos } from '../memory/memos.service';
 import { getProviderCredentials } from '../providers/providers.service';
 import { dispatchAgentTurn } from '../runner/dispatch';
-import { executeApiTurn, resolveApiModel, type ApiProtocol } from '../runner/api-turn';
+import { resolveApiModel, type ApiProtocol } from '../runner/api-turn';
+import { executeApiToolLoop } from '../runner/api-tool-loop';
+import { buildControlPlaneToolDefs } from './control-plane';
 import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
 import { buildIssueRunPrompt } from '../runner/turn-context';
 import type { CliRuntime } from '../agents/runtime-detect';
@@ -50,11 +52,10 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
   const workspace = storage.projectWorkspace(run.userId, issue.projectId);
 
   // Off-host turns cannot reach a loopback control plane; they stay on the
-  // report fallback until MCP_PUBLIC_URL points somewhere routable.
-  const mcpCapable =
-    agent.runtime !== 'api' &&
-    MCP_RUNTIMES.has(agent.runtime) &&
-    agent.execution !== 'machine';
+  // report fallback until MCP_PUBLIC_URL points somewhere routable. The api
+  // lane gets the same tools in-process.
+  const mcpCapable = MCP_RUNTIMES.has(agent.runtime) && agent.execution !== 'machine';
+  const hasControlPlane = agent.runtime === 'api' || mcpCapable;
 
   const prompt = buildIssueRunPrompt({
     agent,
@@ -66,7 +67,7 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
     comments,
     memos,
     workspace,
-    controlPlane: mcpCapable ? 'mcp' : 'report',
+    controlPlane: hasControlPlane ? 'mcp' : 'report',
   });
 
   if (agent.runtime === 'api') {
@@ -76,14 +77,15 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
         'api_failed'
       );
     }
-    const result = await executeApiTurn({
+    const result = await executeApiToolLoop({
       protocol: credentials.vendor as ApiProtocol,
       apiKey: credentials.apiKey,
       baseUrl: credentials.baseUrl,
       model: resolveApiModel(agent, credentials.vendor as ApiProtocol),
       system:
         agent.manifest.api?.systemPrompt ?? `You are ${agent.name}. ${agent.description}`.trim(),
-      messages: [{ role: 'user', content: prompt }],
+      prompt,
+      tools: buildControlPlaneToolDefs({ run, agent, issue }),
       timeoutMs: ISSUE_RUN_TIMEOUT_MS,
     });
     return { text: result.text, sessionRef: null };

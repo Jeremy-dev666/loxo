@@ -192,7 +192,7 @@ async function performRun(run: Run): Promise<void> {
     });
     // Fallback report: only when the agent said nothing through the control
     // plane during the run. Best-effort — the run result stands regardless.
-    if (!(await agentSpokeSince(issue.id, agent.id, run.startedAt))) {
+    if (outcome.text.trim() && !(await agentSpokeSince(issue.id, agent.id, run.startedAt))) {
       await addAgentComment(run.userId, issue.id, agent.id, outcome.text).catch(() => {});
     }
     succeeded = true;

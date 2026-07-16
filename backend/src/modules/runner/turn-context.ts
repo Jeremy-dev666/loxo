@@ -178,7 +178,7 @@ export function buildIssueRunPrompt(input: IssueRunTurnContext): string {
     `Project workspace: ${input.workspace}`,
     input.controlPlane === 'mcp'
       ? [
-          'Platform control plane (MCP server "swarmdev"):',
+          'Platform control-plane tools for this run:',
           '- get_issue: re-read the issue and its timeline.',
           '- comment_on_issue: post a progress note.',
           '- update_issue_status: move the issue on the board (legal transitions only).',

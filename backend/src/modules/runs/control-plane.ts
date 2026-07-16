@@ -4,6 +4,7 @@ import { agents, issues, runs, type Agent, type Issue, type IssueStatus, type Ru
 import { badRequest, unauthorized } from '../../http/errors';
 import { addAgentComment, listComments } from '../issues/comments.service';
 import { moveIssue } from '../issues/issues.service';
+import { isTransitionAllowed } from '../issues/issue-transitions';
 import { verifyRunToken } from './run-token';
 
 /**
@@ -41,6 +42,38 @@ export async function resolveRunContext(token: string): Promise<RunToolContext> 
   return { run, agent, issue };
 }
 
+/**
+ * Tool contexts live for a whole run while the issue moves underneath them
+ * (often via these very tools); reads always go back to the database.
+ */
+async function freshIssue(ctx: RunToolContext): Promise<Issue> {
+  const [issue] = await db
+    .select()
+    .from(issues)
+    .where(and(eq(issues.id, ctx.issue.id), eq(issues.userId, ctx.run.userId)))
+    .limit(1);
+  if (!issue) throw unauthorized('Issue no longer exists');
+  return issue;
+}
+
+/**
+ * Moves toward `target`, stepping through in_progress when that is the one
+ * legal bridge (an agent finishing straight from todo is normal, not an
+ * error). Still-illegal moves reject through the transition table.
+ */
+async function advanceTo(ctx: RunToolContext, target: IssueStatus): Promise<Issue> {
+  let issue = await freshIssue(ctx);
+  if (issue.status === target) return issue;
+  if (
+    !isTransitionAllowed(issue.status, target) &&
+    isTransitionAllowed(issue.status, 'in_progress') &&
+    isTransitionAllowed('in_progress', target)
+  ) {
+    issue = await moveIssue(ctx.run.userId, issue.id, { status: 'in_progress' });
+  }
+  return moveIssue(ctx.run.userId, issue.id, { status: target });
+}
+
 export interface IssueSnapshot {
   issueNumber: number;
   title: string;
@@ -50,12 +83,13 @@ export interface IssueSnapshot {
 }
 
 export async function getIssueSnapshot(ctx: RunToolContext): Promise<IssueSnapshot> {
-  const comments = await listComments(ctx.run.userId, ctx.issue.id);
+  const issue = await freshIssue(ctx);
+  const comments = await listComments(ctx.run.userId, issue.id);
   return {
-    issueNumber: ctx.issue.issueNumber,
-    title: ctx.issue.title,
-    description: ctx.issue.description,
-    status: ctx.issue.status,
+    issueNumber: issue.issueNumber,
+    title: issue.title,
+    description: issue.description,
+    status: issue.status,
     comments: comments.map((c) => ({
       author: c.authorType,
       body: c.body,
@@ -76,14 +110,113 @@ export async function updateIssueStatus(ctx: RunToolContext, status: IssueStatus
 /** Flags the run's issue as blocked with the question on the timeline. */
 export async function askBlocker(ctx: RunToolContext, question: string): Promise<Issue> {
   await addAgentComment(ctx.run.userId, ctx.issue.id, ctx.agent.id, `[BLOCKER] ${question}`);
-  if (ctx.issue.status === 'blocked') return ctx.issue;
-  return moveIssue(ctx.run.userId, ctx.issue.id, { status: 'blocked' });
+  return advanceTo(ctx, 'blocked');
 }
 
 /** Posts the result and hands the issue to review. */
 export async function submitResult(ctx: RunToolContext, summary: string): Promise<Issue> {
   if (!summary.trim()) throw badRequest('invalid_input', 'Result summary is required');
   await addAgentComment(ctx.run.userId, ctx.issue.id, ctx.agent.id, summary);
-  if (ctx.issue.status === 'in_review') return ctx.issue;
-  return moveIssue(ctx.run.userId, ctx.issue.id, { status: 'in_review' });
+  return advanceTo(ctx, 'in_review');
+}
+
+function requireString(args: Record<string, unknown>, key: string): string {
+  const value = args[key];
+  if (typeof value !== 'string' || !value.trim()) {
+    throw badRequest('invalid_input', `"${key}" must be a non-empty string`);
+  }
+  return value;
+}
+
+const STATUS_VALUES: IssueStatus[] = [
+  'backlog',
+  'todo',
+  'in_progress',
+  'in_review',
+  'blocked',
+  'done',
+  'cancelled',
+];
+
+export interface ControlPlaneToolDef {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+  execute: (args: Record<string, unknown>) => Promise<string>;
+}
+
+/**
+ * In-process flavor of the five control-plane tools for the api lane; same
+ * implementations the MCP endpoint wraps, minus the token round-trip since
+ * the executor already holds the run context.
+ */
+export function buildControlPlaneToolDefs(ctx: RunToolContext): ControlPlaneToolDef[] {
+  return [
+    {
+      name: 'get_issue',
+      description:
+        'Read the issue this run was woken for: title, description, status, and timeline.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      execute: async () => JSON.stringify(await getIssueSnapshot(ctx)),
+    },
+    {
+      name: 'comment_on_issue',
+      description: 'Post a progress note to the issue timeline as yourself.',
+      parameters: {
+        type: 'object',
+        properties: { body: { type: 'string' } },
+        required: ['body'],
+      },
+      execute: async (args) => {
+        await commentOnIssue(ctx, requireString(args, 'body'));
+        return 'Comment posted';
+      },
+    },
+    {
+      name: 'update_issue_status',
+      description:
+        'Move the issue to a new status. Transitions follow the board rules; illegal moves are rejected.',
+      parameters: {
+        type: 'object',
+        properties: { status: { type: 'string', enum: STATUS_VALUES } },
+        required: ['status'],
+      },
+      execute: async (args) => {
+        const status = requireString(args, 'status') as IssueStatus;
+        if (!STATUS_VALUES.includes(status)) {
+          throw badRequest('invalid_input', `Unknown status "${status}"`);
+        }
+        const issue = await updateIssueStatus(ctx, status);
+        return JSON.stringify({ status: issue.status });
+      },
+    },
+    {
+      name: 'ask_blocker',
+      description:
+        'You are stuck and need a human decision. Posts the question to the timeline and marks the issue blocked.',
+      parameters: {
+        type: 'object',
+        properties: { question: { type: 'string' } },
+        required: ['question'],
+      },
+      execute: async (args) => {
+        const issue = await askBlocker(ctx, requireString(args, 'question'));
+        return JSON.stringify({ status: issue.status });
+      },
+    },
+    {
+      name: 'submit_result',
+      description:
+        'You finished the work. Posts your result summary to the timeline and hands the issue to review.',
+      parameters: {
+        type: 'object',
+        properties: { summary: { type: 'string' } },
+        required: ['summary'],
+      },
+      execute: async (args) => {
+        const issue = await submitResult(ctx, requireString(args, 'summary'));
+        return JSON.stringify({ status: issue.status });
+      },
+    },
+  ];
 }
