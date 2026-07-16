@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { badRequest } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
+import { requestWake } from '../runs/wake';
 import { addHumanComment, listComments } from './comments.service';
 import {
   createIssue,
@@ -110,6 +111,29 @@ issuesRouter.post('/:id/move', async (req: AuthedRequest, res, next) => {
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) throw badRequest('invalid_input', 'Invalid move');
     res.json({ issue: await moveIssue(req.auth!.userId, String(req.params.id), parsed.data) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/wake', async (req: AuthedRequest, res, next) => {
+  try {
+    const schema = z.object({ reason: z.string().trim().max(2000).optional() });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw badRequest('invalid_input', 'Invalid wake request');
+
+    const issue = await getIssue(req.auth!.userId, String(req.params.id));
+    if (!issue.assigneeAgentId) {
+      throw badRequest('no_agent_assignee', 'Assign an agent to this issue first');
+    }
+    const decision = await requestWake(req.auth!.userId, {
+      agentId: issue.assigneeAgentId,
+      issueId: issue.id,
+      trigger: 'manual',
+      reason:
+        parsed.data.reason ?? `Manual wake on issue #${issue.issueNumber}: ${issue.title}`,
+    });
+    res.status(202).json({ run: decision.run, admitted: decision.admitted });
   } catch (error) {
     next(error);
   }

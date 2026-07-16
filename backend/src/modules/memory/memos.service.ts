@@ -57,7 +57,7 @@ export async function deleteMemo(userId: string, memoId: string): Promise<void> 
 
 export interface NodeMemoScopes {
   agentId?: string | null;
-  teamId: string;
+  teamId?: string | null;
   projectId?: string | null;
 }
 
@@ -67,7 +67,8 @@ export interface NodeMemoScopes {
  * crowding out the actual task (context-rot guard).
  */
 export async function collectNodeMemos(userId: string, scopes: NodeMemoScopes): Promise<string[]> {
-  const wanted: Array<{ scope: MemoScope; subjectId: string }> = [{ scope: 'team', subjectId: scopes.teamId }];
+  const wanted: Array<{ scope: MemoScope; subjectId: string }> = [];
+  if (scopes.teamId) wanted.push({ scope: 'team', subjectId: scopes.teamId });
   if (scopes.agentId) wanted.push({ scope: 'agent', subjectId: scopes.agentId });
   if (scopes.projectId) wanted.push({ scope: 'project', subjectId: scopes.projectId });
 

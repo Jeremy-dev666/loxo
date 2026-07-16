@@ -134,3 +134,14 @@ export async function nextQueuedRunForIssue(issueId: string): Promise<Run | unde
     .limit(1);
   return run;
 }
+
+/** Oldest queued run waiting on an agent, across issues. */
+export async function nextQueuedRunForAgent(agentId: string): Promise<Run | undefined> {
+  const [run] = await db
+    .select()
+    .from(runs)
+    .where(and(eq(runs.agentId, agentId), eq(runs.status, 'queued')))
+    .orderBy(asc(runs.createdAt))
+    .limit(1);
+  return run;
+}

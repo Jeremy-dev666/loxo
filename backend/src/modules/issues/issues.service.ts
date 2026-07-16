@@ -11,7 +11,26 @@ import {
 } from '../../db/schema';
 import { badRequest, notFound } from '../../http/errors';
 import { getOrCreateDefaultProject } from '../projects/projects.service';
+import { requestWake } from '../runs/wake';
 import { isTransitionAllowed, TERMINAL_STATUSES } from './issue-transitions';
+
+/** Statuses where an agent assignee is expected to act; backlog means "not ready yet". */
+const WAKE_STATUSES: IssueStatus[] = ['todo', 'in_progress'];
+
+/** Wake-ups are post-commit side effects; a failed wake never fails the write. */
+async function wakeAssignedAgent(issue: Issue, reason: string): Promise<void> {
+  if (!issue.assigneeAgentId || !WAKE_STATUSES.includes(issue.status)) return;
+  try {
+    await requestWake(issue.userId, {
+      agentId: issue.assigneeAgentId,
+      issueId: issue.id,
+      trigger: 'assignment',
+      reason,
+    });
+  } catch (error) {
+    console.error(`Wake for issue ${issue.id} failed:`, error);
+  }
+}
 
 export interface AssignmentPatch {
   /** Exactly one of agentId/userId may be set; null clears the slot. */
@@ -215,6 +234,13 @@ export async function updateIssue(
     .set(patch)
     .where(and(eq(issues.id, issueId), eq(issues.userId, userId)))
     .returning();
+
+  if (updated!.assigneeAgentId && updated!.assigneeAgentId !== existing.assigneeAgentId) {
+    await wakeAssignedAgent(
+      updated!,
+      `You were assigned issue #${updated!.issueNumber}: ${updated!.title}`
+    );
+  }
   return updated!;
 }
 
@@ -252,6 +278,17 @@ export async function moveIssue(
     })
     .where(and(eq(issues.id, issueId), eq(issues.userId, userId)))
     .returning();
+
+  const enteredWakeStatus =
+    changingStatus &&
+    WAKE_STATUSES.includes(input.status) &&
+    !WAKE_STATUSES.includes(existing.status);
+  if (enteredWakeStatus) {
+    await wakeAssignedAgent(
+      updated!,
+      `Issue #${updated!.issueNumber} moved to ${input.status}: ${updated!.title}`
+    );
+  }
   return updated!;
 }
 

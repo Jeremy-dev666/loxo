@@ -1,0 +1,95 @@
+import type { Agent, Issue, Run } from '../../db/schema';
+import { storage } from '../../storage/layout';
+import { listComments } from '../issues/comments.service';
+import { collectNodeMemos } from '../memory/memos.service';
+import { getProviderCredentials } from '../providers/providers.service';
+import { dispatchAgentTurn } from '../runner/dispatch';
+import { executeApiTurn, resolveApiModel, type ApiProtocol } from '../runner/api-turn';
+import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
+import { buildIssueRunPrompt } from '../runner/turn-context';
+import type { CliRuntime } from '../agents/runtime-detect';
+
+const ISSUE_RUN_TIMEOUT_MS = 15 * 60_000;
+
+type TurnExecutor = (request: TurnRequest) => Promise<TurnResult>;
+let turnExecutor: TurnExecutor = runTurn;
+
+/** Test seam: swap the CLI executor without spawning real processes. */
+export function setIssueTurnExecutorForTests(executor: TurnExecutor | null): void {
+  turnExecutor = executor ?? runTurn;
+}
+
+export interface IssueTurnOutcome {
+  text: string;
+  sessionRef: string | null;
+}
+
+/**
+ * One agent turn against an issue: build the prompt from the issue context
+ * and run it in the project workspace. Locking, run-state transitions, and
+ * the timeline comment are the wake service's job, not this function's.
+ */
+export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Promise<IssueTurnOutcome> {
+  const credentials = agent.providerId
+    ? await getProviderCredentials(run.userId, agent.providerId)
+    : null;
+
+  const comments = (await listComments(run.userId, issue.id)).map((c) => ({
+    author: c.authorType,
+    body: c.body,
+  }));
+  const memos = await collectNodeMemos(run.userId, {
+    agentId: agent.id,
+    projectId: issue.projectId,
+  });
+  const workspace = storage.projectWorkspace(run.userId, issue.projectId);
+
+  const prompt = buildIssueRunPrompt({
+    agent,
+    issueNumber: issue.issueNumber,
+    title: issue.title,
+    description: issue.description,
+    status: issue.status,
+    reason: run.reason,
+    comments,
+    memos,
+    workspace,
+  });
+
+  if (agent.runtime === 'api') {
+    if (!credentials) {
+      throw new RunnerError(
+        `Agent "${agent.name}" needs an OpenAI or Anthropic provider configured`,
+        'api_failed'
+      );
+    }
+    const result = await executeApiTurn({
+      protocol: credentials.vendor as ApiProtocol,
+      apiKey: credentials.apiKey,
+      baseUrl: credentials.baseUrl,
+      model: resolveApiModel(agent, credentials.vendor as ApiProtocol),
+      system:
+        agent.manifest.api?.systemPrompt ?? `You are ${agent.name}. ${agent.description}`.trim(),
+      messages: [{ role: 'user', content: prompt }],
+      timeoutMs: ISSUE_RUN_TIMEOUT_MS,
+    });
+    return { text: result.text, sessionRef: null };
+  }
+
+  const paths = storage.agentPaths(run.userId, agent.id);
+  const result = await dispatchAgentTurn(
+    agent,
+    {
+      runtime: agent.runtime as CliRuntime,
+      workspace,
+      stateDir: paths.state,
+      prompt,
+      model: agent.model,
+      credentials: credentials ?? undefined,
+      sessionRef: null,
+      timeoutMs: ISSUE_RUN_TIMEOUT_MS,
+    },
+    turnExecutor
+  );
+  return { text: result.text, sessionRef: result.sessionRef ?? null };
+}
