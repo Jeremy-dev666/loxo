@@ -125,19 +125,32 @@ body[data-traditional-desktop-mode='true'] main[data-app-main='true'] {
   color: #ffffff;
 }
 
+/* Slim capsule scrollbars; the 2px transparent border keeps a gutter so the
+   thumb floats instead of touching the content edge. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d0d0d0 transparent;
+}
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #ffffff;
-  border-left: 1px solid #ececec;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4d4d4;
-  border: 1px solid var(--pixel-ink);
+  background: #d0d0d0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9b9b9b;
+  background: #a8a8a8;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 *:focus {
