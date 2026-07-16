@@ -314,6 +314,8 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
       if (request.mcp) {
         // strict-mcp-config keeps the turn limited to the platform control
         // plane; whatever is in the user's own claude config stays out.
+        // Non-interactive runs auto-deny un-allowlisted tool calls, so the
+        // control-plane tools must be pre-approved or they are dead weight.
         args.push(
           '--mcp-config',
           JSON.stringify({
@@ -325,7 +327,9 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
               },
             },
           }),
-          '--strict-mcp-config'
+          '--strict-mcp-config',
+          '--allowedTools',
+          'mcp__swarmdev__get_issue,mcp__swarmdev__comment_on_issue,mcp__swarmdev__update_issue_status,mcp__swarmdev__ask_blocker,mcp__swarmdev__submit_result'
         );
       }
       return args;

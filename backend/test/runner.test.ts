@@ -1,11 +1,53 @@
 import { describe, expect, it } from 'vitest';
 import { execProcess } from '@swarmdev/shared';
 import {
+  ADAPTERS,
   extractPlainReply,
   parseClaudeStreamLine,
   redactDiagnostic,
   type ClaudeStreamState,
+  type TurnRequest,
 } from '../src/modules/runner/runner';
+
+describe('claude-code control-plane args', () => {
+  const base: TurnRequest = {
+    runtime: 'claude-code',
+    workspace: 'w',
+    stateDir: 's',
+    prompt: 'p',
+  };
+
+  it('mounts the platform MCP server strictly and pre-approves its tools', () => {
+    const args = ADAPTERS['claude-code'].buildArgs({
+      ...base,
+      mcp: { url: 'http://127.0.0.1:4000/mcp', token: 'srt_x_y' },
+    });
+    expect(args).toContain('--strict-mcp-config');
+
+    const config = JSON.parse(args[args.indexOf('--mcp-config') + 1]!);
+    expect(config.mcpServers.swarmdev.url).toBe('http://127.0.0.1:4000/mcp');
+    expect(config.mcpServers.swarmdev.headers.Authorization).toBe('Bearer srt_x_y');
+
+    // Non-interactive runs auto-deny tools that are not allowlisted; without
+    // this the control plane mounts but every call is rejected.
+    const allowed = args[args.indexOf('--allowedTools') + 1]!;
+    for (const tool of [
+      'get_issue',
+      'comment_on_issue',
+      'update_issue_status',
+      'ask_blocker',
+      'submit_result',
+    ]) {
+      expect(allowed).toContain(`mcp__swarmdev__${tool}`);
+    }
+  });
+
+  it('adds no MCP args without a control plane', () => {
+    const args = ADAPTERS['claude-code'].buildArgs(base);
+    expect(args).not.toContain('--mcp-config');
+    expect(args).not.toContain('--allowedTools');
+  });
+});
 
 describe('parseClaudeStreamLine', () => {
   it('extracts assistant text chunks and the result session ref', () => {
