@@ -1,6 +1,15 @@
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { and, eq, gte, inArray, ne } from 'drizzle-orm';
 import { db } from '../../db/client';
-import { agents, issues, runs, type Agent, type Issue, type Run, type RunTrigger } from '../../db/schema';
+import {
+  agents,
+  issueComments,
+  issues,
+  runs,
+  type Agent,
+  type Issue,
+  type Run,
+  type RunTrigger,
+} from '../../db/schema';
 import { badRequest } from '../../http/errors';
 import { addAgentComment } from '../issues/comments.service';
 import { RunnerError } from '../runner/runner';
@@ -141,6 +150,25 @@ async function tryStartRun(run: Run): Promise<boolean> {
   return true;
 }
 
+async function agentSpokeSince(
+  issueId: string,
+  agentId: string,
+  since: Date | null
+): Promise<boolean> {
+  const [row] = await db
+    .select({ id: issueComments.id })
+    .from(issueComments)
+    .where(
+      and(
+        eq(issueComments.issueId, issueId),
+        eq(issueComments.authorAgentId, agentId),
+        gte(issueComments.createdAt, since ?? new Date(0))
+      )
+    )
+    .limit(1);
+  return row !== undefined;
+}
+
 async function performRun(run: Run): Promise<void> {
   let succeeded = false;
   try {
@@ -162,9 +190,11 @@ async function performRun(run: Run): Promise<void> {
       output: outcome.text,
       sessionRef: outcome.sessionRef,
     });
-    // The comment is best-effort: the run result stands even if the issue
-    // vanished mid-run.
-    await addAgentComment(run.userId, issue.id, agent.id, outcome.text).catch(() => {});
+    // Fallback report: only when the agent said nothing through the control
+    // plane during the run. Best-effort — the run result stands regardless.
+    if (!(await agentSpokeSince(issue.id, agent.id, run.startedAt))) {
+      await addAgentComment(run.userId, issue.id, agent.id, outcome.text).catch(() => {});
+    }
     succeeded = true;
   } catch (error) {
     const detail = error instanceof RunnerError ? error.message : 'Issue run failed unexpectedly';

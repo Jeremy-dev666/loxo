@@ -135,6 +135,12 @@ export interface TurnRequest {
   onChunk?: (text: string) => void;
   /** Extra env for the CLI process; adapter credential vars win on conflict. */
   extraEnv?: Record<string, string>;
+  /**
+   * Platform control plane for this turn. Runtimes with MCP support mount it
+   * as their only MCP server; others receive it via extraEnv and prompt
+   * framing only.
+   */
+  mcp?: { url: string; token: string };
 }
 
 export interface TurnResult {
@@ -305,6 +311,23 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
       ];
       if (request.sessionRef) args.push('--resume', request.sessionRef);
       if (request.model) args.push('--model', request.model);
+      if (request.mcp) {
+        // strict-mcp-config keeps the turn limited to the platform control
+        // plane; whatever is in the user's own claude config stays out.
+        args.push(
+          '--mcp-config',
+          JSON.stringify({
+            mcpServers: {
+              swarmdev: {
+                type: 'http',
+                url: request.mcp.url,
+                headers: { Authorization: `Bearer ${request.mcp.token}` },
+              },
+            },
+          }),
+          '--strict-mcp-config'
+        );
+      }
       return args;
     },
     buildEnv: anthropicEnv,

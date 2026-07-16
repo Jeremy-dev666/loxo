@@ -8,8 +8,13 @@ import { executeApiTurn, resolveApiModel, type ApiProtocol } from '../runner/api
 import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
 import { buildIssueRunPrompt } from '../runner/turn-context';
 import type { CliRuntime } from '../agents/runtime-detect';
+import { config } from '../../config';
+import { issueRunToken } from './run-token';
 
 const ISSUE_RUN_TIMEOUT_MS = 15 * 60_000;
+
+/** Runtimes that can mount the platform MCP server for the turn. */
+const MCP_RUNTIMES: ReadonlySet<string> = new Set(['claude-code']);
 
 type TurnExecutor = (request: TurnRequest) => Promise<TurnResult>;
 let turnExecutor: TurnExecutor = runTurn;
@@ -44,6 +49,13 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
   });
   const workspace = storage.projectWorkspace(run.userId, issue.projectId);
 
+  // Off-host turns cannot reach a loopback control plane; they stay on the
+  // report fallback until MCP_PUBLIC_URL points somewhere routable.
+  const mcpCapable =
+    agent.runtime !== 'api' &&
+    MCP_RUNTIMES.has(agent.runtime) &&
+    agent.execution !== 'machine';
+
   const prompt = buildIssueRunPrompt({
     agent,
     issueNumber: issue.issueNumber,
@@ -54,6 +66,7 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
     comments,
     memos,
     workspace,
+    controlPlane: mcpCapable ? 'mcp' : 'report',
   });
 
   if (agent.runtime === 'api') {
@@ -77,6 +90,9 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
   }
 
   const paths = storage.agentPaths(run.userId, agent.id);
+  const controlPlane = mcpCapable
+    ? { url: config.mcpUrl(), token: issueRunToken(run.id) }
+    : undefined;
   const result = await dispatchAgentTurn(
     agent,
     {
@@ -88,6 +104,10 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
       credentials: credentials ?? undefined,
       sessionRef: null,
       timeoutMs: ISSUE_RUN_TIMEOUT_MS,
+      mcp: controlPlane,
+      extraEnv: controlPlane
+        ? { SWARMDEV_MCP_URL: controlPlane.url, SWARMDEV_RUN_TOKEN: controlPlane.token }
+        : undefined,
     },
     turnExecutor
   );

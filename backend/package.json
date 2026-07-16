@@ -13,6 +13,7 @@
     "market:maintain": "tsx scripts/market-maintenance.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@swarmdev/shared": "file:../packages/shared",
     "adm-zip": "^0.5.18",
     "bcryptjs": "^2.4.3",

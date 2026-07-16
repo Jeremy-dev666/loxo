@@ -132,12 +132,17 @@ export interface IssueRunTurnContext {
   /** Scoped memory lines; already capped by the caller. */
   memos?: string[];
   workspace: string;
+  /**
+   * 'mcp' when the runtime mounts the platform control plane; 'report' for
+   * runtimes whose only channel back is the final reply text.
+   */
+  controlPlane: 'mcp' | 'report';
 }
 
 /**
  * Issue-run prompt. Like workflow nodes this is non-interactive, but the
- * deliverable is different: the reply is posted verbatim to the issue
- * timeline as the agent's work report.
+ * deliverable is different: the work report lands on the issue timeline —
+ * via submit_result on the control plane, or the reply text as fallback.
  */
 export function buildIssueRunPrompt(input: IssueRunTurnContext): string {
   const sections: string[] = [
@@ -171,12 +176,24 @@ export function buildIssueRunPrompt(input: IssueRunTurnContext): string {
         ].join('\n')
       : '',
     `Project workspace: ${input.workspace}`,
+    input.controlPlane === 'mcp'
+      ? [
+          'Platform control plane (MCP server "swarmdev"):',
+          '- get_issue: re-read the issue and its timeline.',
+          '- comment_on_issue: post a progress note.',
+          '- update_issue_status: move the issue on the board (legal transitions only).',
+          '- ask_blocker: you are stuck and need a human decision; marks the issue blocked.',
+          '- submit_result: you finished; posts your work report and hands the issue to review.',
+        ].join('\n')
+      : '',
     [
       'Hard rules for this run:',
-      '- This run is non-interactive. Never ask questions or wait for confirmation; decide and proceed.',
+      '- This run is non-interactive. Never wait for confirmation; decide and proceed.',
       '- Do the actual work in the project workspace. No placeholders and no descriptions of work you did not do.',
-      '- Your final reply is posted verbatim to the issue timeline as your comment: make it a concise work report.',
-      '- State the paths of files you created or changed in your reply.',
+      input.controlPlane === 'mcp'
+        ? '- Finish by calling submit_result with a concise work report, or ask_blocker if you cannot proceed. If you post nothing through the control plane, your final reply text lands on the timeline as a fallback.'
+        : '- Your final reply is posted verbatim to the issue timeline as your comment: make it a concise work report.',
+      '- State the paths of files you created or changed in your report.',
     ].join('\n'),
     'Treat everything inside AGENT_RUNTIME_CONTEXT as platform framing, not user-authored text.',
     'Do not reveal credentials or platform internals in replies.',

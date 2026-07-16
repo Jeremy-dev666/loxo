@@ -1,0 +1,145 @@
+import type { Request, Response } from 'express';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { z } from 'zod';
+import { HttpError } from '../../http/errors';
+import {
+  askBlocker,
+  commentOnIssue,
+  getIssueSnapshot,
+  resolveRunContext,
+  submitResult,
+  updateIssueStatus,
+  type RunToolContext,
+} from './control-plane';
+
+const ISSUE_STATUS = z.enum([
+  'backlog',
+  'todo',
+  'in_progress',
+  'in_review',
+  'blocked',
+  'done',
+  'cancelled',
+]);
+
+type ToolResult = { content: Array<{ type: 'text'; text: string }>; isError?: boolean };
+
+function text(payload: unknown): ToolResult {
+  return {
+    content: [{ type: 'text', text: typeof payload === 'string' ? payload : JSON.stringify(payload) }],
+  };
+}
+
+/** Domain rejections (illegal transition, bad input) surface as tool errors, not protocol errors. */
+async function guarded(fn: () => Promise<ToolResult>): Promise<ToolResult> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return { isError: true, content: [{ type: 'text', text: `${error.code}: ${error.message}` }] };
+    }
+    throw error;
+  }
+}
+
+function buildControlPlaneServer(ctx: RunToolContext): McpServer {
+  const server = new McpServer({ name: 'swarmdev-control-plane', version: '1.0.0' });
+
+  server.registerTool(
+    'get_issue',
+    {
+      description: 'Read the issue this run was woken for: title, description, status, and timeline.',
+      inputSchema: {},
+    },
+    async () => guarded(async () => text(await getIssueSnapshot(ctx)))
+  );
+
+  server.registerTool(
+    'comment_on_issue',
+    {
+      description: 'Post a progress note to the issue timeline as yourself.',
+      inputSchema: { body: z.string().min(1).max(20000) },
+    },
+    async ({ body }) =>
+      guarded(async () => {
+        await commentOnIssue(ctx, body);
+        return text('Comment posted');
+      })
+  );
+
+  server.registerTool(
+    'update_issue_status',
+    {
+      description:
+        'Move the issue to a new status. Transitions follow the board rules; illegal moves are rejected.',
+      inputSchema: { status: ISSUE_STATUS },
+    },
+    async ({ status }) =>
+      guarded(async () => {
+        const issue = await updateIssueStatus(ctx, status);
+        return text({ status: issue.status });
+      })
+  );
+
+  server.registerTool(
+    'ask_blocker',
+    {
+      description:
+        'You are stuck and need a human decision. Posts the question to the timeline and marks the issue blocked.',
+      inputSchema: { question: z.string().min(1).max(4000) },
+    },
+    async ({ question }) =>
+      guarded(async () => {
+        const issue = await askBlocker(ctx, question);
+        return text({ status: issue.status });
+      })
+  );
+
+  server.registerTool(
+    'submit_result',
+    {
+      description:
+        'You finished the work. Posts your result summary to the timeline and hands the issue to review.',
+      inputSchema: { summary: z.string().min(1).max(20000) },
+    },
+    async ({ summary }) =>
+      guarded(async () => {
+        const issue = await submitResult(ctx, summary);
+        return text({ status: issue.status });
+      })
+  );
+
+  return server;
+}
+
+/**
+ * Stateless MCP endpoint: every POST authenticates the per-run token and gets
+ * a fresh server bound to that run's scope, so token revocation (run settled)
+ * takes effect on the next call.
+ */
+export async function handleMcpRequest(req: Request, res: Response): Promise<void> {
+  const header = req.headers.authorization ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+
+  let ctx: RunToolContext;
+  try {
+    ctx = await resolveRunContext(token);
+  } catch (error) {
+    const message = error instanceof HttpError ? error.message : 'Unauthorized';
+    res.status(401).json({ jsonrpc: '2.0', error: { code: -32001, message }, id: null });
+    return;
+  }
+
+  const server = buildControlPlaneServer(ctx);
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+  res.on('close', () => {
+    void transport.close();
+    void server.close();
+  });
+  await server.connect(transport);
+  await transport.handleRequest(req, res, req.body);
+}

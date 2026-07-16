@@ -17,6 +17,9 @@ export const config = {
     .filter(Boolean),
   jwtSecret: () => required('JWT_SECRET'),
   secretsKey: () => required('SECRETS_KEY'),
+  /** Control-plane URL handed to agent runtimes; override when agents run off-host. */
+  mcpUrl: () =>
+    process.env.MCP_PUBLIC_URL ?? `http://127.0.0.1:${Number(process.env.PORT ?? 4000)}/mcp`,
 };
 
 /** Fails fast at boot; individual modules use the lazy getters above. */
