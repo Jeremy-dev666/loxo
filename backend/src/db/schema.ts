@@ -684,6 +684,14 @@ export const issues = pgTable(
     }),
     /** Position within a kanban column; fractional values allow reorder without renumbering. */
     boardOrder: doublePrecision('board_order').notNull().default(0),
+    /**
+     * Execution lock: the run currently working this issue. Wake admission
+     * acquires it with a conditional UPDATE, so the same issue is never
+     * executed by two runs at once regardless of trigger source.
+     */
+    activeRunId: uuid('active_run_id').references((): AnyPgColumn => runs.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     closedAt: timestamp('closed_at', { withTimezone: true }),
@@ -729,3 +737,49 @@ export const issueComments = pgTable(
 );
 
 export type IssueComment = typeof issueComments.$inferSelect;
+
+export type RunTrigger = 'assignment' | 'manual' | 'comment' | 'chat' | 'workflow';
+
+export type RunStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
+
+/**
+ * One admitted wake-up of an agent. Every trigger source funnels through the
+ * wake admission service, which creates exactly one row per admitted wake-up.
+ * Queued rows double as the wait queue for an issue's execution lock and are
+ * promoted oldest-first when the lock releases.
+ */
+export const runs = pgTable(
+  'runs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    agentId: uuid('agent_id').references(() => agents.id, { onDelete: 'set null' }),
+    /** Display snapshot; run history survives agent deletion. */
+    agentName: text('agent_name').notNull(),
+    issueId: uuid('issue_id').references(() => issues.id, { onDelete: 'set null' }),
+    trigger: text('trigger').$type<RunTrigger>().notNull(),
+    status: text('status').$type<RunStatus>().notNull().default('queued'),
+    /** Why the agent was woken; rendered into the turn prompt. */
+    reason: text('reason').notNull().default(''),
+    output: text('output').notNull().default(''),
+    error: text('error'),
+    sessionRef: text('session_ref'),
+    model: text('model'),
+    /** Usage accounting; populated by lanes that report it. */
+    tokensIn: integer('tokens_in'),
+    tokensOut: integer('tokens_out'),
+    costUsd: doublePrecision('cost_usd'),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('runs_issue_status').on(t.issueId, t.status),
+    index('runs_agent_status').on(t.agentId, t.status),
+    index('runs_user_created').on(t.userId, t.createdAt),
+  ]
+);
+
+export type Run = typeof runs.$inferSelect;
