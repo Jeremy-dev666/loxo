@@ -11,13 +11,13 @@ interface HeaderProps {
   traditionalSidebarWidth?: number;
 }
 
-/** Pixel swarm mark: three stacked hex-ish blocks. */
+/** Pixel swarm mark: paired chevrons tracing an S along the diagonal. */
 export function BrandMark({ className = 'w-7 h-7' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" shapeRendering="crispEdges">
       <path
         fill="currentColor"
-        d="M9 2h6v4h4v6h-4v-4H9V2Zm-4 8h6v4h4v4h4v4h-6v-4H9v-4H5v-4Z"
+        d="M4 2h4v4H4V2Zm4 4h4v4H8V6Zm-4 4h4v4H4v-4Zm12 0h4v4h-4v-4Zm-4 4h4v4h-4v-4Zm4 4h4v4h-4v-4Z"
       />
     </svg>
   );
