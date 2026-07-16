@@ -101,8 +101,11 @@ export async function requestWake(userId: string, input: WakeInput): Promise<Wak
   return { run, admitted: started ? 'started' : 'queued' };
 }
 
-/** Atomic agent claim; an agent executes at most one run at a time. */
-async function claimAgent(agentId: string): Promise<boolean> {
+/**
+ * Atomic agent claim; an agent executes at most one turn at a time, no
+ * matter which surface (issue run, chat) started it.
+ */
+export async function claimAgentForTurn(agentId: string): Promise<boolean> {
   const rows = await db
     .update(agents)
     .set({ status: 'busy', lastActiveAt: new Date(), updatedAt: new Date() })
@@ -111,11 +114,25 @@ async function claimAgent(agentId: string): Promise<boolean> {
   return rows.length > 0;
 }
 
-async function releaseAgent(agentId: string, status: 'idle' | 'error'): Promise<void> {
+/** Bare claim release; gate-rollback paths use this to avoid re-promoting themselves. */
+async function releaseAgentClaim(agentId: string, status: 'idle' | 'error'): Promise<void> {
   await db
     .update(agents)
     .set({ status, lastActiveAt: new Date(), updatedAt: new Date() })
     .where(eq(agents.id, agentId));
+}
+
+/**
+ * Releases the claim and starts the oldest run that queued up behind it —
+ * without this, runs parked behind a chat turn would wait forever.
+ */
+export async function releaseAgentAfterTurn(
+  agentId: string,
+  status: 'idle' | 'error'
+): Promise<void> {
+  await releaseAgentClaim(agentId, status);
+  const queued = await nextQueuedRunForAgent(agentId);
+  if (queued) await tryStartRun(queued);
 }
 
 /**
@@ -128,17 +145,17 @@ async function tryStartRun(run: Run): Promise<boolean> {
     await finishRun(run.id, { status: 'failed', error: 'Agent no longer exists' }).catch(() => {});
     return false;
   }
-  if (!(await claimAgent(run.agentId))) return false;
+  if (!(await claimAgentForTurn(run.agentId))) return false;
 
   if (run.issueId && !(await acquireIssueLock(run.issueId, run.id))) {
-    await releaseAgent(run.agentId, 'idle');
+    await releaseAgentClaim(run.agentId, 'idle');
     return false;
   }
 
   const claimed = await claimRun(run.id);
   if (!claimed) {
     if (run.issueId) await releaseIssueLock(run.issueId, run.id);
-    await releaseAgent(run.agentId, 'idle');
+    await releaseAgentClaim(run.agentId, 'idle');
     return false;
   }
 
@@ -202,7 +219,7 @@ async function performRun(run: Run): Promise<void> {
     await finishRun(run.id, { status: 'failed', error: detail }).catch(() => {});
   } finally {
     if (run.issueId) await releaseIssueLock(run.issueId, run.id);
-    if (run.agentId) await releaseAgent(run.agentId, succeeded ? 'idle' : 'error');
+    if (run.agentId) await releaseAgentClaim(run.agentId, succeeded ? 'idle' : 'error');
     await promoteNext(run);
   }
 }

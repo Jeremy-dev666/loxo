@@ -227,6 +227,10 @@ describe('Slack event intake', () => {
     const second = await postEvent('agent', agentId, body);
     expect(second.status).toBe(200);
     expect(second.body.reason).toBe('duplicate');
+
+    // Let the accepted event's turn finish so it does not hold the agent
+    // claim into the next test.
+    await waitFor(async () => (sentMessages.length === 1 ? sentMessages : null));
   });
 
   it('ignores bot echoes and subtyped messages', async () => {
