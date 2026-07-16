@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import type { Agent } from '@/lib/agents';
 import type { Goal } from '@/lib/goals';
-import { BracketButton, PAPER, Rule, TornEdge } from './receipt-parts';
+import { BracketButton, CircularStamp, PAPER, Rule, TornEdge } from './receipt-parts';
 import {
   CLIENT_TRANSITIONS,
   STATUS_META,
@@ -297,18 +297,49 @@ export function IssueReceipt({
           >
         <TornEdge />
         <div
-          className="min-h-0 flex-1 overflow-y-auto px-6 py-3"
+          className="relative min-h-0 flex-1 overflow-y-auto px-6 py-3"
           style={{ backgroundColor: PAPER }}
         >
-          {/* Header */}
-          <div className="text-center">
-            <p className="font-pixel text-lg tracking-[0.3em] text-pixel-black">LOXO</p>
-            <p className="mt-0.5 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
-              * work order *
-            </p>
-            <p className="mt-1 font-pixel text-[10px] text-pixel-gray">
-              {orderNo} · {formatTime(issue.createdAt)}
-            </p>
+          {/* Header row doubles as the stamping zone: centered masthead with
+              the chop inked over its right side via multiply blend */}
+          <div className="relative flex min-h-[112px] items-center justify-center">
+            <div className="text-center">
+              <p className="font-pixel text-lg tracking-[0.3em] text-pixel-black">LOXO</p>
+              <p className="mt-0.5 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
+                * work order *
+              </p>
+              <p className="mt-1 font-pixel text-[10px] text-pixel-gray">
+                {orderNo} · {formatTime(issue.createdAt)}
+              </p>
+            </div>
+            <div
+              className={`absolute right-0 top-1/2 -translate-y-1/2 mix-blend-multiply ${meta.text}`}
+            >
+              <CircularStamp
+                label={meta.label}
+                date={formatTime(issue.updatedAt).slice(0, 5)}
+                orderNo={orderNo}
+                seed={issue.id}
+              />
+              {legalMoves.length > 0 && (
+                <select
+                  value={issue.status}
+                  onChange={(e) =>
+                    e.target.value !== issue.status &&
+                    void mutate(() => moveIssue(issue.id, { status: e.target.value as IssueStatus }))
+                  }
+                  aria-label="Issue status"
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                >
+                  <option value={issue.status}>{meta.label}</option>
+                  {legalMoves.map((s) => (
+                    <option key={s} value={s}>
+                      {`-> ${STATUS_META[s].label}`}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
 
           <Rule />
@@ -321,30 +352,6 @@ export function IssueReceipt({
             rows={2}
             className="w-full resize-none border border-transparent bg-transparent text-center font-pixel text-base uppercase leading-snug text-pixel-black hover:border-pixel-gray/40 focus:border-pixel-black focus:outline-none"
           />
-
-          {/* Status stamp */}
-          <div className="my-2 flex justify-center">
-            <div className={`rotate-[-2deg] border-2 px-2 py-0.5 ${meta.text}`}
-              style={{ borderColor: 'currentColor' }}
-            >
-              <select
-                value={issue.status}
-                onChange={(e) =>
-                  e.target.value !== issue.status &&
-                  void mutate(() => moveIssue(issue.id, { status: e.target.value as IssueStatus }))
-                }
-                disabled={legalMoves.length === 0}
-                className="cursor-pointer appearance-none bg-transparent text-center font-pixel text-xs font-bold uppercase tracking-[0.15em] focus:outline-none disabled:cursor-default"
-              >
-                <option value={issue.status}>{meta.label}</option>
-                {legalMoves.map((s) => (
-                  <option key={s} value={s} className="text-pixel-black">
-                    {`-> ${STATUS_META[s].label}`}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
 
           {error && (
             <p className="my-1 text-center font-pixel text-[10px] uppercase text-pixel-red">
