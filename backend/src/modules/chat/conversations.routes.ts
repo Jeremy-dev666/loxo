@@ -11,6 +11,7 @@ import {
   openConversation,
   renameConversation,
 } from './conversations.service';
+import { draftIssueFromConversation } from './issue-draft.service';
 
 export const conversationsRouter = Router();
 conversationsRouter.use(requireAuth);
@@ -66,6 +67,15 @@ conversationsRouter.delete('/:id', async (req: AuthedRequest, res, next) => {
 conversationsRouter.get('/:id/messages', async (req: AuthedRequest, res, next) => {
   try {
     res.json({ messages: await listMessages(req.auth!.userId, String(req.params.id)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Draft only — nothing is persisted until the user confirms the conversion.
+conversationsRouter.post('/:id/draft-issue', async (req: AuthedRequest, res, next) => {
+  try {
+    res.json({ draft: await draftIssueFromConversation(req.auth!.userId, String(req.params.id)) });
   } catch (error) {
     next(error);
   }
