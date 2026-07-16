@@ -30,6 +30,7 @@ const config: Config = {
       },
       fontFamily: {
         pixel: ['"Departure Mono"', 'VT323', 'monospace'],
+        sans: ['var(--font-sans)', 'Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         pixel: '0 1px 3px rgba(17,17,17,0.10)',
