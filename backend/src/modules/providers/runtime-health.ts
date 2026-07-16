@@ -69,10 +69,26 @@ const PLATFORM_SPECS: PlatformSpec[] = [
 function redact(text: string): string {
   return text
     .replace(/\x1b\[[0-9;]*m/g, '')
+    .replace(/�+/g, '') // non-UTF-8 shell output decoded to replacement chars
     .replace(/\bsk-[A-Za-z0-9_-]{12,}\b/g, '[redacted]')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 400);
+}
+
+/**
+ * Locale-independent PATH lookup. With shell:true (required for npm .cmd
+ * shims on Windows) a missing command exits 1 with a localized, non-UTF-8
+ * cmd.exe message instead of ENOENT, so probe with where/which first.
+ */
+async function commandOnPath(command: string): Promise<boolean> {
+  const locator = process.platform === 'win32' ? 'where' : 'which';
+  try {
+    await execFileAsync(locator, [command], { timeout: CLI_CHECK_TIMEOUT_MS, windowsHide: true });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export interface PlatformHealth {
@@ -93,6 +109,9 @@ export async function checkCliForPlatform(platform: string): Promise<PlatformHea
 }
 
 async function checkCli(spec: PlatformSpec): Promise<PlatformHealth['cli']> {
+  if (!(await commandOnPath(spec.command))) {
+    return { available: false, version: '', error: `${spec.command} is not on PATH` };
+  }
   try {
     const { stdout } = await execFileAsync(spec.command, spec.versionArgs, {
       timeout: CLI_CHECK_TIMEOUT_MS,
