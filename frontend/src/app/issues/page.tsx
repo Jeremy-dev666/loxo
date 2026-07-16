@@ -341,7 +341,10 @@ function BoardPage() {
           projectName={projects.find((p) => p.id === openIssue.projectId)?.name}
           agents={agents}
           goals={goals}
-          onClose={() => setOpenIssue(null)}
+          onClose={() => {
+            setOpenIssue(null);
+            void refresh();
+          }}
           onChanged={() => void refresh()}
         />
       )}

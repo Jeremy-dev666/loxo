@@ -130,12 +130,17 @@ export function IssueReceipt({
     load().catch((err) => setError(err instanceof Error ? err.message : 'Load failed'));
   }, [load]);
 
-  // Live runs settle asynchronously; keep the receipt fresh while one is hot.
+  // Live runs settle asynchronously; keep the receipt fresh while one is
+  // hot, and let the board behind track the agent-driven moves too.
   useEffect(() => {
     if (!runs.some((r) => ACTIVE_RUN_STATUSES.includes(r.status))) return;
-    const t = setTimeout(() => void load().catch(() => undefined), 2000);
+    const t = setTimeout(() => {
+      void load()
+        .then(() => onChanged())
+        .catch(() => undefined);
+    }, 2000);
     return () => clearTimeout(t);
-  }, [runs, load]);
+  }, [runs, load, onChanged]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
