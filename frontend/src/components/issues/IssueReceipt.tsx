@@ -18,6 +18,15 @@ import {
   type IssueComment,
   type IssueStatus,
 } from '@/lib/issues';
+import { ACTIVE_RUN_STATUSES, fetchRuns, wakeIssue, type Run, type RunStatus } from '@/lib/runs';
+
+const RUN_STATUS_TEXT: Record<RunStatus, string> = {
+  queued: 'text-pixel-gray',
+  running: 'text-pixel-orange',
+  succeeded: 'text-pixel-green',
+  failed: 'text-pixel-red',
+  cancelled: 'text-pixel-gray',
+};
 
 interface IssueReceiptProps {
   issueId: string;
@@ -89,6 +98,8 @@ export function IssueReceipt({
   const me = useAuthStore((s) => s.user);
   const [issue, setIssue] = useState<Issue | null>(null);
   const [comments, setComments] = useState<IssueComment[]>([]);
+  const [runs, setRuns] = useState<Run[]>([]);
+  const [openRunId, setOpenRunId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [draft, setDraft] = useState('');
@@ -103,19 +114,28 @@ export function IssueReceipt({
   }, [printEntrance]);
 
   const load = useCallback(async () => {
-    const [{ issue: fetched }, { comments: timeline }] = await Promise.all([
+    const [{ issue: fetched }, { comments: timeline }, { runs: ledger }] = await Promise.all([
       fetchIssue(issueId),
       fetchComments(issueId),
+      fetchRuns({ issueId }),
     ]);
     setIssue(fetched);
     setTitle(fetched.title);
     setDescription(fetched.description);
     setComments(timeline);
+    setRuns(ledger);
   }, [issueId]);
 
   useEffect(() => {
     load().catch((err) => setError(err instanceof Error ? err.message : 'Load failed'));
   }, [load]);
+
+  // Live runs settle asynchronously; keep the receipt fresh while one is hot.
+  useEffect(() => {
+    if (!runs.some((r) => ACTIVE_RUN_STATUSES.includes(r.status))) return;
+    const t = setTimeout(() => void load().catch(() => undefined), 2000);
+    return () => clearTimeout(t);
+  }, [runs, load]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -192,6 +212,10 @@ export function IssueReceipt({
     if (!body) return;
     setDraft('');
     void mutate(() => addComment(issue.id, body));
+  };
+
+  const wakeAssignee = () => {
+    void mutate(() => wakeIssue(issue.id));
   };
 
   const cancelIssue = () => {
@@ -389,6 +413,71 @@ export function IssueReceipt({
             <BracketButton onClick={postComment} disabled={!draft.trim()}>
               POST
             </BracketButton>
+          </div>
+
+          <Rule dashed />
+
+          {/* Runs ledger */}
+          <div className="mb-2 flex items-end justify-between">
+            <p className="font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
+              Runs
+            </p>
+            {issue.assigneeAgentId && (
+              <BracketButton
+                onClick={wakeAssignee}
+                disabled={runs.some((r) => ACTIVE_RUN_STATUSES.includes(r.status))}
+              >
+                WAKE
+              </BracketButton>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            {runs.map((r) => (
+              <div key={r.id} className="font-pixel text-sm">
+                <button
+                  type="button"
+                  onClick={() => setOpenRunId(openRunId === r.id ? null : r.id)}
+                  className="flex w-full items-end gap-1 text-left"
+                >
+                  <span className="shrink-0 text-pixel-gray">
+                    {formatTime(r.createdAt).slice(6)}
+                  </span>
+                  <span className="shrink-0 truncate text-pixel-black">
+                    {r.agentName.toUpperCase()}
+                  </span>
+                  <span className="shrink-0 text-[10px] uppercase text-pixel-gray">
+                    {r.trigger}
+                  </span>
+                  <span className="mb-[3px] min-w-2 flex-1 border-b border-dotted border-pixel-gray/50" />
+                  <span
+                    className={`shrink-0 text-xs font-bold uppercase ${RUN_STATUS_TEXT[r.status]} ${r.status === 'running' ? 'animate-blink-steps' : ''}`}
+                  >
+                    {r.status}
+                  </span>
+                </button>
+                {openRunId === r.id && (
+                  <div className="mt-1 border-l-2 border-pixel-gray/40 pl-2">
+                    {r.reason && (
+                      <p className="text-[10px] uppercase text-pixel-gray">{r.reason}</p>
+                    )}
+                    {r.error ? (
+                      <p className="whitespace-pre-wrap break-words text-xs text-pixel-red">
+                        {r.error}
+                      </p>
+                    ) : r.output ? (
+                      <p className="max-h-40 overflow-y-auto whitespace-pre-wrap break-words text-xs text-pixel-black">
+                        {r.output}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-pixel-gray">(no output yet)</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            {runs.length === 0 && (
+              <p className="font-pixel text-xs text-pixel-gray">(no runs yet)</p>
+            )}
           </div>
 
           <Rule dashed />
