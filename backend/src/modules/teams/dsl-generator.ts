@@ -1,7 +1,7 @@
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '../../db/client';
-import { agents, providers } from '../../db/schema';
-import { openSecret } from '../../crypto/secretbox';
+import { agents } from '../../db/schema';
+import { generateJson } from '../llm/json-generation';
 import { normalizeDsl, type WorkflowDsl } from './workflow-dsl';
 
 const GENERATION_TIMEOUT_MS = 60_000;
@@ -31,87 +31,6 @@ const SYSTEM_PROMPT = [
   'Edges: {"from", "to", "branch"?}. Use short kebab-case ids.',
   'Prefer simple linear or parallel flows; add a condition gate only when the request implies review/retry.',
 ].join('\n');
-
-async function pickGenerationProvider(
-  userId: string
-): Promise<{ vendor: 'anthropic' | 'openai'; apiKey: string; baseUrl: string | null; model: string } | null> {
-  for (const vendor of ['anthropic', 'openai'] as const) {
-    const rows = await db
-      .select()
-      .from(providers)
-      .where(and(eq(providers.userId, userId), eq(providers.vendor, vendor)));
-    const chosen = rows.find((r) => r.isDefault) ?? rows[0];
-    if (chosen) {
-      return {
-        vendor,
-        apiKey: openSecret(chosen.apiKeyEncrypted),
-        baseUrl: chosen.baseUrl,
-        model:
-          chosen.models[0] ?? (vendor === 'anthropic' ? 'claude-sonnet-5' : 'gpt-4o-mini'),
-      };
-    }
-  }
-  return null;
-}
-
-/** Pulls the first JSON object out of a model reply that may have prose around it. */
-export function extractJsonObject(text: string): unknown {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start < 0 || end <= start) throw new Error('No JSON object in model output');
-  return JSON.parse(text.slice(start, end + 1));
-}
-
-async function callAnthropic(
-  cfg: { apiKey: string; baseUrl: string | null; model: string },
-  userPrompt: string,
-  signal: AbortSignal
-): Promise<string> {
-  const res = await fetch(`${cfg.baseUrl ?? 'https://api.anthropic.com'}/v1/messages`, {
-    method: 'POST',
-    headers: {
-      'x-api-key': cfg.apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: cfg.model,
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
-    }),
-    signal,
-  });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}`);
-  const body = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
-  return (body.content ?? [])
-    .filter((b) => b.type === 'text')
-    .map((b) => b.text ?? '')
-    .join('');
-}
-
-async function callOpenAi(
-  cfg: { apiKey: string; baseUrl: string | null; model: string },
-  userPrompt: string,
-  signal: AbortSignal
-): Promise<string> {
-  const res = await fetch(`${cfg.baseUrl ?? 'https://api.openai.com'}/v1/chat/completions`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${cfg.apiKey}`, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      model: cfg.model,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-    signal,
-  });
-  if (!res.ok) throw new Error(`OpenAI API ${res.status}`);
-  const body = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  return body.choices?.[0]?.message?.content ?? '';
-}
 
 /** Deterministic draft when no provider is configured or the model call fails. */
 export function fallbackDraft(prompt: string, available: AgentSummary[]): unknown {
@@ -160,26 +79,26 @@ export async function generateWorkflow(userId: string, prompt: string): Promise<
     prompt,
   ].join('\n');
 
-  const provider = await pickGenerationProvider(userId);
-  if (provider) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
+  const generation = await generateJson(
+    userId,
+    { system: SYSTEM_PROMPT, user: userPrompt },
+    { timeoutMs: GENERATION_TIMEOUT_MS }
+  );
+
+  if (generation.status === 'ok') {
     try {
-      const reply =
-        provider.vendor === 'anthropic'
-          ? await callAnthropic(provider, userPrompt, controller.signal)
-          : await callOpenAi(provider, userPrompt, controller.signal);
-      const draft = extractJsonObject(reply);
-      const workflow = normalizeDsl(draft, knownIds);
+      const workflow = normalizeDsl(generation.json, knownIds);
       workflow.metadata = { source: 'generated' };
-      return { workflow, generator: provider.vendor, warnings };
+      return { workflow, generator: generation.vendor, warnings };
     } catch (error) {
       warnings.push(
-        `Model generation via ${provider.vendor} failed (${(error as Error).message}); used the deterministic fallback`
+        `Model generation via ${generation.vendor} failed (${(error as Error).message}); used the deterministic fallback`
       );
-    } finally {
-      clearTimeout(timer);
     }
+  } else if (generation.status === 'failed') {
+    warnings.push(
+      `Model generation via ${generation.vendor} failed (${generation.message}); used the deterministic fallback`
+    );
   } else {
     warnings.push('No anthropic/openai provider configured; used the deterministic fallback');
   }

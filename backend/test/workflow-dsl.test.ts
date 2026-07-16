@@ -6,7 +6,8 @@ import {
   type AgentNode,
   type WorkflowDsl,
 } from '../src/modules/teams/workflow-dsl';
-import { extractJsonObject, fallbackDraft } from '../src/modules/teams/dsl-generator';
+import { extractJsonObject } from '../src/modules/llm/json-generation';
+import { fallbackDraft } from '../src/modules/teams/dsl-generator';
 
 const KNOWN = new Set(['agent-a', 'agent-b']);
 
