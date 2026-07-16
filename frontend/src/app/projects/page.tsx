@@ -60,13 +60,13 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
         <div className="mt-4 space-y-3">
           <input
             autoFocus
-            className="w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+            className="w-full border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             placeholder="Project name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <textarea
-            className="w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+            className="w-full border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             placeholder="What is this project about? (optional)"
             rows={2}
             value={description}
@@ -115,7 +115,7 @@ function CreateDialog({ teams, agents, onClose, onCreated }: CreateDialogProps) 
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream"
+            className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream"
           >
             Cancel
           </button>

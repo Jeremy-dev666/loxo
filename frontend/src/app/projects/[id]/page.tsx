@@ -131,7 +131,7 @@ function BindingsDialog({
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70"
+            className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-4 py-2 text-sm text-pixel-black/70"
           >
             Cancel
           </button>
@@ -399,7 +399,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
           <select
             value={activeTeamId}
             onChange={(e) => setActiveTeamId(e.target.value)}
-            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-2 py-1.5 text-sm outline-none focus:border-pixel-blue"
+            className="border border-pixel-line bg-pixel-white font-sans text-pixel-black px-2 py-1.5 text-sm outline-none focus:border-pixel-blue"
           >
             {boundTeams.length === 0 && <option value="">No team bound</option>}
             {boundTeams.map((team) => (
@@ -410,7 +410,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
           </select>
           <button
             onClick={() => setShowBindings(true)}
-            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-sm text-pixel-black/70 hover:bg-pixel-cream"
+            className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-3 py-1.5 text-sm text-pixel-black/70 hover:bg-pixel-cream"
           >
             Manage bindings
           </button>
@@ -468,7 +468,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
               value={task}
               onChange={(e) => setTask(e.target.value)}
               placeholder="Describe the task for the team. Agents work inside this project's workspace only."
-              className="w-full resize-none border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+              className="w-full resize-none border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
             />
             <div className="mt-2 flex items-center justify-between">
               <p className="text-[11px] text-pixel-black/40">
@@ -486,7 +486,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
                 <button
                   onClick={submit}
                   disabled={submitting || !task.trim() || running}
-                  className="border border-pixel-line bg-pixel-yellow px-4 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+                  className="border border-pixel-line bg-pixel-yellow px-4 py-1.5 font-sans text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
                 >
                   {running ? 'Running…' : submitting ? 'Submitting…' : 'Submit task'}
                 </button>

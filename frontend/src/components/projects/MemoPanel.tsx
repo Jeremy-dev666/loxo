@@ -50,7 +50,7 @@ export function MemoPanel({
               type="button"
               onClick={() => onDelete(memo.id)}
               title="Forget this memo"
-              className="shrink-0 border border-pixel-line bg-pixel-white px-1.5 py-0.5 font-pixel text-[10px] text-pixel-black/60 opacity-0 transition-opacity hover:bg-pixel-red hover:text-pixel-white group-hover:opacity-100"
+              className="shrink-0 border border-pixel-line bg-pixel-white px-1.5 py-0.5 font-sans text-[10px] text-pixel-black/60 opacity-0 transition-opacity hover:bg-pixel-red hover:text-pixel-white group-hover:opacity-100"
             >
               Forget
             </button>

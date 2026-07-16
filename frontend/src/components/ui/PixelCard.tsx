@@ -28,7 +28,7 @@ export function PixelCard({
       {title && (
         <div className="flex items-center gap-2 border-b border-pixel-line bg-pixel-cream px-3 py-1.5">
           <span className="h-3 w-1 bg-pixel-yellow" aria-hidden />
-          <span className="font-pixel text-xs uppercase tracking-wide text-pixel-black">{title}</span>
+          <span className="font-sans text-xs uppercase tracking-wide text-pixel-black">{title}</span>
         </div>
       )}
       <div className="flex min-h-0 flex-1 flex-col p-3">{children}</div>

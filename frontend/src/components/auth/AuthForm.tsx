@@ -138,7 +138,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       >
         <div className="border border-pixel-line bg-pixel-white" style={{ boxShadow: '3px 3px 0px 0px rgba(17,17,17,0.10)' }}>
           <div
-            className="flex items-center justify-center gap-3 border-b border-pixel-line bg-pixel-black p-3 text-center font-pixel text-xl text-pixel-white"
+            className="flex items-center justify-center gap-3 border-b border-pixel-line bg-pixel-black p-3 text-center font-sans text-xl text-pixel-white"
           >
             <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
               <BrandMark className="h-6 w-6" />
@@ -163,7 +163,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             </motion.div>
           </div>
 
-          <p className="mb-4 px-4 text-center font-pixel text-xs text-pixel-black/50">
+          <p className="mb-4 px-4 text-center font-sans text-xs text-pixel-black/50">
             {isRegister ? 'Join the swarm — set sail with your agents!' : 'Welcome back, captain!'}
           </p>
 
@@ -173,25 +173,25 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               animate={{ opacity: 1, x: 0 }}
               className="mx-4 mb-4 border border-pixel-red bg-pixel-red/10 p-3"
             >
-              <p className="font-pixel text-sm text-pixel-red">{error}</p>
+              <p className="font-sans text-sm text-pixel-red">{error}</p>
             </motion.div>
           )}
 
           <form onSubmit={onSubmit} className="space-y-4 px-4 pb-4">
             <div>
-              <label className="mb-1 block font-pixel text-sm text-pixel-black">EMAIL</label>
+              <label className="mb-1 block font-sans text-sm text-pixel-black">EMAIL</label>
               <PixelInput value={email} onChange={setEmail} placeholder="your@email.com" type="email" />
             </div>
 
             {isRegister && (
               <div>
-                <label className="mb-1 block font-pixel text-sm text-pixel-black">USERNAME</label>
+                <label className="mb-1 block font-sans text-sm text-pixel-black">USERNAME</label>
                 <PixelInput value={username} onChange={setUsername} placeholder="captain" />
               </div>
             )}
 
             <div>
-              <label className="mb-1 block font-pixel text-sm text-pixel-black">PASSWORD</label>
+              <label className="mb-1 block font-sans text-sm text-pixel-black">PASSWORD</label>
               <PixelInput value={password} onChange={setPassword} placeholder="********" type="password" />
             </div>
 
@@ -212,7 +212,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           </form>
 
           <div className="mt-2 pb-4 text-center">
-            <p className="font-pixel text-sm text-pixel-black/60">
+            <p className="font-sans text-sm text-pixel-black/60">
               {isRegister ? 'Already have an account? ' : "Don't have an account? "}
               <Link href={isRegister ? '/login' : '/register'} className="text-pixel-blue hover:underline">
                 {isRegister ? 'Sign in' : 'Sign up now'}
@@ -221,14 +221,14 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           </div>
 
           <div className="pb-4 text-center">
-            <Link href="/" className="font-pixel text-xs text-pixel-black/40 hover:text-pixel-black/60">
+            <Link href="/" className="font-sans text-xs text-pixel-black/40 hover:text-pixel-black/60">
               Back to home
             </Link>
           </div>
         </div>
 
         <motion.p
-          className="mt-4 text-center font-pixel text-xs text-pixel-black/40"
+          className="mt-4 text-center font-sans text-xs text-pixel-black/40"
           animate={{ opacity: [0.4, 0.8, 0.4] }}
           transition={{ duration: 2, repeat: Infinity }}
         >

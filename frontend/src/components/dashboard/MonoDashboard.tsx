@@ -134,7 +134,7 @@ export function MonoDashboard({
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-pixel text-xs uppercase tracking-[0.2em] text-[#9B9B9B]">{dateLine()}</p>
+            <p className="font-sans text-xs uppercase tracking-[0.2em] text-[#9B9B9B]">{dateLine()}</p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight">
               {greeting()}
               {isLoggedIn && userName ? `, ${userName}` : ''}
@@ -195,7 +195,7 @@ export function MonoDashboard({
                       <p className="truncate text-sm font-semibold">{run.title}</p>
                       <p className="truncate text-[13px] text-[#6B6B6B]">{run.detail}</p>
                     </div>
-                    <span className="shrink-0 font-pixel text-xs text-[#9B9B9B]">{run.when}</span>
+                    <span className="shrink-0 font-sans text-xs text-[#9B9B9B]">{run.when}</span>
                   </div>
                 ))}
               </Card>
@@ -223,7 +223,7 @@ export function MonoDashboard({
                       <span className="shrink-0 text-[12px] text-[#6B6B6B]">
                         {project.teamIds.length} teams · {project.agentIds.length} agents
                       </span>
-                      <span className="shrink-0 font-pixel text-xs text-[#9B9B9B]">
+                      <span className="shrink-0 font-sans text-xs text-[#9B9B9B]">
                         {relativeDay(project.updatedAt)}
                       </span>
                     </Link>
@@ -321,7 +321,7 @@ export function MonoDashboard({
                 <ol className="space-y-3">
                   {SAMPLE_ACTIVITY.map((item) => (
                     <li key={item.id} className="flex gap-3 text-[13px] leading-snug">
-                      <span className="shrink-0 font-pixel text-xs text-[#9B9B9B]">{item.time}</span>
+                      <span className="shrink-0 font-sans text-xs text-[#9B9B9B]">{item.time}</span>
                       <span className="text-[#3C3C3C]">{item.text}</span>
                     </li>
                   ))}

@@ -148,14 +148,14 @@ function PostDetailInner() {
           </p>
         )}
         <textarea
-          className="h-16 w-full resize-none border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+          className="h-16 w-full resize-none border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
           placeholder={replyTo ? 'Write a reply…' : 'Write a comment…'}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
         />
         <div className="flex items-center justify-between">
           <select
-            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-2 py-1.5 text-xs"
+            className="border border-pixel-line bg-pixel-white font-sans text-pixel-black px-2 py-1.5 text-xs"
             value={persona}
             onChange={(e) => setPersona(e.target.value)}
           >
@@ -168,7 +168,7 @@ function PostDetailInner() {
           </select>
           <button
             disabled={!draft.trim()}
-            className="border border-pixel-line bg-pixel-yellow px-4 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-line bg-pixel-yellow px-4 py-1.5 font-sans text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {replyTo ? 'Reply' : 'Comment'}
           </button>

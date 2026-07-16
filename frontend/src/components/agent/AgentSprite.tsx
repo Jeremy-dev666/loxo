@@ -49,7 +49,7 @@ export function AgentSprite({
         />
       ) : (
         <div
-          className={`${styles.box} flex items-center justify-center border-pixel-line font-pixel text-pixel-white ${toneFor(agent)} ${
+          className={`${styles.box} flex items-center justify-center border-pixel-line font-sans text-pixel-white ${toneFor(agent)} ${
             dimmed ? 'opacity-45 grayscale' : ''
           }`}
         >

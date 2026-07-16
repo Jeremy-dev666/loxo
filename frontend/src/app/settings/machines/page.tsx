@@ -13,7 +13,7 @@ import {
 } from '@/lib/machines';
 
 const inputClass =
-  'w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
+  'w-full border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
 
 const POLL_INTERVAL_MS = 10_000;
 
@@ -46,7 +46,7 @@ function PairForm({ onPaired }: { onPaired: () => void }) {
     >
       <h2 className="font-medium">Connect a machine</h2>
       <p className="text-xs text-pixel-black/60">
-        Run the SwarmDev daemon on the machine, then enter the pairing code it prints.
+        Run the Loxo daemon on the machine, then enter the pairing code it prints.
       </p>
       <div className="grid grid-cols-2 gap-3">
         <input
@@ -133,7 +133,7 @@ function EnvEditor({
 
   return (
     <div className="mt-3 space-y-2 border-t border-pixel-line/50 pt-3">
-      <p className="font-pixel text-xs text-pixel-black/60">
+      <p className="font-sans text-xs text-pixel-black/60">
         Environment variables for agent processes on this machine. Encrypted at rest, applied on
         the next turn — no daemon restart needed. Example: on networks that need a proxy, set{' '}
         <code className="bg-pixel-cream px-1">HTTP_PROXY</code> and{' '}
@@ -160,30 +160,30 @@ function EnvEditor({
           />
           <button
             onClick={() => editRows(rows.filter((_, i) => i !== index))}
-            className="border border-pixel-line px-2 font-pixel text-xs text-pixel-black/60 hover:text-pixel-red"
+            className="border border-pixel-line px-2 font-sans text-xs text-pixel-black/60 hover:text-pixel-red"
             title="Remove variable"
           >
             ×
           </button>
         </div>
       ))}
-      {error && <p className="font-pixel text-xs text-pixel-red">{error}</p>}
+      {error && <p className="font-sans text-xs text-pixel-red">{error}</p>}
       <div className="flex items-center gap-2">
         <button
           onClick={() => editRows([...rows, { key: '', value: '' }])}
-          className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black/70 hover:bg-pixel-cream"
+          className="border border-pixel-line bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-black/70 hover:bg-pixel-cream"
         >
           + Add variable
         </button>
         <button
           onClick={save}
           disabled={saving}
-          className="bg-pixel-yellow px-3 py-1 font-pixel text-xs text-pixel-black disabled:opacity-60"
+          className="bg-pixel-yellow px-3 py-1 font-sans text-xs text-pixel-black disabled:opacity-60"
         >
           {saving ? 'Saving…' : savedAt ? 'Saved' : 'Save variables'}
         </button>
         {savedAt && (
-          <span className="font-pixel text-xs text-pixel-green">
+          <span className="font-sans text-xs text-pixel-green">
             Saved. Applies from the next agent turn.
           </span>
         )}
@@ -243,7 +243,7 @@ function MachineRow({
             <span className="font-medium">{machine.name}</span>
           )}
           {machine.platform && (
-            <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+            <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-sans text-xs text-pixel-black">
               {machine.platform}
             </span>
           )}
@@ -260,7 +260,7 @@ function MachineRow({
                 <span
                   key={r.runtime}
                   title={r.version ?? undefined}
-                  className="border border-pixel-line bg-pixel-cream px-1.5 py-0.5 font-pixel text-[10px] text-pixel-black/70"
+                  className="border border-pixel-line bg-pixel-cream px-1.5 py-0.5 font-sans text-[10px] text-pixel-black/70"
                 >
                   {r.runtime}
                 </span>
@@ -271,13 +271,13 @@ function MachineRow({
       <div className="flex gap-2 text-xs">
         <button
           onClick={() => setShowEnv(!showEnv)}
-          className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
+          className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
         >
           Env{Object.keys(machine.env).length > 0 ? ` (${Object.keys(machine.env).length})` : ''}
         </button>
         <button
           onClick={() => setRenaming(true)}
-          className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
+          className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
         >
           Rename
         </button>

@@ -82,7 +82,7 @@ export interface WorkflowNodeTurnContext {
 export function buildWorkflowNodePrompt(input: WorkflowNodeTurnContext): string {
   const sections: string[] = [
     '[AGENT_RUNTIME_CONTEXT]',
-    'You are the agent described below, executing one node of a multi-agent workflow on the SwarmDev platform.',
+    'You are the agent described below, executing one node of a multi-agent workflow on the Loxo platform.',
     `Agent: ${input.agent.name}`,
     input.agent.description ? `Description: ${sanitizeInjected(input.agent.description)}` : '',
     `Workflow: ${sanitizeInjected(input.workflowName)} (execution ${input.executionId})`,
@@ -147,7 +147,7 @@ export interface IssueRunTurnContext {
 export function buildIssueRunPrompt(input: IssueRunTurnContext): string {
   const sections: string[] = [
     '[AGENT_RUNTIME_CONTEXT]',
-    'You are the agent described below, executing one run against an issue assigned to you on the SwarmDev platform.',
+    'You are the agent described below, executing one run against an issue assigned to you on the Loxo platform.',
     `Agent: ${input.agent.name}`,
     input.agent.description ? `Description: ${sanitizeInjected(input.agent.description)}` : '',
     [
@@ -226,7 +226,7 @@ export interface DirectChatContext {
 export function buildDirectChatPrompt(input: DirectChatContext): string {
   const sections: string[] = [
     '[AGENT_RUNTIME_CONTEXT]',
-    'You are the agent described below, running inside the SwarmDev platform.',
+    'You are the agent described below, running inside the Loxo platform.',
     `Agent: ${input.agent.name}`,
     input.agent.description ? `Description: ${sanitizeInjected(input.agent.description)}` : '',
     `Conversation: ${input.conversationId}`,

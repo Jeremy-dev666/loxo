@@ -190,11 +190,11 @@ function BoardPage() {
       <div className="mb-2 flex items-center gap-2">
         <span className="flex items-center gap-1.5 bg-pixel-black px-2 py-0.5">
           <span className={`h-2 w-2 ${meta.swatch}`} aria-hidden />
-          <span className="font-pixel text-[11px] uppercase tracking-[0.15em] text-pixel-white">
+          <span className="font-sans text-[11px] uppercase tracking-[0.15em] text-pixel-white">
             {meta.label}
           </span>
         </span>
-        <span className="font-pixel text-xs text-pixel-gray">x {count}</span>
+        <span className="font-sans text-xs text-pixel-gray">x {count}</span>
       </div>
     );
   };
@@ -223,7 +223,7 @@ function BoardPage() {
               {cards.map(renderCard)}
               {provided.placeholder}
               {cards.length === 0 && (
-                <p className="m-auto font-pixel text-[10px] uppercase tracking-[0.15em] text-pixel-gray">no tickets</p>
+                <p className="m-auto font-sans text-[10px] uppercase tracking-[0.15em] text-pixel-gray">no tickets</p>
               )}
             </div>
           )}
@@ -253,7 +253,7 @@ function BoardPage() {
               {cards.map(renderCard)}
               {provided.placeholder}
               {cards.length === 0 && (
-                <p className="col-span-full m-auto font-pixel text-xs text-pixel-gray">
+                <p className="col-span-full m-auto font-sans text-xs text-pixel-gray">
                   NO TICKETS WAITING
                 </p>
               )}
@@ -267,18 +267,18 @@ function BoardPage() {
   return (
     <div className="flex h-full min-h-0 flex-col px-4 py-4">
       <div className="mb-5 flex flex-wrap items-center gap-3 border-b border-pixel-line pb-4">
-        <h1 className="font-pixel text-xl text-pixel-black">Issues</h1>
+        <h1 className="font-sans text-xl text-pixel-black">Issues</h1>
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="bg-pixel-black px-2 py-1 font-pixel text-xs uppercase tracking-wide text-pixel-white hover:bg-pixel-orange hover:text-pixel-black"
+          className="bg-pixel-black px-2 py-1 font-sans text-xs uppercase tracking-wide text-pixel-white hover:bg-pixel-orange hover:text-pixel-black"
         >
           [ NEW TICKET ]
         </button>
         <select
           value={projectFilter}
           onChange={(e) => setProjectFilter(e.target.value)}
-          className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
+          className="border border-pixel-line bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
         >
           <option value="">All projects</option>
           {projects
@@ -297,14 +297,14 @@ function BoardPage() {
             ))}
         </select>
         {error && (
-          <span className="border border-pixel-red bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-red">
+          <span className="border border-pixel-red bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-red">
             {error}
           </span>
         )}
       </div>
 
       {loading ? (
-        <p className="font-pixel text-sm text-pixel-gray">Loading board...</p>
+        <p className="font-sans text-sm text-pixel-gray">Loading board...</p>
       ) : (
         <DragDropContext
           onDragStart={(start) => setDragSource(start.source.droppableId as IssueStatus)}

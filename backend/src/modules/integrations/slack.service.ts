@@ -352,7 +352,7 @@ async function processAgentEvent(
 ): Promise<void> {
   const agent = await findSubjectAgent(context.subjectId);
   if (!agent) {
-    await replyInThread(credentials, context, 'This agent no longer exists in SwarmDev.');
+    await replyInThread(credentials, context, 'This agent no longer exists in Loxo.');
     return;
   }
 
@@ -422,7 +422,7 @@ async function processTeamEvent(
 ): Promise<void> {
   const team = await findSubjectTeam(context.subjectId);
   if (!team) {
-    await replyInThread(credentials, context, 'This team no longer exists in SwarmDev.');
+    await replyInThread(credentials, context, 'This team no longer exists in Loxo.');
     return;
   }
 
@@ -430,7 +430,7 @@ async function processTeamEvent(
   try {
     view = await getTeam(team.userId, team.id);
   } catch {
-    await replyInThread(credentials, context, 'This team no longer exists in SwarmDev.');
+    await replyInThread(credentials, context, 'This team no longer exists in Loxo.');
     return;
   }
 
@@ -453,7 +453,7 @@ async function processTeamEvent(
       await replyInThread(
         credentials,
         context,
-        `The team is still working. Execution ID: ${execution.id} — check the team page in SwarmDev for progress.`
+        `The team is still working. Execution ID: ${execution.id} — check the team page in Loxo for progress.`
       );
       return;
     }

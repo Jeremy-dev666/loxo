@@ -93,7 +93,7 @@ function Whiteboard({
           onClick={onGenerateWorkflow}
           disabled={generating || notes.length === 0}
           title={notes.length === 0 ? 'Add whiteboard notes first' : 'Turn the whiteboard into a workflow draft'}
-          className="border border-pixel-line bg-pixel-blue px-2 py-1 font-pixel text-[11px] text-pixel-white shadow-pixel-sm disabled:opacity-50"
+          className="border border-pixel-line bg-pixel-blue px-2 py-1 font-sans text-[11px] text-pixel-white shadow-pixel-sm disabled:opacity-50"
         >
           {generating ? 'Generating…' : 'Generate workflow'}
         </button>
@@ -162,7 +162,7 @@ function WorkflowDraftCard({
   return (
     <div className="inline-block w-full max-w-[92%] border border-pixel-line bg-pixel-cream p-3 text-left shadow-pixel-sm">
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-        <span className="font-pixel font-bold text-pixel-black">
+        <span className="font-sans font-bold text-pixel-black">
           Workflow draft v{draft.revision}
         </span>
         <span className={`px-1.5 py-0.5 ${status.chip}`}>{status.label}</span>
@@ -171,14 +171,14 @@ function WorkflowDraftCard({
           {draft.noteCount} notes
         </span>
       </div>
-      <p className="font-pixel text-sm font-bold text-pixel-black">{draft.workflow.name}</p>
+      <p className="font-sans text-sm font-bold text-pixel-black">{draft.workflow.name}</p>
       {draft.workflow.description && (
         <p className="mt-0.5 text-xs text-pixel-black/60">{draft.workflow.description}</p>
       )}
       <ol className="mt-2 space-y-1 text-xs">
         {agentSteps.map((node, index) => (
           <li key={node.id} className="flex items-center gap-2">
-            <span className="font-pixel text-pixel-black/40">{index + 1}.</span>
+            <span className="font-sans text-pixel-black/40">{index + 1}.</span>
             <span className="text-pixel-black">{node.label}</span>
             <span className="text-pixel-black/50">({node.kind ?? 'worker'})</span>
             {!node.agentId && <span className="text-pixel-red">unbound</span>}
@@ -195,7 +195,7 @@ function WorkflowDraftCard({
       {draft.status === 'confirmed' && draft.teamId && (
         <Link
           href={`/teams/${draft.teamId}`}
-          className="mt-3 inline-block border border-pixel-line bg-pixel-green px-3 py-1 font-pixel text-xs text-pixel-white no-underline shadow-pixel-sm"
+          className="mt-3 inline-block border border-pixel-line bg-pixel-green px-3 py-1 font-sans text-xs text-pixel-white no-underline shadow-pixel-sm"
         >
           Open team →
         </Link>
@@ -209,13 +209,13 @@ function WorkflowDraftCard({
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 placeholder={draft.workflow.name}
-                className="flex-1 border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black outline-none focus:border-pixel-blue"
+                className="flex-1 border border-pixel-line bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-black outline-none focus:border-pixel-blue"
               />
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => onConfirm(draft.id, teamName.trim() || undefined)}
-                className="border border-pixel-line bg-pixel-green px-3 py-1 font-pixel text-xs text-pixel-white shadow-pixel-sm disabled:opacity-50"
+                className="border border-pixel-line bg-pixel-green px-3 py-1 font-sans text-xs text-pixel-white shadow-pixel-sm disabled:opacity-50"
               >
                 Save team
               </button>
@@ -227,13 +227,13 @@ function WorkflowDraftCard({
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="What should change?"
-                className="flex-1 border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black outline-none focus:border-pixel-blue"
+                className="flex-1 border border-pixel-line bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-black outline-none focus:border-pixel-blue"
               />
               <button
                 type="button"
                 disabled={busy || !feedback.trim()}
                 onClick={() => onRegenerate(feedback.trim(), draft.id)}
-                className="border border-pixel-line bg-pixel-blue px-3 py-1 font-pixel text-xs text-pixel-white shadow-pixel-sm disabled:opacity-50"
+                className="border border-pixel-line bg-pixel-blue px-3 py-1 font-sans text-xs text-pixel-white shadow-pixel-sm disabled:opacity-50"
               >
                 Regenerate
               </button>
@@ -245,7 +245,7 @@ function WorkflowDraftCard({
                 type="button"
                 disabled={busy}
                 onClick={() => setShowActions('confirm')}
-                className="border border-pixel-line bg-pixel-green px-3 py-1 font-pixel text-xs text-pixel-white shadow-pixel-sm disabled:opacity-50"
+                className="border border-pixel-line bg-pixel-green px-3 py-1 font-sans text-xs text-pixel-white shadow-pixel-sm disabled:opacity-50"
               >
                 Confirm as team
               </button>
@@ -253,7 +253,7 @@ function WorkflowDraftCard({
                 type="button"
                 disabled={busy}
                 onClick={() => setShowActions('regenerate')}
-                className="border border-pixel-line bg-pixel-white px-3 py-1 font-pixel text-xs text-pixel-black shadow-pixel-sm hover:bg-pixel-cream disabled:opacity-50"
+                className="border border-pixel-line bg-pixel-white px-3 py-1 font-sans text-xs text-pixel-black shadow-pixel-sm hover:bg-pixel-cream disabled:opacity-50"
               >
                 Regenerate with feedback
               </button>
@@ -418,7 +418,7 @@ function RoundtablePageInner() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold">Roundtable</h1>
           {state?.active && (
-            <span className="border border-pixel-line bg-pixel-green px-2 py-0.5 font-pixel text-xs text-pixel-white">
+            <span className="border border-pixel-line bg-pixel-green px-2 py-0.5 font-sans text-xs text-pixel-white">
               live · round {state.round}
             </span>
           )}
@@ -434,7 +434,7 @@ function RoundtablePageInner() {
           )}
           <button
             onClick={newSession}
-            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-1.5 text-pixel-black/70 hover:bg-pixel-cream"
+            className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-3 py-1.5 text-pixel-black/70 hover:bg-pixel-cream"
           >
             New session
           </button>
@@ -494,8 +494,8 @@ function RoundtablePageInner() {
                   <div
                     className={
                       message.senderId === 'user'
-                        ? 'inline-block max-w-[85%] border border-pixel-line bg-pixel-blue px-3 py-2 font-pixel text-sm text-pixel-white shadow-pixel-sm'
-                        : 'inline-block max-w-[85%] border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black shadow-pixel-sm'
+                        ? 'inline-block max-w-[85%] border border-pixel-line bg-pixel-blue px-3 py-2 font-sans text-sm text-pixel-white shadow-pixel-sm'
+                        : 'inline-block max-w-[85%] border border-pixel-line bg-pixel-white px-3 py-2 font-sans text-sm text-pixel-black shadow-pixel-sm'
                     }
                   >
                     <p className="whitespace-pre-wrap text-left">{message.content}</p>
@@ -512,12 +512,12 @@ function RoundtablePageInner() {
           </div>
           <form onSubmit={send} className="flex gap-2 border-t border-pixel-line p-3">
             <input
-              className="flex-1 border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+              className="flex-1 border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
               placeholder="Say something to the table…"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
             />
-            <button className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange">
+            <button className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-sans text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange">
               Send
             </button>
           </form>

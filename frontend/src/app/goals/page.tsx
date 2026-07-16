@@ -65,12 +65,12 @@ function GoalRow({ goal, onChanged }: { goal: Goal; onChanged: () => void }) {
           onChange={(e) => setTitle(e.target.value)}
           onBlur={saveTitle}
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-          className="min-w-0 flex-1 border border-transparent bg-transparent font-pixel text-sm text-pixel-black hover:border-pixel-line focus:border-pixel-black focus:outline-none"
+          className="min-w-0 flex-1 border border-transparent bg-transparent font-sans text-sm text-pixel-black hover:border-pixel-line focus:border-pixel-black focus:outline-none"
         />
         <select
           value={goal.status}
           onChange={(e) => void mutate(() => updateGoal(goal.id, { status: e.target.value as GoalStatus }))}
-          className="border border-pixel-line bg-pixel-white px-1.5 py-0.5 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
+          className="border border-pixel-line bg-pixel-white px-1.5 py-0.5 font-sans text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
         >
           <option value="active">Active</option>
           <option value="achieved">Achieved</option>
@@ -79,7 +79,7 @@ function GoalRow({ goal, onChanged }: { goal: Goal; onChanged: () => void }) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="px-1 font-pixel text-xs text-pixel-gray hover:text-pixel-black"
+          className="px-1 font-sans text-xs text-pixel-gray hover:text-pixel-black"
           aria-label="Toggle details"
         >
           {expanded ? '▲' : '▼'}
@@ -87,7 +87,7 @@ function GoalRow({ goal, onChanged }: { goal: Goal; onChanged: () => void }) {
         <button
           type="button"
           onClick={remove}
-          className="px-1 font-pixel text-xs uppercase text-pixel-red hover:bg-pixel-red hover:text-pixel-white"
+          className="px-1 font-sans text-xs uppercase text-pixel-red hover:bg-pixel-red hover:text-pixel-white"
         >
           [ DEL ]
         </button>
@@ -100,12 +100,12 @@ function GoalRow({ goal, onChanged }: { goal: Goal; onChanged: () => void }) {
             onBlur={saveDescription}
             rows={2}
             placeholder="Why does this goal exist?"
-            className="w-full border border-transparent bg-transparent font-pixel text-xs leading-relaxed text-pixel-black hover:border-pixel-line focus:border-pixel-black focus:outline-none"
+            className="w-full border border-transparent bg-transparent font-sans text-xs leading-relaxed text-pixel-black hover:border-pixel-line focus:border-pixel-black focus:outline-none"
           />
         </div>
       )}
       {error && (
-        <p className="border-t border-pixel-red px-3 py-1 font-pixel text-xs text-pixel-red">
+        <p className="border-t border-pixel-red px-3 py-1 font-sans text-xs text-pixel-red">
           {error}
         </p>
       )}
@@ -148,11 +148,11 @@ function GoalsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-4">
       <div className="mb-5 flex flex-wrap items-center gap-3 border-b border-pixel-line pb-4">
-        <h1 className="font-pixel text-xl text-pixel-black">Goals</h1>
+        <h1 className="font-sans text-xl text-pixel-black">Goals</h1>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as GoalStatus | '')}
-          className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
+          className="border border-pixel-line bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
         >
           <option value="active">Active</option>
           <option value="achieved">Achieved</option>
@@ -160,7 +160,7 @@ function GoalsPage() {
           <option value="">All</option>
         </select>
         {error && (
-          <span className="border border-pixel-red bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-red">
+          <span className="border border-pixel-red bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-red">
             {error}
           </span>
         )}
@@ -172,27 +172,27 @@ function GoalsPage() {
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && void add()}
           placeholder="What are you working toward?"
-          className="min-w-0 flex-1 border border-pixel-line bg-pixel-white px-2 py-1.5 font-pixel text-sm text-pixel-black focus:border-pixel-black focus:outline-none"
+          className="min-w-0 flex-1 border border-pixel-line bg-pixel-white px-2 py-1.5 font-sans text-sm text-pixel-black focus:border-pixel-black focus:outline-none"
         />
         <button
           type="button"
           onClick={() => void add()}
           disabled={!newTitle.trim()}
-          className="bg-pixel-black px-3 py-1 font-pixel text-xs uppercase tracking-wide text-pixel-white hover:bg-pixel-orange hover:text-pixel-black disabled:opacity-40"
+          className="bg-pixel-black px-3 py-1 font-sans text-xs uppercase tracking-wide text-pixel-white hover:bg-pixel-orange hover:text-pixel-black disabled:opacity-40"
         >
           [ ADD GOAL ]
         </button>
       </div>
 
       {loading ? (
-        <p className="font-pixel text-sm text-pixel-gray">Loading goals...</p>
+        <p className="font-sans text-sm text-pixel-gray">Loading goals...</p>
       ) : (
         <div className="flex flex-col gap-2">
           {goals.map((g) => (
             <GoalRow key={g.id} goal={g} onChanged={() => void refresh()} />
           ))}
           {goals.length === 0 && (
-            <p className="py-8 text-center font-pixel text-xs uppercase tracking-[0.15em] text-pixel-gray">
+            <p className="py-8 text-center font-sans text-xs uppercase tracking-[0.15em] text-pixel-gray">
               no goals here
             </p>
           )}

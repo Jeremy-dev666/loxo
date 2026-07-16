@@ -76,7 +76,7 @@ export function NewTicketModal({
           style={{ backgroundColor: PAPER }}
         >
           <div className="text-center">
-            <p className="font-pixel text-lg tracking-[0.3em] text-pixel-black">SWARMDEV</p>
+            <p className="font-pixel text-lg tracking-[0.3em] text-pixel-black">LOXO</p>
             <p className="mt-0.5 font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
               * new work order *
             </p>

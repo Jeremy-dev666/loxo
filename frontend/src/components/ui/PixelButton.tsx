@@ -41,7 +41,7 @@ export function PixelButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`font-pixel pixel-notch-sm uppercase tracking-wide ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${
+      className={`font-sans pixel-notch-sm uppercase tracking-wide ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${
         disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
       } ${className} relative transition-colors duration-100 active:translate-x-px active:translate-y-px`}
       style={{ filter: disabled ? 'none' : 'drop-shadow(1px 1px 0 rgba(17,17,17,0.10))' }}

@@ -19,7 +19,10 @@
   --pixel-green: #2f8a4c;
   --pixel-amber: #f2b03d;
   --pixel-red: #c94141;
-  --font-main: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* UI text is Inter (injected by next/font as --font-sans); the pixel face
+     survives as the ticket font for receipt surfaces only. */
+  --font-main: var(--font-sans), Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-ticket: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 * {
@@ -36,7 +39,7 @@ body {
 }
 
 .font-pixel {
-  font-family: var(--font-main);
+  font-family: var(--font-ticket);
   letter-spacing: 0;
 }
 

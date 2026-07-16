@@ -12,14 +12,14 @@ import {
 } from '@/lib/integrations';
 
 const inputClass =
-  'w-full border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue';
+  'w-full border border-pixel-line bg-pixel-white px-3 py-2 font-sans text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue';
 const chipButtonClass =
-  'cursor-pointer border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50';
+  'cursor-pointer border border-pixel-line bg-pixel-white px-3 py-1.5 font-sans text-xs text-pixel-black hover:bg-pixel-cream disabled:opacity-50';
 
 function StatusChip({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span
-      className={`border border-pixel-line px-1.5 py-0.5 font-pixel text-xs ${
+      className={`border border-pixel-line px-1.5 py-0.5 font-sans text-xs ${
         ok ? 'bg-pixel-green text-pixel-white' : 'bg-pixel-white text-pixel-black/55'
       }`}
     >
@@ -97,7 +97,7 @@ export function SlackIntegrationCard({
     }
   };
 
-  if (!info) return <p className="font-pixel text-xs text-pixel-black/50">Loading Slack setup…</p>;
+  if (!info) return <p className="font-sans text-xs text-pixel-black/50">Loading Slack setup…</p>;
 
   return (
     <div className="space-y-3">
@@ -108,7 +108,7 @@ export function SlackIntegrationCard({
       </div>
 
       <div>
-        <p className="mb-1 font-pixel text-xs font-bold text-pixel-black">
+        <p className="mb-1 font-sans text-xs font-bold text-pixel-black">
           Request URL (paste into Slack → Event Subscriptions)
         </p>
         <div className="flex gap-2">
@@ -123,7 +123,7 @@ export function SlackIntegrationCard({
           </button>
         </div>
         {!info.envStatus.publicBaseConfigured && (
-          <p className="mt-1 font-pixel text-xs text-pixel-black/55">
+          <p className="mt-1 font-sans text-xs text-pixel-black/55">
             Set SLACK_PUBLIC_BASE_URL (e.g. an ngrok tunnel) so Slack can reach this URL.
           </p>
         )}
@@ -131,7 +131,7 @@ export function SlackIntegrationCard({
 
       {config && (
         <div className="flex items-center justify-between border border-pixel-line bg-pixel-green/10 px-3 py-2">
-          <p className="font-pixel text-xs text-pixel-black">
+          <p className="font-sans text-xs text-pixel-black">
             Connected · token {config.botTokenMasked} · secret {config.signingSecretMasked}
             {config.channelId ? ` · channel ${config.channelId}` : ''}
           </p>
@@ -169,7 +169,7 @@ export function SlackIntegrationCard({
         />
         <button
           disabled={saving || !botToken.trim() || !signingSecret.trim()}
-          className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-pixel text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60"
+          className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-sans text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60"
           style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           {saving ? 'Saving…' : config ? 'Update credentials' : 'Connect Slack'}
@@ -177,12 +177,12 @@ export function SlackIntegrationCard({
       </form>
 
       {message && (
-        <p className="border border-pixel-yellow bg-pixel-yellow/15 p-2 font-pixel text-xs text-pixel-black">
+        <p className="border border-pixel-yellow bg-pixel-yellow/15 p-2 font-sans text-xs text-pixel-black">
           {message}
         </p>
       )}
 
-      <p className="font-pixel text-xs text-pixel-black/55">
+      <p className="font-sans text-xs text-pixel-black/55">
         {scope === 'agent'
           ? 'Mention the bot in a channel to chat with this agent; replies land in the thread.'
           : 'Mention the bot with a task to run this team’s workflow; the summary is posted in the thread.'}

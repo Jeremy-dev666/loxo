@@ -43,7 +43,7 @@ function MessageBubble({ message, agentName }: { message: LiveMessage | ChatMess
   return (
     <div className={isUser ? 'flex justify-end' : 'flex justify-start'}>
       <div className="max-w-[85%] md:max-w-[75%]">
-        <p className={`mb-1 font-pixel text-xs text-pixel-black/45 ${isUser ? 'text-right' : ''}`}>
+        <p className={`mb-1 font-sans text-xs text-pixel-black/45 ${isUser ? 'text-right' : ''}`}>
           {isUser ? 'You' : isError ? 'System' : agentName}
         </p>
         <div
@@ -57,9 +57,9 @@ function MessageBubble({ message, agentName }: { message: LiveMessage | ChatMess
           style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           {isUser || isError ? (
-            <p className="whitespace-pre-wrap font-pixel text-sm">{message.content}</p>
+            <p className="whitespace-pre-wrap font-sans text-sm">{message.content}</p>
           ) : (
-            <div className="prose prose-sm max-w-none font-pixel prose-headings:font-pixel prose-p:my-1 prose-pre:border prose-pre:border-pixel-line prose-pre:bg-pixel-black prose-pre:text-pixel-white">
+            <div className="prose prose-sm max-w-none font-sans prose-headings:font-sans prose-p:my-1 prose-pre:border prose-pre:border-pixel-line prose-pre:bg-pixel-black prose-pre:text-pixel-white">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
             </div>
           )}
@@ -97,10 +97,10 @@ function SessionsSidebar({
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-pixel-line bg-pixel-white md:flex">
       <div className="flex items-center justify-between border-b border-pixel-line bg-pixel-blue p-3">
-        <span className="font-pixel text-sm font-bold text-pixel-white">SESSIONS</span>
+        <span className="font-sans text-sm font-bold text-pixel-white">SESSIONS</span>
         <button
           onClick={onNew}
-          className="border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs font-bold text-pixel-black hover:bg-pixel-cream"
+          className="border border-pixel-line bg-pixel-white px-2 py-1 font-sans text-xs font-bold text-pixel-black hover:bg-pixel-cream"
           style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
         >
           + NEW
@@ -118,7 +118,7 @@ function SessionsSidebar({
             {renamingId === conversation.id ? (
               <input
                 autoFocus
-                className="w-full border border-pixel-line bg-pixel-white px-1 py-0.5 font-pixel text-xs"
+                className="w-full border border-pixel-line bg-pixel-white px-1 py-0.5 font-sans text-xs"
                 value={renameDraft}
                 onChange={(e) => setRenameDraft(e.target.value)}
                 onBlur={() => void saveRename(conversation.id)}
@@ -126,10 +126,10 @@ function SessionsSidebar({
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <p className="truncate font-pixel text-sm font-bold text-pixel-black">{conversation.title}</p>
+              <p className="truncate font-sans text-sm font-bold text-pixel-black">{conversation.title}</p>
             )}
-            <p className="truncate font-pixel text-xs text-pixel-black/50">{conversation.lastMessagePreview}</p>
-            <div className="mt-1 flex gap-2 font-pixel text-[10px] text-pixel-black/45">
+            <p className="truncate font-sans text-xs text-pixel-black/50">{conversation.lastMessagePreview}</p>
+            <div className="mt-1 flex gap-2 font-sans text-[10px] text-pixel-black/45">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -162,7 +162,7 @@ function SessionsSidebar({
           </div>
         ))}
         {conversations.length === 0 && (
-          <p className="p-3 font-pixel text-xs text-pixel-black/50">No sessions yet. Send a message to start.</p>
+          <p className="p-3 font-sans text-xs text-pixel-black/50">No sessions yet. Send a message to start.</p>
         )}
       </div>
     </aside>
@@ -201,16 +201,16 @@ function MonitorView({
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-6">
-      <h2 className="font-pixel text-xl font-bold text-pixel-black">■ Agent monitor</h2>
+      <h2 className="font-sans text-xl font-bold text-pixel-black">■ Agent monitor</h2>
       {rows.map((row) => (
         <div
           key={row.label}
           className="flex items-center justify-between border border-pixel-line bg-pixel-white px-4 py-3"
           style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
-          <span className="font-pixel text-sm text-pixel-black/60">{row.label}</span>
+          <span className="font-sans text-sm text-pixel-black/60">{row.label}</span>
           <span
-            className={`font-pixel text-sm font-bold ${
+            className={`font-sans text-sm font-bold ${
               row.ok === undefined ? 'text-pixel-black' : row.ok ? 'text-pixel-green' : 'text-pixel-red'
             }`}
           >
@@ -248,28 +248,28 @@ function SkillsView({ agentId }: { agentId: string }) {
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-pixel text-xl font-bold text-pixel-black">■ Skills</h2>
+        <h2 className="font-sans text-xl font-bold text-pixel-black">■ Skills</h2>
         <PixelButton variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>
           + Add skill
         </PixelButton>
         <input ref={inputRef} type="file" accept=".md,.zip" className="hidden" onChange={handleUpload} />
       </div>
-      <p className="font-pixel text-xs text-pixel-black/55">
+      <p className="font-sans text-xs text-pixel-black/55">
         SKILL.md files under the agent workspace; injected as a skill index for chat turns.
       </p>
-      {error && <p className="font-pixel text-sm text-pixel-red">{error}</p>}
+      {error && <p className="font-sans text-sm text-pixel-red">{error}</p>}
       {skills.map((skill) => (
         <div
           key={skill.id}
           className="border border-pixel-line bg-pixel-white px-4 py-3"
           style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
-          <p className="font-pixel text-sm font-bold text-pixel-black">{skill.name}</p>
-          <p className="mt-1 font-pixel text-xs text-pixel-black/60">{skill.description || 'No description'}</p>
+          <p className="font-sans text-sm font-bold text-pixel-black">{skill.name}</p>
+          <p className="mt-1 font-sans text-xs text-pixel-black/60">{skill.description || 'No description'}</p>
         </div>
       ))}
       {skills.length === 0 && (
-        <p className="border border-dashed border-pixel-black/30 p-6 text-center font-pixel text-sm text-pixel-black/45">
+        <p className="border border-dashed border-pixel-black/30 p-6 text-center font-sans text-sm text-pixel-black/45">
           No skills yet — upload a SKILL.md or a zip of skill folders.
         </p>
       )}
@@ -390,7 +390,7 @@ function ChatPageInner() {
   if (!agent) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center bg-pixel-cream">
-        <div className="animate-pulse font-pixel text-2xl text-pixel-black">Summoning agent…</div>
+        <div className="animate-pulse font-sans text-2xl text-pixel-black">Summoning agent…</div>
       </div>
     );
   }
@@ -430,13 +430,13 @@ function ChatPageInner() {
               </div>
 
               <div className="min-w-0">
-                <h1 className="truncate font-pixel text-base leading-none text-pixel-black md:text-xl">{agent.name}</h1>
+                <h1 className="truncate font-sans text-base leading-none text-pixel-black md:text-xl">{agent.name}</h1>
                 <div className="flex items-center gap-2">
-                  <span className="hidden font-pixel text-xs text-pixel-black/60 sm:inline">
+                  <span className="hidden font-sans text-xs text-pixel-black/60 sm:inline">
                     {RUNTIME_LABELS[agent.runtime] ?? agent.runtime}
                   </span>
                   <span
-                    className={`border border-pixel-line px-2 py-0.5 font-pixel text-xs ${
+                    className={`border border-pixel-line px-2 py-0.5 font-sans text-xs ${
                       busy ? 'bg-pixel-black text-pixel-white' : 'bg-pixel-white text-pixel-black'
                     }`}
                   >
@@ -449,7 +449,7 @@ function ChatPageInner() {
             <div className="flex items-center gap-2 md:gap-4">
               {agentProvider && (
                 <select
-                  className="hidden border border-pixel-line bg-pixel-white px-2 py-1.5 font-pixel text-xs text-pixel-black md:block"
+                  className="hidden border border-pixel-line bg-pixel-white px-2 py-1.5 font-sans text-xs text-pixel-black md:block"
                   style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
                   value={agent.model ?? ''}
                   disabled={savingModel}
@@ -477,7 +477,7 @@ function ChatPageInner() {
 
           {!providerConfigured && (
             <div className="mt-2 border border-pixel-yellow bg-pixel-yellow/15 px-3 py-1.5">
-              <p className="font-pixel text-xs text-pixel-black">
+              <p className="font-sans text-xs text-pixel-black">
                 No provider configured — replies will fail.{' '}
                 <Link href={`/agents/${agentId}/settings`} className="text-pixel-blue underline">
                   Configure now →
@@ -498,7 +498,7 @@ function ChatPageInner() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-4 py-2 font-pixel text-sm transition-colors ${index < 2 ? 'border-r border-pixel-line' : ''} ${
+              className={`flex-1 px-4 py-2 font-sans text-sm transition-colors ${index < 2 ? 'border-r border-pixel-line' : ''} ${
                 activeTab === tab
                   ? 'bg-pixel-black text-pixel-white'
                   : 'bg-pixel-white text-pixel-black hover:bg-pixel-black/10'
@@ -532,24 +532,24 @@ function ChatPageInner() {
                   <MessageBubble key={message.id} message={message} agentName={agent.name} />
                 ))}
                 {busy && (
-                  <p className="animate-pulse font-pixel text-xs text-pixel-black/50">
+                  <p className="animate-pulse font-sans text-xs text-pixel-black/50">
                     {agent.name} is composing a reply…
                   </p>
                 )}
                 {allMessages.length === 0 && !busy && (
                   <div className="py-16 text-center">
-                    <p className="font-pixel text-sm text-pixel-black/50">
+                    <p className="font-sans text-sm text-pixel-black/50">
                       Send a message to start the conversation.
                     </p>
                   </div>
                 )}
               </div>
 
-              {error && <p className="px-4 pb-1 font-pixel text-xs text-pixel-red">{error}</p>}
+              {error && <p className="px-4 pb-1 font-sans text-xs text-pixel-red">{error}</p>}
 
               <form onSubmit={submit} className="flex gap-2 border-t border-pixel-line bg-pixel-white p-3">
                 <textarea
-                  className="max-h-40 min-h-[2.75rem] flex-1 resize-y border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue"
+                  className="max-h-40 min-h-[2.75rem] flex-1 resize-y border border-pixel-line bg-pixel-white px-3 py-2 font-sans text-sm text-pixel-black outline-none placeholder:text-pixel-black/40 focus:border-pixel-blue"
                   style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.10)' }}
                   placeholder={`Message ${agent.name}…`}
                   value={draft}

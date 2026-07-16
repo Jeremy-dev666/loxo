@@ -69,7 +69,7 @@ function OfficialAdoptModal({ onClose, onDone }: { onClose: () => void; onDone: 
         <label className="block text-sm">
           <span className="text-pixel-black/60">Agent name</span>
           <input
-            className="mt-1 w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 outline-none focus:border-pixel-blue"
+            className="mt-1 w-full border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 outline-none focus:border-pixel-blue"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="My Starter Agent"
@@ -79,7 +79,7 @@ function OfficialAdoptModal({ onClose, onDone }: { onClose: () => void; onDone: 
         <label className="block text-sm">
           <span className="text-pixel-black/60">Runtime</span>
           <select
-            className="mt-1 w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2"
+            className="mt-1 w-full border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2"
             value={runtime}
             onChange={(e) => setRuntime(e.target.value)}
           >
@@ -92,12 +92,12 @@ function OfficialAdoptModal({ onClose, onDone }: { onClose: () => void; onDone: 
         </label>
         {error && <p className="text-sm text-pixel-red">{error}</p>}
         <div className="flex justify-end gap-2 text-sm">
-          <button type="button" onClick={onClose} className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-pixel-black/70">
+          <button type="button" onClick={onClose} className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-3 py-2 text-pixel-black/70">
             Cancel
           </button>
           <button
             disabled={busy || !name.trim()}
-            className="border border-pixel-line bg-pixel-yellow px-3 py-2 font-pixel font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-line bg-pixel-yellow px-3 py-2 font-sans font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {busy ? 'Adopting…' : 'Adopt'}
           </button>
@@ -141,12 +141,12 @@ function ListingsTab() {
         className="flex max-w-md gap-2"
       >
         <input
-          className="flex-1 border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+          className="flex-1 border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
           placeholder="Search listings"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream">
+        <button className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-3 py-2 text-sm text-pixel-black/70 hover:bg-pixel-cream">
           Search
         </button>
       </form>
@@ -162,7 +162,7 @@ function ListingsTab() {
                 <div className="flex items-center gap-2">
                   <span className="truncate font-medium">{listing.name}</span>
                   {listing.isOfficial && (
-                    <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">OFFICIAL</span>
+                    <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-sans text-xs text-pixel-black">OFFICIAL</span>
                   )}
                 </div>
                 <p className="mt-0.5 line-clamp-2 text-xs text-pixel-black/60">
@@ -183,7 +183,7 @@ function ListingsTab() {
               {listing.isOfficial ? (
                 <button
                   onClick={() => setAdopting(true)}
-                  className="border border-pixel-line bg-pixel-green px-3 py-1.5 font-pixel font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-cream hover:text-pixel-black"
+                  className="border border-pixel-line bg-pixel-green px-3 py-1.5 font-sans font-bold text-pixel-white shadow-pixel-sm hover:bg-pixel-cream hover:text-pixel-black"
                 >
                   Adopt
                 </button>
@@ -191,7 +191,7 @@ function ListingsTab() {
                 <button
                   onClick={() => download(listing)}
                   disabled={!listing.hasFiles}
-                  className="border border-pixel-line bg-pixel-yellow px-3 py-1.5 font-pixel font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+                  className="border border-pixel-line bg-pixel-yellow px-3 py-1.5 font-sans font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
                 >
                   Download
                 </button>
@@ -260,7 +260,7 @@ function ApiAgentsTab() {
             <div className="mt-3 flex justify-end">
               <button
                 onClick={() => deploy(preset)}
-                className="border border-pixel-line bg-pixel-yellow px-3 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange"
+                className="border border-pixel-line bg-pixel-yellow px-3 py-1.5 font-sans text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange"
               >
                 Deploy
               </button>
@@ -322,14 +322,14 @@ function TemplateAdoptModal({
         <label className="block text-sm">
           <span className="text-pixel-black/60">Team name</span>
           <input
-            className="mt-1 w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 outline-none focus:border-pixel-blue"
+            className="mt-1 w-full border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 outline-none focus:border-pixel-blue"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
           />
         </label>
 
         {duplicates.length > 0 && (
-          <div className="space-y-2 border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm p-3 text-sm">
+          <div className="space-y-2 border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm p-3 text-sm">
             <p className="text-pixel-black/70">
               You already have agents from this template. Share their provider setup with the new
               agents?
@@ -340,7 +340,7 @@ function TemplateAdoptModal({
                   {d.memberName} <span className="text-pixel-black/40">({d.agentName})</span>
                 </span>
                 <select
-                  className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-2 py-1 text-xs"
+                  className="border border-pixel-line bg-pixel-white font-sans text-pixel-black px-2 py-1 text-xs"
                   value={modes[d.roleCode] ?? 'clone'}
                   onChange={(e) =>
                     setModes((prev) => ({
@@ -359,12 +359,12 @@ function TemplateAdoptModal({
 
         {error && <p className="text-sm text-pixel-red">{error}</p>}
         <div className="flex justify-end gap-2 text-sm">
-          <button type="button" onClick={onClose} className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-3 py-2 text-pixel-black/70">
+          <button type="button" onClick={onClose} className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-3 py-2 text-pixel-black/70">
             Cancel
           </button>
           <button
             disabled={busy || !teamName.trim()}
-            className="border border-pixel-line bg-pixel-yellow px-3 py-2 font-pixel font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-line bg-pixel-yellow px-3 py-2 font-sans font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             {busy ? 'Creating…' : 'Adopt team'}
           </button>
@@ -390,7 +390,7 @@ function TeamTemplatesTab() {
             <div className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: template.color }} />
               <span className="font-medium">{template.name}</span>
-              <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+              <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-sans text-xs text-pixel-black">
                 {template.category}
               </span>
             </div>
@@ -411,7 +411,7 @@ function TeamTemplatesTab() {
             <div className="mt-3 flex justify-end">
               <button
                 onClick={() => setAdopting(template)}
-                className="border border-pixel-line bg-pixel-yellow px-3 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange"
+                className="border border-pixel-line bg-pixel-yellow px-3 py-1.5 font-sans text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange"
               >
                 Adopt team
               </button>
@@ -442,8 +442,8 @@ function MarketPageInner() {
             onClick={() => setTab(t.id)}
             className={
               tab === t.id
-                ? 'border-b border-pixel-line bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
-                : 'px-4 py-2 font-pixel text-pixel-black/55 hover:text-pixel-black'
+                ? 'border-b border-pixel-line bg-pixel-yellow/30 px-4 py-2 font-sans font-bold text-pixel-black'
+                : 'px-4 py-2 font-sans text-pixel-black/55 hover:text-pixel-black'
             }
           >
             {t.label}

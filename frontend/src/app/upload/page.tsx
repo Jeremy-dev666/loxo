@@ -181,7 +181,7 @@ function UploadPageInner() {
           style={{ boxShadow: '8px 8px 0 rgba(17,17,17,0.10)' }}
         >
           <h1 className="brand-large mb-2 text-pixel-black">Agent on board!</h1>
-          <p className="font-pixel text-sm text-pixel-black/60">
+          <p className="font-sans text-sm text-pixel-black/60">
             “{createdAgent.name}” joined your den as a {RUNTIME_LABELS[createdAgent.runtime]} agent.
             {publishToMarket ? ' A sanitized copy was published to the market.' : ''}
           </p>
@@ -207,8 +207,8 @@ function UploadPageInner() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center">
         <h1 className="brand-large mb-2 text-pixel-black">Upload Agent</h1>
-        <p className="font-pixel text-xl text-pixel-blue">BRING YOUR OWN AGENT</p>
-        <p className="mt-2 font-pixel text-sm text-pixel-black/60">
+        <p className="font-sans text-xl text-pixel-blue">BRING YOUR OWN AGENT</p>
+        <p className="mt-2 font-sans text-sm text-pixel-black/60">
           Import a workspace folder or zip archive; the runtime is detected from its files.
         </p>
       </motion.div>
@@ -219,7 +219,7 @@ function UploadPageInner() {
             key={m}
             type="button"
             onClick={() => switchMode(m)}
-            className={`flex flex-col items-center gap-2 border border-pixel-line p-5 font-pixel transition-colors ${
+            className={`flex flex-col items-center gap-2 border border-pixel-line p-5 font-sans transition-colors ${
               mode === m ? 'bg-pixel-blue text-pixel-white' : 'bg-pixel-white text-pixel-black hover:bg-pixel-cream'
             }`}
             style={{ boxShadow: mode === m ? '5px 5px 0 rgba(17,17,17,0.10)' : '3px 3px 0 rgba(17,17,17,0.10)' }}
@@ -236,7 +236,7 @@ function UploadPageInner() {
       <div className="border border-pixel-line bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
         {!hasSelection ? (
           <div className="py-8 text-center">
-            <p className="mb-4 font-pixel text-sm text-pixel-black/60">
+            <p className="mb-4 font-sans text-sm text-pixel-black/60">
               {mode === 'folder'
                 ? 'Select the agent workspace folder (config dirs like .claude included).'
                 : 'Select a .zip archive of the agent workspace.'}
@@ -264,15 +264,15 @@ function UploadPageInner() {
           <div className="space-y-5">
             <div className="flex items-center justify-between gap-3 border border-pixel-line bg-pixel-cream p-3">
               <div className="min-w-0">
-                <p className="truncate font-pixel text-sm font-bold text-pixel-black">
+                <p className="truncate font-sans text-sm font-bold text-pixel-black">
                   {mode === 'folder' ? `${folderFiles.length} files selected` : zipFile?.name}
                 </p>
-                <p className="font-pixel text-xs text-pixel-black/55">{formatBytes(totalSize)}</p>
+                <p className="font-sans text-xs text-pixel-black/55">{formatBytes(totalSize)}</p>
               </div>
               <button
                 type="button"
                 onClick={resetSelection}
-                className="shrink-0 border border-pixel-line bg-pixel-white px-2 py-1 font-pixel text-xs text-pixel-black hover:bg-pixel-cream"
+                className="shrink-0 border border-pixel-line bg-pixel-white px-2 py-1 font-sans text-xs text-pixel-black hover:bg-pixel-cream"
                 style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
               >
                 Reselect
@@ -281,7 +281,7 @@ function UploadPageInner() {
 
             {detection && mode === 'folder' && (
               <div
-                className={`border p-3 font-pixel text-sm ${
+                className={`border p-3 font-sans text-sm ${
                   detection.confidence === 'high'
                     ? 'border-pixel-green bg-pixel-green/10 text-pixel-green'
                     : 'border-pixel-yellow bg-pixel-yellow/10 text-pixel-black'
@@ -297,14 +297,14 @@ function UploadPageInner() {
 
             {showRuntimePicker && (
               <div>
-                <label className="mb-2 block font-pixel text-sm text-pixel-black">Agent runtime</label>
+                <label className="mb-2 block font-sans text-sm text-pixel-black">Agent runtime</label>
                 <div className="flex flex-wrap gap-2">
                   {CLI_RUNTIMES.map((runtime) => (
                     <button
                       key={runtime}
                       type="button"
                       onClick={() => setSelectedRuntime(runtime)}
-                      className={`border border-pixel-line px-3 py-2 font-pixel text-sm transition-colors ${
+                      className={`border border-pixel-line px-3 py-2 font-sans text-sm transition-colors ${
                         effectiveRuntime === runtime
                           ? 'bg-pixel-blue text-pixel-white'
                           : 'bg-pixel-white text-pixel-black hover:bg-pixel-cream'
@@ -319,12 +319,12 @@ function UploadPageInner() {
             )}
 
             <div>
-              <label className="mb-1 block font-pixel text-sm text-pixel-black">Agent name</label>
+              <label className="mb-1 block font-sans text-sm text-pixel-black">Agent name</label>
               <PixelInput value={agentName} onChange={setAgentName} placeholder="My agent" />
             </div>
 
             <div>
-              <label className="mb-1 block font-pixel text-sm text-pixel-black">Description (optional)</label>
+              <label className="mb-1 block font-sans text-sm text-pixel-black">Description (optional)</label>
               <PixelInput value={description} onChange={setDescription} placeholder="What is this agent good at?" multiline rows={3} />
             </div>
 
@@ -335,7 +335,7 @@ function UploadPageInner() {
                 onChange={(e) => setPublishToMarket(e.target.checked)}
                 className="h-5 w-5 accent-pixel-blue"
               />
-              <span className="font-pixel text-sm text-pixel-black">
+              <span className="font-sans text-sm text-pixel-black">
                 Also publish to the agent market
                 <span className="block text-xs text-pixel-black/55">
                   Sensitive files are omitted and secrets redacted in the published copy.
@@ -351,17 +351,17 @@ function UploadPageInner() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden border border-pixel-red bg-pixel-red/10 p-3"
                 >
-                  <p className="mb-2 font-pixel text-sm font-bold text-pixel-red">
+                  <p className="mb-2 font-sans text-sm font-bold text-pixel-red">
                     {sensitiveHits.length} sensitive file(s) spotted — they will be omitted from the market copy:
                   </p>
                   <ul className="max-h-32 space-y-1 overflow-y-auto">
                     {sensitiveHits.slice(0, 8).map((hit) => (
-                      <li key={hit.path} className="truncate font-pixel text-xs text-pixel-black/70">
+                      <li key={hit.path} className="truncate font-sans text-xs text-pixel-black/70">
                         {hit.path} ({hit.reason})
                       </li>
                     ))}
                     {sensitiveHits.length > 8 && (
-                      <li className="font-pixel text-xs text-pixel-black/50">…and {sensitiveHits.length - 8} more</li>
+                      <li className="font-sans text-xs text-pixel-black/50">…and {sensitiveHits.length - 8} more</li>
                     )}
                   </ul>
                 </motion.div>
@@ -370,7 +370,7 @@ function UploadPageInner() {
 
             {error && (
               <div className="border border-pixel-red bg-pixel-red/10 p-3">
-                <p className="font-pixel text-sm text-pixel-red">{error}</p>
+                <p className="font-sans text-sm text-pixel-red">{error}</p>
               </div>
             )}
 
@@ -379,7 +379,7 @@ function UploadPageInner() {
                 <div className="relative h-4 overflow-hidden border border-pixel-line bg-pixel-white">
                   <motion.div className="h-full bg-pixel-green" animate={{ width: `${progress}%` }} />
                 </div>
-                <p className="text-center font-pixel text-xs text-pixel-black/55">Uploading… {progress}%</p>
+                <p className="text-center font-sans text-xs text-pixel-black/55">Uploading… {progress}%</p>
               </div>
             )}
 
@@ -396,7 +396,7 @@ function UploadPageInner() {
         )}
       </div>
 
-      <p className="mt-4 text-center font-pixel text-xs text-pixel-black/40">
+      <p className="mt-4 text-center font-sans text-xs text-pixel-black/40">
         Prefer a hosted agent instead? <Link href="/market?tab=api-agents" className="text-pixel-blue">Deploy an API agent →</Link>
       </p>
     </div>

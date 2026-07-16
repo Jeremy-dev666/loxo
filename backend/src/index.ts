@@ -19,7 +19,7 @@ if (interrupted > 0) {
 }
 
 server.listen(config.port, () => {
-  console.log(`SwarmDev backend listening on http://localhost:${config.port}`);
+  console.log(`Loxo backend listening on http://localhost:${config.port}`);
 });
 
 let shuttingDown = false;

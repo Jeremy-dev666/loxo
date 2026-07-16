@@ -17,7 +17,7 @@ export function setCanvasContext(ctx: CanvasContext): void {
   canvasContext = ctx;
 }
 
-const box = 'border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-xs shadow-pixel-sm';
+const box = 'border border-pixel-line bg-pixel-white px-3 py-2 font-sans text-xs shadow-pixel-sm';
 
 export function StartNode({ data }: NodeProps) {
   return (

@@ -30,11 +30,11 @@ const VENDORS_FOR_RUNTIME: Record<string, string[]> = {
 };
 
 const inputClass =
-  'w-full border border-pixel-line bg-pixel-white px-3 py-2 font-pixel text-sm text-pixel-black outline-none focus:border-pixel-blue';
+  'w-full border border-pixel-line bg-pixel-white px-3 py-2 font-sans text-sm text-pixel-black outline-none focus:border-pixel-blue';
 const sectionClass = 'space-y-3 border border-pixel-line bg-pixel-white p-4';
 const sectionStyle = { boxShadow: '5px 5px 0 rgba(17,17,17,0.10)' } as const;
 const chipButtonClass =
-  'cursor-pointer border border-pixel-line bg-pixel-white px-3 py-1.5 font-pixel text-xs text-pixel-black hover:bg-pixel-cream';
+  'cursor-pointer border border-pixel-line bg-pixel-white px-3 py-1.5 font-sans text-xs text-pixel-black hover:bg-pixel-cream';
 
 function SettingsInner() {
   const params = useParams<{ id: string }>();
@@ -82,7 +82,7 @@ function SettingsInner() {
     [providers, agent]
   );
 
-  if (!agent) return <p className="font-pixel text-pixel-black/50">Loading…</p>;
+  if (!agent) return <p className="font-sans text-pixel-black/50">Loading…</p>;
 
   const saveProfile = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -153,13 +153,13 @@ function SettingsInner() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatar} alt="" className="h-14 w-14 border border-pixel-line object-cover pixelated" />
         ) : (
-          <div className="flex h-14 w-14 items-center justify-center border border-pixel-line bg-pixel-blue font-pixel text-pixel-white">
+          <div className="flex h-14 w-14 items-center justify-center border border-pixel-line bg-pixel-blue font-sans text-pixel-white">
             {agent.name.slice(0, 2).toUpperCase()}
           </div>
         )}
         <div>
-          <h1 className="font-pixel text-2xl font-bold text-pixel-black">{agent.name}</h1>
-          <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+          <h1 className="font-sans text-2xl font-bold text-pixel-black">{agent.name}</h1>
+          <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-sans text-xs text-pixel-black">
             {agent.runtime}
           </span>
         </div>
@@ -174,10 +174,10 @@ function SettingsInner() {
         </label>
       </div>
 
-      {message && <p className="border border-pixel-yellow bg-pixel-yellow/15 p-2 font-pixel text-sm text-pixel-black">{message}</p>}
+      {message && <p className="border border-pixel-yellow bg-pixel-yellow/15 p-2 font-sans text-sm text-pixel-black">{message}</p>}
 
       <form onSubmit={saveProfile} className={sectionClass} style={sectionStyle}>
-        <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Profile</h2>
+        <h2 className="font-sans text-lg font-bold text-pixel-black">■ Profile</h2>
         <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} required />
         <textarea
           className={inputClass}
@@ -188,14 +188,14 @@ function SettingsInner() {
         />
         <button
           disabled={saving}
-          className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-pixel text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
+          className="border border-pixel-line bg-pixel-yellow px-4 py-2 font-sans text-sm text-pixel-black hover:bg-pixel-orange disabled:opacity-60" style={{ boxShadow: '3px 3px 0 rgba(17,17,17,0.10)' }}
         >
           Save
         </button>
       </form>
 
       <section className={sectionClass} style={sectionStyle}>
-        <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Model provider</h2>
+        <h2 className="font-sans text-lg font-bold text-pixel-black">■ Model provider</h2>
         <select
           className={inputClass}
           value={agent.providerId ?? ''}
@@ -223,7 +223,7 @@ function SettingsInner() {
           </select>
         )}
         {eligibleProviders.length === 0 && (
-          <p className="font-pixel text-xs text-pixel-black/55">
+          <p className="font-sans text-xs text-pixel-black/55">
             No provider matches this runtime. Add one under Settings → Providers.
           </p>
         )}
@@ -231,7 +231,7 @@ function SettingsInner() {
 
       {agent.runtime !== 'api' && (
         <section className={sectionClass} style={sectionStyle}>
-          <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Execution</h2>
+          <h2 className="font-sans text-lg font-bold text-pixel-black">■ Execution</h2>
           <div className="flex gap-2">
             {(['server', 'machine'] as const).map((mode) => (
               <button
@@ -282,7 +282,7 @@ function SettingsInner() {
             </>
           )}
           {agent.execution === 'machine' && machines.length === 0 && (
-            <p className="font-pixel text-xs text-pixel-black/55">
+            <p className="font-sans text-xs text-pixel-black/55">
               No machines paired. Add one under Settings → Machines.
             </p>
           )}
@@ -291,7 +291,7 @@ function SettingsInner() {
 
       <section className={sectionClass} style={sectionStyle}>
         <div className="flex items-center justify-between">
-          <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Skills</h2>
+          <h2 className="font-sans text-lg font-bold text-pixel-black">■ Skills</h2>
           <label className={chipButtonClass} style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}>
             Upload skill (.md / .zip)
             <input
@@ -303,13 +303,13 @@ function SettingsInner() {
           </label>
         </div>
         {skills.length === 0 ? (
-          <p className="font-pixel text-xs text-pixel-black/55">No skills installed.</p>
+          <p className="font-sans text-xs text-pixel-black/55">No skills installed.</p>
         ) : (
           <ul className="space-y-2">
             {skills.map((skill) => (
               <li key={skill.id} className="border border-pixel-line px-3 py-2" style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}>
-                <span className="font-pixel text-sm font-bold text-pixel-black">{skill.name}</span>
-                <p className="font-pixel text-xs text-pixel-black/60">{skill.description}</p>
+                <span className="font-sans text-sm font-bold text-pixel-black">{skill.name}</span>
+                <p className="font-sans text-xs text-pixel-black/60">{skill.description}</p>
               </li>
             ))}
           </ul>
@@ -317,13 +317,13 @@ function SettingsInner() {
       </section>
 
       <section className={sectionClass} style={sectionStyle}>
-        <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Slack</h2>
+        <h2 className="font-sans text-lg font-bold text-pixel-black">■ Slack</h2>
         <SlackIntegrationCard scope="agent" subjectId={agentId} />
       </section>
 
       <section className={sectionClass} style={sectionStyle}>
         <div className="flex items-center justify-between">
-          <h2 className="font-pixel text-lg font-bold text-pixel-black">■ Diagnostics</h2>
+          <h2 className="font-sans text-lg font-bold text-pixel-black">■ Diagnostics</h2>
           <button
             onClick={runDiagnostics}
             className={chipButtonClass} style={{ boxShadow: '2px 2px 0 rgba(17,17,17,0.10)' }}
@@ -332,7 +332,7 @@ function SettingsInner() {
           </button>
         </div>
         {diagnostics && (
-          <div className="space-y-1 font-pixel text-sm text-pixel-black">
+          <div className="space-y-1 font-sans text-sm text-pixel-black">
             <p>
               CLI:{' '}
               {diagnostics.cli.available ? (

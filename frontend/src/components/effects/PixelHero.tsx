@@ -178,11 +178,11 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          Welcome to SwarmDev
+          Welcome to Loxo
         </motion.h1>
 
         <motion.p
-          className="mt-2 font-pixel text-lg tracking-widest text-pixel-blue/60"
+          className="mt-2 font-sans text-lg tracking-widest text-pixel-blue/60"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.4 }}
@@ -204,13 +204,13 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
               transition={{ delay: 0.9, duration: 0.6, ease: 'easeOut' }}
             />
           </div>
-          <p className="mt-2 font-pixel text-xs text-pixel-black/30">Loading...</p>
+          <p className="mt-2 font-sans text-xs text-pixel-black/30">Loading...</p>
         </motion.div>
 
         {showButton && (
           <motion.button
             onClick={onEnter}
-            className="pointer-events-auto mt-5 border border-pixel-line bg-pixel-blue px-5 py-2.5 font-pixel text-base text-pixel-white transition-all duration-150 hover:bg-pixel-cream hover:text-pixel-black"
+            className="pointer-events-auto mt-5 border border-pixel-line bg-pixel-blue px-5 py-2.5 font-sans text-base text-pixel-white transition-all duration-150 hover:bg-pixel-cream hover:text-pixel-black"
             style={{ boxShadow: '4px 4px 0px rgba(16,16,16,0.12)' }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -225,12 +225,12 @@ export function PixelHero({ onEnter }: PixelHeroProps) {
       </motion.div>
 
       <motion.p
-        className="absolute bottom-5 font-pixel text-xs text-pixel-black/15"
+        className="absolute bottom-5 font-sans text-xs text-pixel-black/15"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
       >
-        SWARMDEV v0.1.0
+        LOXO v0.1.0
       </motion.p>
     </motion.div>
   );

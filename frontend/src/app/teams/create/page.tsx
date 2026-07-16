@@ -36,19 +36,19 @@ function CreateTeamInner() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center">
         <h1 className="brand-large mb-2 text-pixel-black">Create a Team</h1>
-        <p className="font-pixel text-xl text-pixel-blue">ASSEMBLE YOUR CREW</p>
-        <p className="mt-2 font-pixel text-sm text-pixel-black/60">
+        <p className="font-sans text-xl text-pixel-blue">ASSEMBLE YOUR CREW</p>
+        <p className="mt-2 font-sans text-sm text-pixel-black/60">
           Name the team first — then design its workflow on the canvas or generate one from plain language.
         </p>
       </motion.div>
 
       <div className="space-y-5 border border-pixel-line bg-pixel-white p-5" style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}>
         <div>
-          <label className="mb-1 block font-pixel text-sm text-pixel-black">Team name</label>
+          <label className="mb-1 block font-sans text-sm text-pixel-black">Team name</label>
           <PixelInput value={name} onChange={setName} placeholder="Product delivery squad" />
         </div>
         <div>
-          <label className="mb-1 block font-pixel text-sm text-pixel-black">Description (optional)</label>
+          <label className="mb-1 block font-sans text-sm text-pixel-black">Description (optional)</label>
           <PixelInput
             value={description}
             onChange={setDescription}
@@ -60,7 +60,7 @@ function CreateTeamInner() {
 
         {error && (
           <div className="border border-pixel-red bg-pixel-red/10 p-3">
-            <p className="font-pixel text-sm text-pixel-red">{error}</p>
+            <p className="font-sans text-sm text-pixel-red">{error}</p>
           </div>
         )}
 
@@ -69,7 +69,7 @@ function CreateTeamInner() {
         </PixelButton>
       </div>
 
-      <p className="mt-4 text-center font-pixel text-xs text-pixel-black/40">
+      <p className="mt-4 text-center font-sans text-xs text-pixel-black/40">
         Want a ready-made crew instead?{' '}
         <Link href="/market?tab=team-templates" className="text-pixel-blue">
           Adopt a team template →

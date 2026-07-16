@@ -48,5 +48,5 @@ export function setSlackClientForTests(override: SlackClient | null): void {
 
 export function truncateReply(text: string): string {
   if (text.length <= REPLY_MAX_CHARS) return text;
-  return `${text.slice(0, REPLY_MAX_CHARS - 60).trimEnd()}\n\n[Truncated — see SwarmDev for the full output]`;
+  return `${text.slice(0, REPLY_MAX_CHARS - 60).trimEnd()}\n\n[Truncated — see Loxo for the full output]`;
 }

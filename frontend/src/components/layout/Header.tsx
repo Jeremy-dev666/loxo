@@ -51,8 +51,8 @@ export function Header({
                 <BrandMark className="h-5 w-5 text-white" />
               </div>
               <h1 className="flex min-w-0 items-baseline gap-3">
-                <span className="brand-large whitespace-nowrap !text-pixel-black">SwarmDev</span>
-                <span className={`font-pixel uppercase tracking-widest !text-pixel-gray ${traditionalMode ? 'hidden text-xs lg:inline' : 'text-xs'}`}>
+                <span className="brand-large whitespace-nowrap !text-pixel-black">Loxo</span>
+                <span className={`font-sans uppercase tracking-widest !text-pixel-gray ${traditionalMode ? 'hidden text-xs lg:inline' : 'text-xs'}`}>
                   Agent team platform
                 </span>
               </h1>
@@ -68,11 +68,11 @@ export function Header({
                 className="flex items-center gap-2 rounded-sm border border-[#E4E4E4] bg-white px-2 py-1 transition-colors hover:border-[#111]"
               >
                 <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-[#111]">
-                  <span className="font-pixel text-xs text-white">
+                  <span className="font-sans text-xs text-white">
                     {user.username.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span className="font-pixel text-sm text-pixel-black">{user.username}</span>
+                <span className="font-sans text-sm text-pixel-black">{user.username}</span>
                 <span className="text-pixel-gray">▾</span>
               </button>
 
@@ -86,13 +86,13 @@ export function Header({
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="rounded-sm border border-[#111] bg-white px-3 py-1 font-pixel text-sm uppercase text-[#111] no-underline transition-colors hover:bg-[#F5F5F5]"
+                className="rounded-sm border border-[#111] bg-white px-3 py-1 font-sans text-sm uppercase text-[#111] no-underline transition-colors hover:bg-[#F5F5F5]"
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="rounded-sm border border-[#111] bg-[#111] px-3 py-1 font-pixel text-sm uppercase text-white no-underline transition-colors hover:bg-[#333]"
+                className="rounded-sm border border-[#111] bg-[#111] px-3 py-1 font-sans text-sm uppercase text-white no-underline transition-colors hover:bg-[#333]"
               >
                 Sign up
               </Link>

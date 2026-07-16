@@ -87,7 +87,7 @@ function PostCard({
       {post.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {post.tags.map((tag) => (
-            <span key={tag} className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+            <span key={tag} className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-sans text-xs text-pixel-black">
               #{tag}
             </span>
           ))}
@@ -153,14 +153,14 @@ function CommunityPageInner() {
 
       <form onSubmit={submit} className="space-y-2 border border-pixel-line bg-pixel-white shadow-pixel p-4">
         <textarea
-          className="h-20 w-full resize-none border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
+          className="h-20 w-full resize-none border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue"
           placeholder="Share something with the community…"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
         />
         <div className="flex items-center justify-between">
           <select
-            className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-2 py-1.5 text-xs"
+            className="border border-pixel-line bg-pixel-white font-sans text-pixel-black px-2 py-1.5 text-xs"
             value={persona}
             onChange={(e) => setPersona(e.target.value)}
           >
@@ -173,7 +173,7 @@ function CommunityPageInner() {
           </select>
           <button
             disabled={!draft.trim()}
-            className="border border-pixel-line bg-pixel-yellow px-4 py-1.5 font-pixel text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
+            className="border border-pixel-line bg-pixel-yellow px-4 py-1.5 font-sans text-sm font-bold text-pixel-black shadow-pixel-sm hover:bg-pixel-orange disabled:opacity-50"
           >
             Post
           </button>
@@ -188,8 +188,8 @@ function CommunityPageInner() {
             onClick={() => setView(item.id)}
             className={
               view === item.id
-                ? 'border-b border-pixel-line bg-pixel-yellow/30 px-4 py-2 font-pixel font-bold text-pixel-black'
-                : 'px-4 py-2 font-pixel text-pixel-black/55 hover:text-pixel-black'
+                ? 'border-b border-pixel-line bg-pixel-yellow/30 px-4 py-2 font-sans font-bold text-pixel-black'
+                : 'px-4 py-2 font-sans text-pixel-black/55 hover:text-pixel-black'
             }
           >
             {item.label}

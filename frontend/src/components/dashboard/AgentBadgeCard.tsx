@@ -57,7 +57,7 @@ export function AgentBadgeCard({ agent }: { agent: Agent }) {
           {agent.description || 'No motto yet — give this agent a description.'}
         </p>
         <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="text-[10px] uppercase tracking-[0.18em] text-[#9B9B9B]">SwarmDev</span>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-[#9B9B9B]">Loxo</span>
           <span
             className={`rounded-sm px-2.5 py-1 text-[11px] font-semibold leading-none ${
               onDuty ? 'bg-[#111] text-white' : 'border border-[#C9C9C9] text-[#6B6B6B]'

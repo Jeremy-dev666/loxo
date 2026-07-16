@@ -44,7 +44,7 @@ export function PixelDialog({ isOpen, onClose, title, children }: PixelDialogPro
             >
               {title && (
                 <div className="flex items-center justify-between border-b border-pixel-line bg-pixel-cream px-3 py-2">
-                  <span className="flex items-center gap-2 font-pixel text-sm uppercase tracking-wide text-pixel-black">
+                  <span className="flex items-center gap-2 font-sans text-sm uppercase tracking-wide text-pixel-black">
                     <span className="h-3 w-1 bg-pixel-yellow" aria-hidden />
                     {title}
                   </span>
@@ -57,7 +57,7 @@ export function PixelDialog({ isOpen, onClose, title, children }: PixelDialogPro
                   </button>
                 </div>
               )}
-              <div className="p-4 font-pixel text-pixel-black">{showContent && children}</div>
+              <div className="p-4 font-sans text-pixel-black">{showContent && children}</div>
             </motion.div>
           </motion.div>
         </ModalPortal>

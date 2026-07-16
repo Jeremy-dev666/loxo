@@ -6,7 +6,7 @@ import { ClientLayout } from '@/components/layout/ClientLayout';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'SwarmDev | Agent Team Platform',
+  title: 'Loxo | Agent Team Platform',
   description: 'Multi-agent collaboration platform',
 };
 

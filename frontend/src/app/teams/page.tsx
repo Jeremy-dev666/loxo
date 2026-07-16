@@ -26,11 +26,11 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
       style={{ boxShadow: '6px 6px 0 rgba(17,17,17,0.10)' }}
     >
       <div className={`flex items-center justify-between gap-2 border-b border-pixel-line p-3 ${tone}`}>
-        <h2 className={`truncate font-pixel text-lg font-bold ${yellow ? 'text-pixel-black' : 'text-pixel-white'}`}>
+        <h2 className={`truncate font-sans text-lg font-bold ${yellow ? 'text-pixel-black' : 'text-pixel-white'}`}>
           {team.name}
         </h2>
         <span
-          className={`shrink-0 border border-pixel-line px-1.5 py-0.5 font-pixel text-[10px] ${
+          className={`shrink-0 border border-pixel-line px-1.5 py-0.5 font-sans text-[10px] ${
             yellow ? 'bg-pixel-black text-pixel-white' : 'bg-pixel-white text-pixel-black'
           }`}
         >
@@ -39,16 +39,16 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <p className="line-clamp-2 min-h-[2.5rem] font-pixel text-sm text-pixel-black/65">
+        <p className="line-clamp-2 min-h-[2.5rem] font-sans text-sm text-pixel-black/65">
           {team.description || 'No description yet'}
         </p>
 
         <div className="mt-3 flex flex-wrap gap-1">
-          <span className="border border-pixel-line bg-pixel-black px-2 py-0.5 font-pixel text-xs text-pixel-white">
+          <span className="border border-pixel-line bg-pixel-black px-2 py-0.5 font-sans text-xs text-pixel-white">
             {agents.length} AGENTS
           </span>
           <span
-            className={`border border-pixel-line px-2 py-0.5 font-pixel text-xs ${
+            className={`border border-pixel-line px-2 py-0.5 font-sans text-xs ${
               bound === agents.length && agents.length > 0
                 ? 'bg-pixel-green text-pixel-white'
                 : 'bg-pixel-yellow text-pixel-black'
@@ -57,14 +57,14 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
             {bound} BOUND
           </span>
           {conditions > 0 && (
-            <span className="border border-pixel-line bg-pixel-red px-2 py-0.5 font-pixel text-xs text-pixel-white">
+            <span className="border border-pixel-line bg-pixel-red px-2 py-0.5 font-sans text-xs text-pixel-white">
               {conditions} GATES
             </span>
           )}
         </div>
 
         {team.warnings.length > 0 && (
-          <p className="mt-2 font-pixel text-xs text-pixel-red">
+          <p className="mt-2 font-sans text-xs text-pixel-red">
             {team.warnings.length} warning{team.warnings.length > 1 ? 's' : ''}
           </p>
         )}
@@ -77,7 +77,7 @@ function TeamCard({ team, index, onDelete }: { team: TeamView; index: number; on
           </Link>
           <button
             onClick={() => onDelete(team)}
-            className="font-pixel text-xs text-pixel-black/45 hover:text-pixel-red"
+            className="font-sans text-xs text-pixel-black/45 hover:text-pixel-red"
           >
             delete
           </button>
@@ -113,8 +113,8 @@ function TeamsPageInner() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 pt-3 text-center md:pt-6">
         <h1 className="brand-large mb-2 text-pixel-black">My Teams</h1>
-        <p className="font-pixel text-xl text-pixel-blue">AGENT TEAM ARCHITECTURES</p>
-        <p className="mt-2 font-pixel text-sm text-pixel-black/60">
+        <p className="font-sans text-xl text-pixel-blue">AGENT TEAM ARCHITECTURES</p>
+        <p className="mt-2 font-sans text-sm text-pixel-black/60">
           {teams.length} teams · design workflows on the canvas or generate them from plain language
         </p>
       </motion.div>
@@ -128,10 +128,10 @@ function TeamsPageInner() {
       </div>
 
       {loading ? (
-        <p className="py-12 text-center font-pixel text-pixel-black/50">Loading…</p>
+        <p className="py-12 text-center font-sans text-pixel-black/50">Loading…</p>
       ) : teams.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="mb-6 font-pixel text-base text-pixel-black/60">
+          <p className="mb-6 font-sans text-base text-pixel-black/60">
             No teams yet — assemble your first agent crew.
           </p>
           <div className="flex justify-center gap-3">

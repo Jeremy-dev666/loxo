@@ -112,7 +112,7 @@ export function AgentCard({
       }`}
     >
       {published && !silhouette && (
-        <div className="absolute left-1.5 top-1.5 z-20 border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-[10px] font-bold leading-none text-pixel-black md:text-[9px]">
+        <div className="absolute left-1.5 top-1.5 z-20 border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-sans text-[10px] font-bold leading-none text-pixel-black md:text-[9px]">
           LISTED
         </div>
       )}
@@ -128,7 +128,7 @@ export function AgentCard({
           <button
             type="button"
             aria-label="Agent actions"
-            className="h-11 w-11 border-0 bg-transparent font-pixel text-2xl font-bold leading-none text-pixel-black/65 hover:bg-pixel-black/5 hover:text-pixel-black focus:text-pixel-black focus:outline-none md:h-8 md:w-8 md:text-xl"
+            className="h-11 w-11 border-0 bg-transparent font-sans text-2xl font-bold leading-none text-pixel-black/65 hover:bg-pixel-black/5 hover:text-pixel-black focus:text-pixel-black focus:outline-none md:h-8 md:w-8 md:text-xl"
             onClick={(event) => {
               event.stopPropagation();
               setMenuOpen((open) => !open);
@@ -146,7 +146,7 @@ export function AgentCard({
             >
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-sans text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleConfigure}
                 disabled={busyAction !== null}
               >
@@ -154,7 +154,7 @@ export function AgentCard({
               </button>
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-sans text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleDelete}
                 disabled={busyAction !== null}
               >
@@ -162,7 +162,7 @@ export function AgentCard({
               </button>
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-sans text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleMarketToggle}
                 disabled={busyAction !== null}
               >
@@ -170,7 +170,7 @@ export function AgentCard({
               </button>
               <button
                 type="button"
-                className="w-full px-4 py-3 text-left font-pixel text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
+                className="w-full px-4 py-3 text-left font-sans text-base text-pixel-black hover:bg-pixel-cream disabled:opacity-50 md:px-3 md:py-2 md:text-xs"
                 onClick={handleCommunity}
                 disabled={busyAction !== null}
               >
@@ -195,19 +195,19 @@ export function AgentCard({
             providerConfigured={providerConfigured}
           />
           {!silhouette && (
-            <div className="pointer-events-none absolute -left-2 bottom-0 z-20 border border-pixel-line bg-pixel-white px-1 py-0.5 font-pixel text-[9px] leading-none text-pixel-black">
+            <div className="pointer-events-none absolute -left-2 bottom-0 z-20 border border-pixel-line bg-pixel-white px-1 py-0.5 font-sans text-[9px] leading-none text-pixel-black">
               {RUNTIME_LABELS[agent.runtime] ?? agent.runtime}
             </div>
           )}
         </div>
         <div className="flex w-full flex-1 flex-col justify-end text-center">
-          <p className="mb-2 line-clamp-2 min-h-[3.8rem] font-pixel text-[1.55rem] font-bold leading-tight text-pixel-black md:mb-1 md:min-h-[2.5rem] md:text-base">
+          <p className="mb-2 line-clamp-2 min-h-[3.8rem] font-sans text-[1.55rem] font-bold leading-tight text-pixel-black md:mb-1 md:min-h-[2.5rem] md:text-base">
             {agent.name}
           </p>
-          <p className="line-clamp-3 min-h-[4.6rem] font-pixel text-[1.1rem] leading-snug text-pixel-black/70 md:min-h-[3rem] md:text-xs">
+          <p className="line-clamp-3 min-h-[4.6rem] font-sans text-[1.1rem] leading-snug text-pixel-black/70 md:min-h-[3rem] md:text-xs">
             {description}
           </p>
-          <p className="mt-3 truncate font-pixel text-[0.95rem] text-pixel-black/50 md:mt-2 md:text-xs">
+          <p className="mt-3 truncate font-sans text-[0.95rem] text-pixel-black/50 md:mt-2 md:text-xs">
             {providerConfigured ? `Model: ${agent.model ?? 'default'}` : 'Provider not configured'}
           </p>
         </div>

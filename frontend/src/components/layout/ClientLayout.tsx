@@ -112,8 +112,8 @@ function TraditionalSidebar({
                 <BrandMark className="h-5 w-5 text-white" />
               </span>
               <span className="min-w-0">
-                <span className="brand-large block truncate text-[#111]">SwarmDev</span>
-                <span className="block truncate font-pixel text-xs uppercase tracking-widest leading-none text-[#9B9B9B]">
+                <span className="brand-large block truncate text-[#111]">Loxo</span>
+                <span className="block truncate font-sans text-xs uppercase tracking-widest leading-none text-[#9B9B9B]">
                   Agent team platform
                 </span>
               </span>
@@ -146,7 +146,7 @@ function TraditionalSidebar({
               >
                 <Link
                   href={item.href}
-                  className={`flex min-h-[44px] items-center gap-3 rounded-sm px-3 font-pixel text-base no-underline transition-colors ${
+                  className={`flex min-h-[44px] items-center gap-3 rounded-sm px-3 font-sans text-base no-underline transition-colors ${
                     active
                       ? 'bg-[#111] text-white'
                       : 'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#111]'
@@ -162,7 +162,7 @@ function TraditionalSidebar({
           {recentProjects.length > 0 && (
             <div className="pt-2">
               <div className="my-3 h-px bg-[#E4E4E4]" aria-hidden="true" />
-              <p className="mb-2 px-3 font-pixel text-[10px] uppercase tracking-[0.16em] leading-none text-[#9B9B9B]">
+              <p className="mb-2 px-3 font-sans text-[10px] uppercase tracking-[0.16em] leading-none text-[#9B9B9B]">
                 Recent projects
               </p>
               <div className="space-y-1">
@@ -179,7 +179,7 @@ function TraditionalSidebar({
                       <div className="group/sidebar-project relative">
                         <Link
                           href={href}
-                          className={`flex min-h-[44px] items-center gap-2.5 rounded-sm px-3 font-pixel text-sm no-underline transition-colors ${
+                          className={`flex min-h-[44px] items-center gap-2.5 rounded-sm px-3 font-sans text-sm no-underline transition-colors ${
                             active
                               ? 'bg-[#111] text-white'
                               : 'text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#111]'
@@ -201,7 +201,7 @@ function TraditionalSidebar({
                             event.stopPropagation();
                             onDeleteProject(project);
                           }}
-                          className="pointer-events-none absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-sm border border-[#C9C9C9] bg-white font-pixel text-xs leading-none text-[#6B6B6B] opacity-0 transition-opacity hover:border-[#111] hover:text-[#111] group-hover/sidebar-project:pointer-events-auto group-hover/sidebar-project:opacity-100"
+                          className="pointer-events-none absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-sm border border-[#C9C9C9] bg-white font-sans text-xs leading-none text-[#6B6B6B] opacity-0 transition-opacity hover:border-[#111] hover:text-[#111] group-hover/sidebar-project:pointer-events-auto group-hover/sidebar-project:opacity-100"
                           aria-label={`Delete project ${project.name}`}
                           title="Delete project"
                         >
@@ -217,7 +217,7 @@ function TraditionalSidebar({
         </nav>
 
         <div className="border-t border-[#F0F0F0] p-3">
-          <p className="font-pixel text-xs leading-tight text-[#9B9B9B]">v0.1.0 · SwarmDev Labs</p>
+          <p className="font-sans text-xs leading-tight text-[#9B9B9B]">v0.1.0 · Loxo Labs</p>
         </div>
 
         <div
@@ -372,9 +372,9 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       </main>
       <footer className="hidden border-t border-pixel-line bg-pixel-white py-3 transition-[padding] duration-300 ease-out md:block" style={effectiveSidebarOpen ? { paddingLeft: sidebarOffset } : undefined}>
         <div
-          className="mx-0 w-full max-w-none px-8 text-center font-pixel text-xs text-pixel-gray xl:px-10 2xl:px-12"
+          className="mx-0 w-full max-w-none px-8 text-center font-sans text-xs text-pixel-gray xl:px-10 2xl:px-12"
         >
-          <p>SwarmDev — Efficient AI Team Collaboration</p>
+          <p>Loxo — Efficient AI Team Collaboration</p>
           <p className="mt-1 uppercase tracking-widest text-[#9B9B9B]">Ready.</p>
         </div>
       </footer>

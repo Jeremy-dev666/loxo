@@ -121,8 +121,8 @@ function BadgeCard({ agent, listed }: { agent: Agent; listed: boolean }) {
       <div className="my-5 border-t border-dashed border-pixel-black/20" />
 
       <div className="flex items-center justify-between">
-        <span className="font-pixel text-lg font-bold tracking-[0.18em] text-pixel-black">
-          SWARMDEV
+        <span className="font-sans text-lg font-bold tracking-[0.18em] text-pixel-black">
+          LOXO
         </span>
         <Link
           href={`/agents/${agent.id}`}

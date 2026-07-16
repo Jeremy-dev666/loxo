@@ -29,14 +29,14 @@ export function UserMenu({ onClose }: UserMenuProps) {
     >
       <div className="border-b border-[#F0F0F0] bg-white p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-[#111] text-white font-pixel text-xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-[#111] text-white font-sans text-xl">
             {user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div>
-            <p className="font-pixel text-base font-bold text-pixel-black">
+            <p className="font-sans text-base font-bold text-pixel-black">
               {user?.username || 'User'}
             </p>
-            <p className="font-pixel text-xs text-pixel-black/50">{user?.email || ''}</p>
+            <p className="font-sans text-xs text-pixel-black/50">{user?.email || ''}</p>
           </div>
         </div>
       </div>
@@ -47,8 +47,8 @@ export function UserMenu({ onClose }: UserMenuProps) {
           className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F5F5F5]"
         >
           <div>
-            <div className="font-pixel text-sm text-pixel-black">Provider settings</div>
-            <div className="font-pixel text-xs text-pixel-black/50">Manage API keys</div>
+            <div className="font-sans text-sm text-pixel-black">Provider settings</div>
+            <div className="font-sans text-xs text-pixel-black/50">Manage API keys</div>
           </div>
         </button>
 
@@ -57,8 +57,8 @@ export function UserMenu({ onClose }: UserMenuProps) {
           className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F5F5F5]"
         >
           <div>
-            <div className="font-pixel text-sm text-[#111]">Sign out</div>
-            <div className="font-pixel text-xs text-pixel-black/50">Switch account</div>
+            <div className="font-sans text-sm text-[#111]">Sign out</div>
+            <div className="font-sans text-xs text-pixel-black/50">Switch account</div>
           </div>
         </button>
       </div>

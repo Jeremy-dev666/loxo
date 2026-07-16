@@ -15,7 +15,7 @@ export function BackButton({ href = '/', label = 'Home', onClick }: BackButtonPr
       <Link
         href={href}
         onClick={onClick}
-        className="inline-flex items-center gap-2 border border-pixel-line bg-pixel-white px-4 py-2 font-pixel text-pixel-black no-underline transition-colors hover:bg-pixel-cream"
+        className="inline-flex items-center gap-2 border border-pixel-line bg-pixel-white px-4 py-2 font-sans text-pixel-black no-underline transition-colors hover:bg-pixel-cream"
         style={{ boxShadow: '2px 2px 0px 0px rgba(17,17,17,0.10)' }}
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">

@@ -16,7 +16,7 @@ import {
 } from '@/lib/providers';
 
 const inputClass =
-  'w-full border border-pixel-line bg-pixel-white font-pixel text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
+  'w-full border border-pixel-line bg-pixel-white font-sans text-pixel-black px-3 py-2 text-sm outline-none focus:border-pixel-blue';
 
 function ProviderForm({ onCreated }: { onCreated: () => void }) {
   const [name, setName] = useState('');
@@ -182,7 +182,7 @@ function ProvidersPageInner() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-medium">{provider.name}</span>
-                <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-pixel text-xs text-pixel-black">
+                <span className="border border-pixel-line bg-pixel-yellow px-1.5 py-0.5 font-sans text-xs text-pixel-black">
                   {provider.vendor}
                 </span>
                 {provider.isDefault && (
@@ -200,7 +200,7 @@ function ProvidersPageInner() {
               {!provider.isDefault && (
                 <button
                   onClick={() => setDefault(provider)}
-                  className="border border-pixel-line bg-pixel-white font-pixel text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
+                  className="border border-pixel-line bg-pixel-white font-sans text-pixel-black shadow-pixel-sm px-2 py-1 text-pixel-black/70 hover:bg-pixel-cream"
                 >
                   Make default
                 </button>

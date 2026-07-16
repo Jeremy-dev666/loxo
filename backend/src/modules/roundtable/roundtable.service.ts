@@ -448,7 +448,7 @@ function buildRoundtablePrompt(agent: Agent, input: TurnInput): string {
 
   return [
     '[AGENT_RUNTIME_CONTEXT]',
-    'You are one participant in a multi-agent group chat on the SwarmDev platform. Speak only as the agent described below; never impersonate other members.',
+    'You are one participant in a multi-agent group chat on the Loxo platform. Speak only as the agent described below; never impersonate other members.',
     `Agent: ${agent.name}`,
     agent.description ? `Description: ${sanitizeInjected(agent.description)}` : '',
     `Roundtable: ${sanitizeInjected(input.sessionTitle || 'Untitled roundtable')}`,

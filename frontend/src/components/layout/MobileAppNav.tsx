@@ -92,7 +92,7 @@ export function MobileAppNav() {
           <Link
             key={tab.key}
             href={tab.href}
-            className={`relative flex min-h-[62px] flex-col items-center justify-center gap-0.5 border-r border-pixel-black/10 px-0 pb-1 pt-1.5 font-pixel text-[0.66rem] last:border-r-0 ${
+            className={`relative flex min-h-[62px] flex-col items-center justify-center gap-0.5 border-r border-pixel-black/10 px-0 pb-1 pt-1.5 font-sans text-[0.66rem] last:border-r-0 ${
               active ? 'bg-pixel-black text-pixel-white' : 'text-pixel-black/70'
             }`}
           >
