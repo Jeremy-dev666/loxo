@@ -4,6 +4,7 @@ import { badRequest } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
 import { requestWake } from '../runs/wake';
 import { addHumanComment, listComments } from './comments.service';
+import { createReview, listReviews } from './reviews.service';
 import {
   createIssue,
   deleteIssue,
@@ -155,6 +156,33 @@ issuesRouter.post('/:id/comments', async (req: AuthedRequest, res, next) => {
     res.status(201).json({
       comment: await addHumanComment(req.auth!.userId, String(req.params.id), parsed.data.body),
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.get('/:id/reviews', async (req: AuthedRequest, res, next) => {
+  try {
+    res.json({ reviews: await listReviews(req.auth!.userId, String(req.params.id)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/reviews', async (req: AuthedRequest, res, next) => {
+  try {
+    const schema = z.object({
+      decision: z.enum(['approved', 'changes_requested']),
+      body: z.string().trim().min(1).max(20000),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw badRequest('invalid_input', 'A review needs a decision and a comment');
+    const review = await createReview(req.auth!.userId, String(req.params.id), {
+      decision: parsed.data.decision,
+      body: parsed.data.body,
+      reviewer: { userId: req.auth!.userId },
+    });
+    res.status(201).json({ review });
   } catch (error) {
     next(error);
   }

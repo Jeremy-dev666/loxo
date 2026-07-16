@@ -783,3 +783,42 @@ export const runs = pgTable(
 );
 
 export type Run = typeof runs.$inferSelect;
+
+export type ReviewDecision = 'approved' | 'changes_requested';
+
+/**
+ * Structured verdict on an issue in review. Every decision carries a body;
+ * the body is also posted to the issue timeline so the assignee's next run
+ * reads the feedback naturally. Reviewer mirrors the dual-principal pattern.
+ */
+export const issueReviews = pgTable(
+  'issue_reviews',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    reviewerType: text('reviewer_type').$type<'human' | 'agent'>().notNull(),
+    reviewerUserId: uuid('reviewer_user_id').references(() => users.id, { onDelete: 'set null' }),
+    reviewerAgentId: uuid('reviewer_agent_id').references(() => agents.id, {
+      onDelete: 'set null',
+    }),
+    /** Review run that produced this verdict, when an agent reviewed. */
+    runId: uuid('run_id').references(() => runs.id, { onDelete: 'set null' }),
+    decision: text('decision').$type<ReviewDecision>().notNull(),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('issue_reviews_issue_created').on(t.issueId, t.createdAt),
+    check(
+      'issue_reviews_single_principal',
+      sql`NOT (${t.reviewerAgentId} IS NOT NULL AND ${t.reviewerUserId} IS NOT NULL)`
+    ),
+  ]
+);
+
+export type IssueReview = typeof issueReviews.$inferSelect;
