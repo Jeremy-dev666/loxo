@@ -12,10 +12,13 @@ import {
   deleteIssue,
   fetchComments,
   fetchIssue,
+  fetchReviews,
   moveIssue,
+  submitReview,
   updateIssue,
   type Issue,
   type IssueComment,
+  type IssueReview,
   type IssueStatus,
 } from '@/lib/issues';
 import { ACTIVE_RUN_STATUSES, fetchRuns, wakeIssue, type Run, type RunStatus } from '@/lib/runs';
@@ -27,6 +30,23 @@ const RUN_STATUS_TEXT: Record<RunStatus, string> = {
   failed: 'text-pixel-red',
   cancelled: 'text-pixel-gray',
 };
+
+/** Mirror of the server-side automated rework fuse; display only. */
+const REVIEW_CYCLE_CAP = 3;
+
+const DECISION_META = {
+  approved: { label: 'APPROVED', text: 'text-pixel-green' },
+  changes_requested: { label: 'CHANGES REQUESTED', text: 'text-pixel-red' },
+} as const;
+
+/** Verdict comments carry a stamp prefix; tint them to match the decision. */
+function commentTone(body: string): string {
+  if (body.startsWith('[APPROVED]')) return 'text-pixel-green';
+  if (body.startsWith('[CHANGES REQUESTED]') || body.startsWith('[REVIEW HALTED]')) {
+    return 'text-pixel-red';
+  }
+  return 'text-pixel-black';
+}
 
 interface IssueReceiptProps {
   issueId: string;
@@ -99,10 +119,12 @@ export function IssueReceipt({
   const [issue, setIssue] = useState<Issue | null>(null);
   const [comments, setComments] = useState<IssueComment[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
+  const [reviews, setReviews] = useState<IssueReview[]>([]);
   const [openRunId, setOpenRunId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [draft, setDraft] = useState('');
+  const [verdictNote, setVerdictNote] = useState('');
   const [error, setError] = useState('');
   const [fed, setFed] = useState(!printEntrance);
 
@@ -114,16 +136,19 @@ export function IssueReceipt({
   }, [printEntrance]);
 
   const load = useCallback(async () => {
-    const [{ issue: fetched }, { comments: timeline }, { runs: ledger }] = await Promise.all([
-      fetchIssue(issueId),
-      fetchComments(issueId),
-      fetchRuns({ issueId }),
-    ]);
+    const [{ issue: fetched }, { comments: timeline }, { runs: ledger }, { reviews: verdicts }] =
+      await Promise.all([
+        fetchIssue(issueId),
+        fetchComments(issueId),
+        fetchRuns({ issueId }),
+        fetchReviews(issueId),
+      ]);
     setIssue(fetched);
     setTitle(fetched.title);
     setDescription(fetched.description);
     setComments(timeline);
     setRuns(ledger);
+    setReviews(verdicts);
   }, [issueId]);
 
   useEffect(() => {
@@ -187,6 +212,9 @@ export function IssueReceipt({
   const canCancel = CLIENT_TRANSITIONS[issue.status].includes('cancelled');
   const agentName = (id: string | null) => agents.find((a) => a.id === id)?.name ?? 'agent';
   const orderNo = `ORD-${String(issue.issueNumber).padStart(4, '0')}`;
+  const agentRejections = reviews.filter(
+    (r) => r.reviewerType === 'agent' && r.decision === 'changes_requested'
+  ).length;
 
   const saveTitle = () => {
     const next = title.trim();
@@ -221,6 +249,15 @@ export function IssueReceipt({
 
   const wakeAssignee = () => {
     void mutate(() => wakeIssue(issue.id));
+  };
+
+  // Approve stands alone; requesting changes needs a written reason the
+  // reworking agent can act on.
+  const stampVerdict = (decision: 'approved' | 'changes_requested') => {
+    const body = verdictNote.trim() || (decision === 'approved' ? 'Approved.' : '');
+    if (!body) return;
+    setVerdictNote('');
+    void mutate(() => submitReview(issue.id, { decision, body }));
   };
 
   const cancelIssue = () => {
@@ -400,7 +437,9 @@ export function IssueReceipt({
                 <span className={c.authorType === 'agent' ? 'text-pixel-orange' : 'text-pixel-black'}>
                   {c.authorType === 'agent' ? agentName(c.authorAgentId).toUpperCase() : 'YOU'}
                 </span>
-                <p className="whitespace-pre-wrap break-words pl-4 text-sm text-pixel-black">{c.body}</p>
+                <p className={`whitespace-pre-wrap break-words pl-4 text-sm ${commentTone(c.body)}`}>
+                  {c.body}
+                </p>
               </div>
             ))}
             {comments.length === 0 && (
@@ -484,6 +523,73 @@ export function IssueReceipt({
               <p className="font-pixel text-xs text-pixel-gray">(no runs yet)</p>
             )}
           </div>
+
+          <Rule dashed />
+
+          {/* Review verdicts */}
+          <div className="mb-2 flex items-end justify-between">
+            <p className="font-pixel text-[10px] uppercase tracking-[0.2em] text-pixel-gray">
+              Review
+            </p>
+            {agentRejections > 0 && (
+              <span
+                className={`font-pixel text-[10px] uppercase ${
+                  agentRejections >= REVIEW_CYCLE_CAP ? 'text-pixel-red' : 'text-pixel-gray'
+                }`}
+              >
+                rework {agentRejections}/{REVIEW_CYCLE_CAP}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            {reviews.map((r) => (
+              <div key={r.id} className="flex items-end gap-1 font-pixel text-sm">
+                <span className="shrink-0 text-pixel-gray">
+                  {formatTime(r.createdAt).slice(6)}
+                </span>
+                <span
+                  className={`shrink-0 truncate ${r.reviewerType === 'agent' ? 'text-pixel-orange' : 'text-pixel-black'}`}
+                >
+                  {r.reviewerType === 'agent' ? agentName(r.reviewerAgentId).toUpperCase() : 'YOU'}
+                </span>
+                <span className="mb-[3px] min-w-2 flex-1 border-b border-dotted border-pixel-gray/50" />
+                <span
+                  className={`shrink-0 text-xs font-bold uppercase ${DECISION_META[r.decision].text}`}
+                >
+                  {DECISION_META[r.decision].label}
+                </span>
+              </div>
+            ))}
+            {reviews.length === 0 && (
+              <p className="font-pixel text-xs text-pixel-gray">(no verdicts yet)</p>
+            )}
+          </div>
+          {issue.status === 'in_review' && (
+            <div className="mt-2">
+              {agentRejections >= REVIEW_CYCLE_CAP && (
+                <p className="mb-1 font-pixel text-[10px] uppercase text-pixel-red">
+                  ! auto-review halted - your verdict required
+                </p>
+              )}
+              <textarea
+                value={verdictNote}
+                onChange={(e) => setVerdictNote(e.target.value)}
+                rows={2}
+                placeholder="Verdict notes (required to request changes)..."
+                className="w-full resize-none border border-dashed border-pixel-gray/60 bg-transparent p-1.5 font-pixel text-xs text-pixel-black focus:border-pixel-black focus:outline-none"
+              />
+              <div className="mt-1 flex justify-end gap-3">
+                <BracketButton
+                  danger
+                  onClick={() => stampVerdict('changes_requested')}
+                  disabled={!verdictNote.trim()}
+                >
+                  REQUEST CHANGES
+                </BracketButton>
+                <BracketButton onClick={() => stampVerdict('approved')}>APPROVE</BracketButton>
+              </div>
+            </div>
+          )}
 
           <Rule dashed />
 

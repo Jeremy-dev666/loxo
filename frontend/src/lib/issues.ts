@@ -37,6 +37,20 @@ export interface IssueComment {
   createdAt: string;
 }
 
+export type ReviewDecision = 'approved' | 'changes_requested';
+
+export interface IssueReview {
+  id: string;
+  issueId: string;
+  reviewerType: 'human' | 'agent';
+  reviewerUserId: string | null;
+  reviewerAgentId: string | null;
+  runId: string | null;
+  decision: ReviewDecision;
+  body: string;
+  createdAt: string;
+}
+
 export type Board = Record<IssueStatus, Issue[]>;
 
 export interface AssignmentPatch {
@@ -108,6 +122,17 @@ export function addComment(issueId: string, body: string) {
   return apiFetch<{ comment: IssueComment }>(`/api/issues/${issueId}/comments`, {
     method: 'POST',
     body: JSON.stringify({ body }),
+  });
+}
+
+export function fetchReviews(issueId: string) {
+  return apiFetch<{ reviews: IssueReview[] }>(`/api/issues/${issueId}/reviews`);
+}
+
+export function submitReview(issueId: string, input: { decision: ReviewDecision; body: string }) {
+  return apiFetch<{ review: IssueReview }>(`/api/issues/${issueId}/reviews`, {
+    method: 'POST',
+    body: JSON.stringify(input),
   });
 }
 
