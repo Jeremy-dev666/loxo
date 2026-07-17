@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { RequireAuth } from '@/components/auth/RequireAuth';
@@ -148,6 +149,52 @@ function BindingsDialog({
   );
 }
 
+function AutomationsPanel({
+  teams,
+  onManageBindings,
+}: {
+  teams: TeamView[];
+  onManageBindings: () => void;
+}) {
+  return (
+    <div className="space-y-2 p-3">
+      <p className="text-xs text-pixel-black/50">
+        Workflow canvases bound to this project. Tasks submitted here run them inside this
+        workspace.
+      </p>
+      {teams.map((team) => (
+        <div key={team.id} className="border border-pixel-line bg-pixel-white px-3 py-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-sm font-semibold">{team.name}</p>
+            <Link
+              href={`/teams/${team.id}`}
+              className="shrink-0 text-xs text-pixel-blue underline"
+            >
+              Open canvas →
+            </Link>
+          </div>
+          {team.description && (
+            <p className="mt-0.5 truncate text-xs text-pixel-black/50">{team.description}</p>
+          )}
+        </div>
+      ))}
+      {teams.length === 0 && (
+        <p className="border border-dashed border-pixel-black/30 p-4 text-center text-xs text-pixel-black/45">
+          No automations bound yet.
+        </p>
+      )}
+      <div className="flex gap-3 pt-1 text-xs">
+        <Link href="/teams/create" className="text-pixel-blue underline">
+          + New automation
+        </Link>
+        <button onClick={onManageBindings} className="text-pixel-black/60 underline">
+          Manage bindings
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
   const [project, setProject] = useState<ProjectView | null>(null);
   const [teams, setTeams] = useState<TeamView[]>([]);
@@ -159,7 +206,7 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
   const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
   const [memos, setMemos] = useState<Memo[]>([]);
   const [reviewing, setReviewing] = useState<Set<string>>(new Set());
-  const [tab, setTab] = useState<'board' | 'deliverables' | 'memory'>('board');
+  const [tab, setTab] = useState<'board' | 'deliverables' | 'memory' | 'automations'>('board');
   const [previewPath, setPreviewPath] = useState<string | null>(null);
   const [showBindings, setShowBindings] = useState(false);
   const [filesRefresh, setFilesRefresh] = useState(0);
@@ -515,6 +562,12 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
             >
               Memory{memos.length > 0 ? ` (${memos.length})` : ''}
             </button>
+            <button
+              onClick={() => setTab('automations')}
+              className={`flex-1 px-3 py-2 ${tab === 'automations' ? 'text-pixel-black' : 'text-pixel-black/50 hover:text-pixel-black'}`}
+            >
+              Automations
+            </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
             {tab === 'board' ? (
@@ -526,8 +579,10 @@ function ProjectWorkspaceInner({ projectId }: { projectId: string }) {
                 onReview={review}
                 onOpenFile={(path) => setPreviewPath(path)}
               />
-            ) : (
+            ) : tab === 'memory' ? (
               <MemoPanel memos={memos} onDelete={forgetMemo} />
+            ) : (
+              <AutomationsPanel teams={boundTeams} onManageBindings={() => setShowBindings(true)} />
             )}
           </div>
         </div>

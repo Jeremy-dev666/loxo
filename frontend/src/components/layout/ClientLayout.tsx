@@ -65,7 +65,6 @@ function TraditionalSidebar({
     { href: '/issues', label: 'Issues', icon: 'teams' },
     { href: '/goals', label: 'Goals', icon: 'roundtable' },
     { href: '/agents', label: 'My Agents', icon: 'agents' },
-    { href: '/teams', label: 'My Teams', icon: 'teams' },
     { href: '/roundtable', label: 'Roundtable', icon: 'roundtable' },
     { href: '/market', label: 'Agent Market', icon: 'market' },
     { href: '/community', label: 'Community', icon: 'community' },
