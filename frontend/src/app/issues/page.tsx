@@ -96,6 +96,22 @@ function BoardPage() {
     };
   }, [projectFilter]);
 
+  // Deep link (?issue=<id>): open the receipt once the board is in, then
+  // strip the param so refreshes and closes don't reopen it.
+  useEffect(() => {
+    if (loading) return;
+    const requested = new URLSearchParams(window.location.search).get('issue');
+    if (!requested) return;
+    const issue = Object.values(board)
+      .flat()
+      .find((candidate) => candidate.id === requested);
+    if (issue) {
+      setPrintEntrance(false);
+      setOpenIssue(issue);
+    }
+    window.history.replaceState(null, '', window.location.pathname);
+  }, [loading, board]);
+
   const legalTargets = useMemo(() => {
     if (!dragSource) return null;
     return new Set<IssueStatus>([dragSource, ...CLIENT_TRANSITIONS[dragSource]]);

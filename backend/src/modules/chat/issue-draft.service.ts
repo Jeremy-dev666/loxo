@@ -21,6 +21,13 @@ export interface IssueDraft {
   description: string;
   source: 'anthropic' | 'openai' | 'fallback';
   warnings: string[];
+  /** Messages the draft was based on, so the client can show and adjust the slice. */
+  window: { fromMessageId: string; toMessageId: string; count: number };
+}
+
+export interface DraftRange {
+  fromMessageId?: string;
+  toMessageId?: string;
 }
 
 type WindowMessage = Pick<Message, 'role' | 'content' | 'createdAt'>;
@@ -32,8 +39,8 @@ type WindowMessage = Pick<Message, 'role' | 'content' | 'createdAt'>;
  * walking across the gap so a terse follow-up ("file that as an issue")
  * still carries its context. Char and count caps bound the prompt.
  */
-export function sliceTopicWindow(history: WindowMessage[]): WindowMessage[] {
-  const window: WindowMessage[] = [];
+export function sliceTopicWindow<T extends WindowMessage>(history: T[]): T[] {
+  const window: T[] = [];
   let chars = 0;
   for (let i = history.length - 1; i >= 0; i--) {
     const message = history[i]!;
@@ -47,6 +54,33 @@ export function sliceTopicWindow(history: WindowMessage[]): WindowMessage[] {
     chars += message.content.length;
   }
   return window.reverse();
+}
+
+/**
+ * Explicit selection: the span between the range endpoints, newest-biased
+ * caps applied. No gap logic — the user drew the boundary themselves.
+ */
+export function sliceExplicitRange<T extends WindowMessage & { id: string }>(
+  history: T[],
+  range: DraftRange
+): T[] {
+  const from = range.fromMessageId ? history.findIndex((m) => m.id === range.fromMessageId) : 0;
+  const to = range.toMessageId
+    ? history.findIndex((m) => m.id === range.toMessageId)
+    : history.length - 1;
+  if (from < 0 || to < 0) throw badRequest('invalid_range', 'Range message not found');
+  if (from > to) throw badRequest('invalid_range', 'Range endpoints are reversed');
+
+  const span = history.slice(from, to + 1).slice(-TOPIC_MAX_MESSAGES);
+  let chars = 0;
+  let start = span.length;
+  while (start > 0) {
+    const next = chars + span[start - 1]!.content.length;
+    if (start < span.length && next > TOPIC_CHAR_BUDGET) break;
+    chars = next;
+    start--;
+  }
+  return span.slice(start);
 }
 
 const DRAFT_SYSTEM_PROMPT = [
@@ -94,7 +128,8 @@ function normalizeDraft(json: unknown): { title: string; description: string } {
 
 export async function draftIssueFromConversation(
   userId: string,
-  conversationId: string
+  conversationId: string,
+  range?: DraftRange
 ): Promise<IssueDraft> {
   const conversation = await getConversation(userId, conversationId);
   const [agent] = await db
@@ -111,7 +146,13 @@ export async function draftIssueFromConversation(
     throw badRequest('empty_conversation', 'Nothing to convert into an issue yet');
   }
 
-  const window = sliceTopicWindow(history);
+  const explicit = Boolean(range?.fromMessageId || range?.toMessageId);
+  const window = explicit ? sliceExplicitRange(history, range!) : sliceTopicWindow(history);
+  const windowInfo = {
+    fromMessageId: window[0]!.id,
+    toMessageId: window[window.length - 1]!.id,
+    count: window.length,
+  };
   const warnings: string[] = [];
 
   const generation = await generateJson(
@@ -125,7 +166,12 @@ export async function draftIssueFromConversation(
 
   if (generation.status === 'ok') {
     try {
-      return { ...normalizeDraft(generation.json), source: generation.vendor, warnings };
+      return {
+        ...normalizeDraft(generation.json),
+        source: generation.vendor,
+        warnings,
+        window: windowInfo,
+      };
     } catch (error) {
       warnings.push(
         `Draft via ${generation.vendor} was malformed (${(error as Error).message}); used the transcript fallback`
@@ -139,5 +185,5 @@ export async function draftIssueFromConversation(
     warnings.push('No anthropic/openai provider configured; drafted from the transcript directly');
   }
 
-  return { ...fallbackIssueDraft(agentName, window), source: 'fallback', warnings };
+  return { ...fallbackIssueDraft(agentName, window), source: 'fallback', warnings, window: windowInfo };
 }

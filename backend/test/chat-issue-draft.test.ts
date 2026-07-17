@@ -217,4 +217,78 @@ describe('POST /api/conversations/:id/draft-issue', () => {
     expect(res.body.draft.title).toBe('summarize the retro notes');
     expect(res.body.draft.warnings[0]).toContain('failed');
   });
+
+  it('reports the slice window it drafted from', async () => {
+    const conversationId = await newConversation();
+    await seedMessages(conversationId, [
+      msg('user', 'plan the launch email', 6),
+      msg('assistant', 'drafting an outline', 5),
+      msg('user', 'add a discount code section', 4),
+    ]);
+
+    const res = await request(app)
+      .post(`/api/conversations/${conversationId}/draft-issue`)
+      .set(auth());
+    expect(res.status).toBe(200);
+    const stored = await request(app)
+      .get(`/api/conversations/${conversationId}/messages`)
+      .set(auth());
+    const ids = stored.body.messages.map((m: { id: string }) => m.id);
+    expect(res.body.draft.window).toEqual({
+      fromMessageId: ids[0],
+      toMessageId: ids[ids.length - 1],
+      count: 3,
+    });
+  });
+
+  it('honors an explicit range and ignores the gap heuristic', async () => {
+    const conversationId = await newConversation();
+    await seedMessages(conversationId, [
+      msg('user', 'topic A: refactor auth', 500),
+      msg('assistant', 'topic A reply', 499),
+      msg('user', 'topic B: write docs', 5),
+      msg('assistant', 'topic B reply', 4),
+    ]);
+    const stored = await request(app)
+      .get(`/api/conversations/${conversationId}/messages`)
+      .set(auth());
+    const ids = stored.body.messages.map((m: { id: string }) => m.id);
+
+    const res = await request(app)
+      .post(`/api/conversations/${conversationId}/draft-issue`)
+      .set(auth())
+      .send({ fromMessageId: ids[0], toMessageId: ids[1] });
+    expect(res.status).toBe(200);
+    expect(res.body.draft.window).toEqual({
+      fromMessageId: ids[0],
+      toMessageId: ids[1],
+      count: 2,
+    });
+    expect(res.body.draft.title).toBe('topic A: refactor auth');
+    expect(res.body.draft.description).not.toContain('topic B');
+  });
+
+  it('rejects a range pointing at unknown or reversed messages', async () => {
+    const conversationId = await newConversation();
+    await seedMessages(conversationId, [
+      msg('user', 'one', 3),
+      msg('assistant', 'two', 2),
+    ]);
+    const stored = await request(app)
+      .get(`/api/conversations/${conversationId}/messages`)
+      .set(auth());
+    const ids = stored.body.messages.map((m: { id: string }) => m.id);
+
+    const unknown = await request(app)
+      .post(`/api/conversations/${conversationId}/draft-issue`)
+      .set(auth())
+      .send({ fromMessageId: '00000000-0000-0000-0000-000000000000' });
+    expect(unknown.status).toBe(400);
+
+    const reversed = await request(app)
+      .post(`/api/conversations/${conversationId}/draft-issue`)
+      .set(auth())
+      .send({ fromMessageId: ids[1], toMessageId: ids[0] });
+    expect(reversed.status).toBe(400);
+  });
 });

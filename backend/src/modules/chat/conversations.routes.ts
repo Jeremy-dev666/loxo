@@ -74,9 +74,18 @@ conversationsRouter.get('/:id/messages', async (req: AuthedRequest, res, next) =
 });
 
 // Draft only — nothing is persisted until the user confirms the conversion.
+// An explicit range overrides the topic-window heuristic.
 conversationsRouter.post('/:id/draft-issue', async (req: AuthedRequest, res, next) => {
   try {
-    res.json({ draft: await draftIssueFromConversation(req.auth!.userId, String(req.params.id)) });
+    const schema = z.object({
+      fromMessageId: z.string().uuid().optional(),
+      toMessageId: z.string().uuid().optional(),
+    });
+    const parsed = schema.safeParse(req.body ?? {});
+    if (!parsed.success) throw badRequest('invalid_input', 'Range must be message ids');
+    res.json({
+      draft: await draftIssueFromConversation(req.auth!.userId, String(req.params.id), parsed.data),
+    });
   } catch (error) {
     next(error);
   }

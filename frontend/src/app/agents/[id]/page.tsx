@@ -23,11 +23,14 @@ import {
 import {
   createConversation,
   deleteConversation,
+  draftIssue,
   fetchConversations,
   fetchMessages,
+  fileIssue,
   renameConversation,
   type ChatMessage,
   type Conversation,
+  type IssueDraft,
 } from '@/lib/chat';
 import { fetchProviders, type ProviderView } from '@/lib/providers';
 import { API_BASE } from '@/lib/runtime';
@@ -39,6 +42,29 @@ type TabType = 'chat' | 'monitor' | 'skills';
 function MessageBubble({ message, agentName }: { message: LiveMessage | ChatMessage; agentName: string }) {
   const isUser = message.role === 'user';
   const isError = message.role === 'system' && message.meta?.error;
+
+  if (message.role === 'system' && !isError) {
+    return (
+      <div className="flex justify-center">
+        <div className="max-w-[85%] border border-pixel-line bg-pixel-yellow/20 px-3 py-1.5 text-center">
+          <p className="font-sans text-xs text-pixel-black/70">
+            {message.content}
+            {message.meta?.issueId && (
+              <>
+                {' '}
+                <Link
+                  href={`/issues?issue=${message.meta.issueId}`}
+                  className="font-bold text-pixel-blue underline"
+                >
+                  View issue →
+                </Link>
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={isUser ? 'flex justify-end' : 'flex justify-start'}>
@@ -65,6 +91,116 @@ function MessageBubble({ message, agentName }: { message: LiveMessage | ChatMess
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+type DraftCard =
+  | { phase: 'loading' }
+  | { phase: 'error'; message: string }
+  | { phase: 'editing' | 'filing'; draft: IssueDraft; title: string; description: string; error?: string };
+
+function sliceLabel(draft: IssueDraft, messages: Array<LiveMessage | ChatMessage>): string {
+  const base = `Drafted from ${draft.window.count} message${draft.window.count === 1 ? '' : 's'}`;
+  const from = messages.find((m) => m.id === draft.window.fromMessageId);
+  const to = messages.find((m) => m.id === draft.window.toMessageId);
+  if (!from || !to) return base;
+  const stamp = (iso: string) =>
+    new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return `${base} · ${stamp(from.createdAt)} – ${stamp(to.createdAt)}`;
+}
+
+function IssueDraftCard({
+  card,
+  messages,
+  onEdit,
+  onCancel,
+  onRetry,
+  onFile,
+}: {
+  card: DraftCard;
+  messages: Array<LiveMessage | ChatMessage>;
+  onEdit: (patch: { title?: string; description?: string }) => void;
+  onCancel: () => void;
+  onRetry: () => void;
+  onFile: () => void;
+}) {
+  return (
+    <div
+      className="border border-pixel-line bg-pixel-white"
+      style={{ boxShadow: '4px 4px 0 rgba(17,17,17,0.10)' }}
+    >
+      <div className="flex items-center justify-between border-b border-pixel-line bg-pixel-black px-3 py-1.5">
+        <span className="font-sans text-xs font-bold text-pixel-white">■ ISSUE DRAFT</span>
+        <button
+          onClick={onCancel}
+          className="font-sans text-xs text-pixel-white/70 hover:text-pixel-white"
+          aria-label="Dismiss draft"
+        >
+          ✕
+        </button>
+      </div>
+
+      {card.phase === 'loading' && (
+        <p className="animate-pulse p-4 font-sans text-sm text-pixel-black/50">
+          Reading the current topic…
+        </p>
+      )}
+
+      {card.phase === 'error' && (
+        <div className="space-y-2 p-4">
+          <p className="font-sans text-sm text-pixel-red">{card.message}</p>
+          <div className="flex gap-2">
+            <PixelButton variant="secondary" size="sm" onClick={onRetry}>
+              Retry
+            </PixelButton>
+            <PixelButton variant="secondary" size="sm" onClick={onCancel}>
+              Dismiss
+            </PixelButton>
+          </div>
+        </div>
+      )}
+
+      {(card.phase === 'editing' || card.phase === 'filing') && (
+        <div className="space-y-2 p-3">
+          <input
+            className="w-full border border-pixel-line bg-pixel-white px-2 py-1.5 font-sans text-sm font-bold text-pixel-black outline-none focus:border-pixel-blue"
+            style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.08)' }}
+            value={card.title}
+            disabled={card.phase === 'filing'}
+            onChange={(e) => onEdit({ title: e.target.value })}
+            placeholder="Issue title"
+          />
+          <textarea
+            className="min-h-28 w-full resize-y border border-pixel-line bg-pixel-white px-2 py-1.5 font-sans text-sm text-pixel-black outline-none focus:border-pixel-blue"
+            style={{ boxShadow: 'inset 2px 2px 0 rgba(17,17,17,0.08)' }}
+            value={card.description}
+            disabled={card.phase === 'filing'}
+            onChange={(e) => onEdit({ description: e.target.value })}
+            placeholder="Issue description"
+          />
+          <p className="font-sans text-xs text-pixel-black/50">{sliceLabel(card.draft, messages)}</p>
+          {card.draft.warnings.map((warning) => (
+            <p key={warning} className="border border-pixel-yellow bg-pixel-yellow/15 px-2 py-1 font-sans text-xs text-pixel-black/70">
+              {warning}
+            </p>
+          ))}
+          {card.error && <p className="font-sans text-xs text-pixel-red">{card.error}</p>}
+          <div className="flex justify-end gap-2 pt-1">
+            <PixelButton variant="secondary" size="sm" onClick={onCancel} disabled={card.phase === 'filing'}>
+              Cancel
+            </PixelButton>
+            <PixelButton
+              variant="primary"
+              size="sm"
+              onClick={onFile}
+              disabled={card.phase === 'filing' || !card.title.trim()}
+            >
+              {card.phase === 'filing' ? 'Filing…' : 'File issue'}
+            </PixelButton>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -290,6 +426,7 @@ function ChatPageInner() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
+  const [draftCard, setDraftCard] = useState<DraftCard | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [savingModel, setSavingModel] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -306,6 +443,7 @@ function ChatPageInner() {
   }, [agentId, reloadConversations]);
 
   useEffect(() => {
+    setDraftCard(null);
     if (!activeId) {
       setHistory([]);
       return;
@@ -335,7 +473,49 @@ function ChatPageInner() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [allMessages.length]);
+  }, [allMessages.length, draftCard?.phase]);
+
+  const openDraftCard = useCallback(async () => {
+    if (!activeId) return;
+    setDraftCard({ phase: 'loading' });
+    try {
+      const issueDraft = await draftIssue(activeId);
+      setDraftCard({
+        phase: 'editing',
+        draft: issueDraft,
+        title: issueDraft.title,
+        description: issueDraft.description,
+      });
+    } catch (err) {
+      setDraftCard({
+        phase: 'error',
+        message: err instanceof Error ? err.message : 'Drafting failed',
+      });
+    }
+  }, [activeId]);
+
+  const fileDraftCard = useCallback(async () => {
+    if (!activeId || draftCard?.phase !== 'editing') return;
+    const editing = draftCard;
+    setDraftCard({ ...editing, phase: 'filing', error: undefined });
+    try {
+      await fileIssue(activeId, {
+        title: editing.title.trim(),
+        description: editing.description,
+      });
+      // The system-message breadcrumb is the durable receipt; the card retires.
+      setDraftCard(null);
+      const refreshed = await fetchMessages(activeId);
+      setHistory(refreshed);
+      reloadConversations();
+    } catch (err) {
+      setDraftCard({
+        ...editing,
+        phase: 'editing',
+        error: err instanceof Error ? err.message : 'Filing failed',
+      });
+    }
+  }, [activeId, draftCard, reloadConversations]);
 
   const agentProvider = useMemo(
     () => providers.find((p) => p.id === agent?.providerId) ?? null,
@@ -543,9 +723,36 @@ function ChatPageInner() {
                     </p>
                   </div>
                 )}
+                {draftCard && (
+                  <IssueDraftCard
+                    card={draftCard}
+                    messages={allMessages}
+                    onEdit={(patch) =>
+                      setDraftCard((current) =>
+                        current && current.phase === 'editing' ? { ...current, ...patch } : current
+                      )
+                    }
+                    onCancel={() => setDraftCard(null)}
+                    onRetry={() => void openDraftCard()}
+                    onFile={() => void fileDraftCard()}
+                  />
+                )}
               </div>
 
               {error && <p className="px-4 pb-1 font-sans text-xs text-pixel-red">{error}</p>}
+
+              {allMessages.some((m) => m.role !== 'system') && !draftCard && (
+                <div className="flex justify-end border-t border-pixel-line bg-pixel-cream px-3 py-1">
+                  <button
+                    onClick={() => void openDraftCard()}
+                    disabled={busy}
+                    className="font-sans text-xs font-bold text-pixel-black/60 hover:text-pixel-blue disabled:opacity-40"
+                    title="Draft an issue from the current topic"
+                  >
+                    ▣ FILE AS ISSUE
+                  </button>
+                </div>
+              )}
 
               <form onSubmit={submit} className="flex gap-2 border-t border-pixel-line bg-pixel-white p-3">
                 <textarea
