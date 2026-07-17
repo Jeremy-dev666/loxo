@@ -142,6 +142,8 @@ export interface MessageMeta {
   durationMs?: number;
   error?: boolean;
   source?: string;
+  /** Set on the system message posted when a chat topic is filed as an issue. */
+  issueId?: string;
 }
 
 export const messages = pgTable('messages', {
@@ -692,6 +694,10 @@ export const issues = pgTable(
     activeRunId: uuid('active_run_id').references((): AnyPgColumn => runs.id, {
       onDelete: 'set null',
     }),
+    /** Chat conversation this issue was filed from. A conversation can spawn many issues. */
+    sourceConversationId: uuid('source_conversation_id').references(() => conversations.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     closedAt: timestamp('closed_at', { withTimezone: true }),
@@ -701,6 +707,7 @@ export const issues = pgTable(
     index('issues_user_status').on(t.userId, t.status),
     index('issues_project_status').on(t.projectId, t.status),
     index('issues_assignee_agent').on(t.assigneeAgentId, t.status),
+    index('issues_source_conversation').on(t.sourceConversationId),
     check(
       'issues_assignee_single_principal',
       sql`NOT (${t.assigneeAgentId} IS NOT NULL AND ${t.assigneeUserId} IS NOT NULL)`

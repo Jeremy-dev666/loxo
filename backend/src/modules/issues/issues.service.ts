@@ -131,7 +131,15 @@ async function resolvePrincipal(
 
 export async function createIssue(
   userId: string,
-  input: { title: string; description?: string; projectId?: string; goalId?: string }
+  input: {
+    title: string;
+    description?: string;
+    projectId?: string;
+    goalId?: string;
+    assignee?: AssignmentPatch;
+    /** Validated by the caller; not exposed through the HTTP create route. */
+    sourceConversationId?: string;
+  }
 ): Promise<Issue> {
   let projectId = input.projectId;
   if (projectId) {
@@ -140,6 +148,9 @@ export async function createIssue(
     projectId = (await getOrCreateDefaultProject(userId)).id;
   }
   if (input.goalId) await assertOwnedGoal(userId, input.goalId);
+  const assignee = input.assignee
+    ? await resolvePrincipal(userId, input.assignee, 'assignee')
+    : { agentId: null, userId: null };
 
   const boardOrder = await nextBoardOrder(userId, 'backlog');
 
@@ -161,6 +172,9 @@ export async function createIssue(
         issueNumber: counter!.value,
         title: input.title,
         description: input.description ?? '',
+        assigneeAgentId: assignee.agentId,
+        assigneeUserId: assignee.userId,
+        sourceConversationId: input.sourceConversationId ?? null,
         boardOrder,
       })
       .returning();
