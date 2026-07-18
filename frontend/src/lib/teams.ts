@@ -39,7 +39,7 @@ export interface DslEdge {
 }
 
 export interface WorkflowOrigin {
-  kind: 'roundtable';
+  kind: 'workshop';
   sessionId: string;
   sessionTitle: string;
   revision: number;

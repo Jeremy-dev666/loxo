@@ -412,14 +412,14 @@ function MobileHome({
               </MobilePanel>
               <MobilePanel>
                 <div className="border-b border-pixel-line bg-pixel-black px-3 py-2 text-pixel-white">
-                  <p className="font-sans text-base font-bold leading-tight">Roundtable</p>
+                  <p className="font-sans text-base font-bold leading-tight">Workshop</p>
                   <p className="mt-1 font-sans text-xs leading-tight text-pixel-white/80">
                     Drop into your agent group chats
                   </p>
                 </div>
                 <MobileLinkRow
-                  href="/roundtable"
-                  title="Open the roundtable"
+                  href="/workshop"
+                  title="Open the workshop"
                   description="Multi-agent discussion with a shared whiteboard"
                   accent="bg-pixel-yellow"
                 />

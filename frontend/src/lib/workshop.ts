@@ -4,14 +4,14 @@ import type { TeamView, WorkflowDsl } from './teams';
 export const WHITEBOARD_COLUMNS = ['ideas', 'questions', 'actions', 'risks'] as const;
 export type WhiteboardColumn = (typeof WHITEBOARD_COLUMNS)[number];
 
-export interface RoundtableMember {
+export interface WorkshopMember {
   agentId: string;
   name: string;
   role?: string;
   description?: string;
 }
 
-export interface RoundtableMessage {
+export interface WorkshopMessage {
   id: string;
   senderId: string;
   senderName: string;
@@ -59,8 +59,8 @@ export interface SessionState {
   active: boolean;
   stopRequested: boolean;
   round: number;
-  members: RoundtableMember[];
-  messages: RoundtableMessage[];
+  members: WorkshopMember[];
+  messages: WorkshopMessage[];
   notes: WhiteboardNote[];
   runLogs: RunLogEntry[];
   workflowDrafts: WorkflowDraft[];
@@ -69,25 +69,25 @@ export interface SessionState {
 }
 
 export const fetchSessionState = (sessionId: string) =>
-  apiFetch<SessionState>(`/api/roundtable/sessions/${encodeURIComponent(sessionId)}`);
+  apiFetch<SessionState>(`/api/workshop/sessions/${encodeURIComponent(sessionId)}`);
 
 export const sendSessionMessage = (
   sessionId: string,
   input: {
     title?: string;
     userMessage: { content: string; senderName?: string };
-    members: RoundtableMember[];
-    messages?: RoundtableMessage[];
+    members: WorkshopMember[];
+    messages?: WorkshopMessage[];
     notes?: WhiteboardNote[];
   }
 ) =>
-  apiFetch<SessionState>(`/api/roundtable/sessions/${encodeURIComponent(sessionId)}/messages`, {
+  apiFetch<SessionState>(`/api/workshop/sessions/${encodeURIComponent(sessionId)}/messages`, {
     method: 'POST',
     body: JSON.stringify(input),
   });
 
 export const stopSession = (sessionId: string) =>
-  apiFetch<SessionState>(`/api/roundtable/sessions/${encodeURIComponent(sessionId)}/stop`, {
+  apiFetch<SessionState>(`/api/workshop/sessions/${encodeURIComponent(sessionId)}/stop`, {
     method: 'POST',
   });
 
@@ -95,14 +95,14 @@ export const generateWorkflowDraft = (
   sessionId: string,
   input: {
     title?: string;
-    members?: RoundtableMember[];
+    members?: WorkshopMember[];
     notes?: WhiteboardNote[];
     feedback?: string;
     previousDraftId?: string;
   }
 ) =>
   apiFetch<{ draft: WorkflowDraft; state: SessionState }>(
-    `/api/roundtable/sessions/${encodeURIComponent(sessionId)}/workflow-drafts`,
+    `/api/workshop/sessions/${encodeURIComponent(sessionId)}/workflow-drafts`,
     { method: 'POST', body: JSON.stringify(input) }
   );
 
@@ -112,7 +112,7 @@ export const confirmWorkflowDraft = (
   input: { name?: string; description?: string; teamId?: string } = {}
 ) =>
   apiFetch<{ team: TeamView; state: SessionState }>(
-    `/api/roundtable/sessions/${encodeURIComponent(sessionId)}/workflow-drafts/${encodeURIComponent(draftId)}/confirm`,
+    `/api/workshop/sessions/${encodeURIComponent(sessionId)}/workflow-drafts/${encodeURIComponent(draftId)}/confirm`,
     { method: 'POST', body: JSON.stringify(input) }
   );
 
@@ -122,6 +122,6 @@ export const updateNote = (
   patch: { x?: number; y?: number; column?: WhiteboardColumn; text?: string }
 ) =>
   apiFetch<{ note: WhiteboardNote }>(
-    `/api/roundtable/sessions/${encodeURIComponent(sessionId)}/notes/${encodeURIComponent(noteId)}`,
+    `/api/workshop/sessions/${encodeURIComponent(sessionId)}/notes/${encodeURIComponent(noteId)}`,
     { method: 'PATCH', body: JSON.stringify(patch) }
   );

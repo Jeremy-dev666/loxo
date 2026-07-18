@@ -60,7 +60,7 @@ const TAB_QUERY_KEYS: Record<string, MobileTabKey> = {
 
 function activeTabForRoute(pathname: string, searchTab: string | null): MobileTabKey {
   if (pathname === '/' && searchTab && TAB_QUERY_KEYS[searchTab]) return TAB_QUERY_KEYS[searchTab]!;
-  if (pathname.startsWith('/teams') || pathname.startsWith('/roundtable')) return 'teams';
+  if (pathname.startsWith('/teams') || pathname.startsWith('/workshop')) return 'teams';
   if (pathname.startsWith('/agents')) return 'agents';
   if (pathname.startsWith('/market') || pathname.startsWith('/community') || pathname.startsWith('/upload')) {
     return 'discover';

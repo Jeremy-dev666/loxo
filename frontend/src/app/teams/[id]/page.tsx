@@ -166,10 +166,10 @@ function EditorInner() {
           <button
             type="button"
             onClick={() => setShowOrigin((v) => !v)}
-            title="This workflow was confirmed out of a roundtable discussion"
+            title="This workflow was confirmed out of a workshop discussion"
             className="border border-pixel-line bg-pixel-blue/15 px-1.5 py-0.5 font-sans text-xs text-pixel-blue hover:bg-pixel-blue/25"
           >
-            v{team.workflow.metadata.version ?? 1} · from roundtable {showOrigin ? '▴' : '▾'}
+            v{team.workflow.metadata.version ?? 1} · from workshop {showOrigin ? '▴' : '▾'}
           </button>
         )}
         <button
@@ -228,7 +228,7 @@ function EditorInner() {
       {showOrigin && team.workflow.metadata?.origin && (
         <div className="border border-pixel-line bg-pixel-cream px-3 py-2 font-sans text-xs text-pixel-black">
           <p>
-            Confirmed from roundtable “{team.workflow.metadata.origin.sessionTitle}” (draft rev{' '}
+            Confirmed from workshop “{team.workflow.metadata.origin.sessionTitle}” (draft rev{' '}
             {team.workflow.metadata.origin.revision}
             {team.workflow.metadata.origin.feedback
               ? `, after feedback: ${team.workflow.metadata.origin.feedback}`

@@ -9,7 +9,7 @@ import { MobileAppNav } from '@/components/layout/MobileAppNav';
 import { useAuthStore } from '@/store/auth';
 import { fetchProjects, deleteProject, type ProjectView } from '@/lib/projects';
 
-type SidebarIcon = 'home' | 'agents' | 'teams' | 'roundtable' | 'market' | 'community' | 'projects' | 'settings';
+type SidebarIcon = 'home' | 'agents' | 'teams' | 'workshop' | 'market' | 'community' | 'projects' | 'settings';
 
 const SIDEBAR_WIDTH_STORAGE_KEY = 'swarmdev.sidebarWidth';
 const SIDEBAR_OPEN_STORAGE_KEY = 'swarmdev.sidebarOpen';
@@ -27,7 +27,7 @@ function SidebarIconGlyph({ icon, className = 'h-5 w-5' }: { icon: SidebarIcon; 
     home: 'M12 3 3 9v12h7v-6h4v6h7V9Zm0 2.5L18 10v9h-2v-6H8v6H6v-9Z',
     agents: 'M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-8 9a8 8 0 0 1 16 0H4Z',
     teams: 'M12 2 2 7l10 5 10-5-10-5ZM2 17l10 5 10-5M2 12l10 5 10-5',
-    roundtable:
+    workshop:
       'M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Zm0 14H6l-2 2V4h16ZM7 9h10v2H7Zm0-3h10v2H7Z',
     market: 'M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm3.5 14.5-7 2 2-7 7-2-2 7Z',
     community:
@@ -63,9 +63,9 @@ function TraditionalSidebar({
   const navItems: Array<{ href: string; label: string; icon: SidebarIcon; exact?: boolean }> = [
     { href: '/', label: 'Home', icon: 'home', exact: true },
     { href: '/issues', label: 'Issues', icon: 'teams' },
-    { href: '/goals', label: 'Goals', icon: 'roundtable' },
+    { href: '/goals', label: 'Goals', icon: 'workshop' },
     { href: '/agents', label: 'My Agents', icon: 'agents' },
-    { href: '/roundtable', label: 'Roundtable', icon: 'roundtable' },
+    { href: '/workshop', label: 'Workshop', icon: 'workshop' },
     { href: '/market', label: 'Agent Market', icon: 'market' },
     { href: '/community', label: 'Community', icon: 'community' },
     { href: '/settings/providers', label: 'Providers', icon: 'settings' },
@@ -260,7 +260,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   const isPublicPath = pathname === '/' || pathname === '/login' || pathname === '/register';
   const isRouteGuardBlocking = !isPublicPath && (!hasHydrated || !token);
-  const isChatRoute = /^\/agents\/[^/]+$/.test(pathname) || pathname.startsWith('/roundtable');
+  const isChatRoute = /^\/agents\/[^/]+$/.test(pathname) || pathname.startsWith('/workshop');
   const isProjectDetailRoute = /^\/projects\/[^/]+/.test(pathname);
 
   const mainClassName = isChatRoute
