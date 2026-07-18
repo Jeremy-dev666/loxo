@@ -1,59 +1,37 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AgentBadgeCard, HireBadgeCard } from '@/components/dashboard/AgentBadgeCard';
 import type { Agent } from '@/lib/agents';
 import type { TeamView } from '@/lib/teams';
 import type { ProjectView } from '@/lib/projects';
+import {
+  fetchDashboardActivity,
+  fetchDashboardSummary,
+  type ActivityEvent,
+  type DashboardRunRow,
+  type DashboardSummary,
+} from '@/lib/dashboard';
+import type { RunStatus } from '@/lib/runs';
 
-// Placeholder rows until a workflow-executions API exists.
-const SAMPLE_RUNS = [
-  {
-    id: 'run-1',
-    status: 'running' as const,
-    title: 'Release notes draft',
-    detail: 'Docs crew → Website refresh',
-    when: 'Started 4 min ago',
-  },
-  {
-    id: 'run-2',
-    status: 'done' as const,
-    title: 'API error triage',
-    detail: 'Backend duo → Bug backlog',
-    when: '38 min · finished 10:24',
-  },
-  {
-    id: 'run-3',
-    status: 'done' as const,
-    title: 'Landing page copy pass',
-    detail: 'Docs crew → Website refresh',
-    when: '12 min · finished 09:51',
-  },
-  {
-    id: 'run-4',
-    status: 'failed' as const,
-    title: 'Nightly dependency audit',
-    detail: 'Maintenance bot → Chores',
-    when: 'Failed at step 2 · 07:00',
-  },
-];
+const REFRESH_MS = 30000;
 
-// Placeholder feed until an activity API exists.
-const SAMPLE_ACTIVITY = [
-  { id: 'a1', time: '10:24', text: 'API error triage finished — 2 deliverables ready for review' },
-  { id: 'a2', time: '10:02', text: 'Scout replied in roundtable "Sprint planning"' },
-  { id: 'a3', time: '09:51', text: 'Landing page copy pass finished without changes requested' },
-  { id: 'a4', time: '09:12', text: 'Slack: 3 messages handled by Support bot' },
-  { id: 'a5', time: '07:00', text: 'Nightly dependency audit failed — step 2 timed out' },
-];
-
-const RUN_STATUS_STYLES = {
+const RUN_STATUS_STYLES: Record<RunStatus, string> = {
+  queued: 'border border-dashed border-[#9B9B9B] text-[#6B6B6B]',
   running: 'bg-[#111] text-white',
-  done: 'border border-[#C9C9C9] text-[#6B6B6B]',
+  succeeded: 'border border-[#C9C9C9] text-[#6B6B6B]',
   failed: 'border border-[#111] text-[#111]',
+  cancelled: 'border border-[#C9C9C9] text-[#9B9B9B]',
 };
 
-const RUN_STATUS_LABELS = { running: 'Running', done: 'Done', failed: 'Failed' };
+const RUN_STATUS_LABELS: Record<RunStatus, string> = {
+  queued: 'Queued',
+  running: 'Running',
+  succeeded: 'Done',
+  failed: 'Failed',
+  cancelled: 'Cancelled',
+};
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -78,25 +56,98 @@ function relativeDay(iso: string): string {
   return `${days} days ago`;
 }
 
+function timeAgo(iso: string): string {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} h ago`;
+  return `${Math.floor(hours / 24)} d ago`;
+}
+
+function clockTime(iso: string): string {
+  const date = new Date(iso);
+  if (date.toDateString() === new Date().toDateString()) {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatCost(costUsd: number): string {
+  if (costUsd > 0 && costUsd < 0.01) return '<$0.01';
+  return `$${costUsd.toFixed(2)}`;
+}
+
+function formatTokens(tokens: number): string {
+  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`;
+  if (tokens >= 1000) return `${(tokens / 1000).toFixed(1)}k`;
+  return String(tokens);
+}
+
+function issueRef(event: { issueNumber: number | null; issueTitle: string | null }): string {
+  if (event.issueNumber == null) return '';
+  return ` — #${event.issueNumber} ${event.issueTitle ?? ''}`.trimEnd();
+}
+
+function activityText(event: ActivityEvent): string {
+  const actor = event.actorName ?? 'You';
+  switch (event.kind) {
+    case 'run_finished':
+      if (event.detail === 'failed') return `${actor} run failed${issueRef(event)}`;
+      if (event.detail === 'cancelled') return `${actor} run cancelled${issueRef(event)}`;
+      return `${actor} finished a run${issueRef(event)}`;
+    case 'issue_created':
+      return `Issue filed${issueRef(event)}`;
+    case 'issue_closed':
+      return event.detail === 'cancelled'
+        ? `Issue cancelled${issueRef(event)}`
+        : `Issue done${issueRef(event)}`;
+    case 'comment':
+      return `${actor} commented${issueRef(event)}`;
+    case 'review':
+      return event.detail === 'approved'
+        ? `${actor} approved the review${issueRef(event)}`
+        : `${actor} requested changes${issueRef(event)}`;
+  }
+}
+
+function runDetail(run: DashboardRunRow): string {
+  const target =
+    run.issueNumber != null ? `#${run.issueNumber} ${run.issueTitle ?? ''}`.trimEnd() : run.reason;
+  return target ? `${run.agentName} → ${target}` : run.agentName;
+}
+
+function runTiming(run: DashboardRunRow): string {
+  if (run.status === 'queued') return `Queued ${timeAgo(run.createdAt)}`;
+  if (run.status === 'running') {
+    return run.startedAt ? `Started ${timeAgo(run.startedAt)}` : 'Starting';
+  }
+  if (!run.finishedAt) return '';
+  const finished = `finished ${clockTime(run.finishedAt)}`;
+  if (run.startedAt) {
+    const mins = Math.round(
+      (new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime()) / 60000
+    );
+    return `${mins < 1 ? '<1' : mins} min · ${finished}`;
+  }
+  return finished;
+}
+
+function runTitle(run: DashboardRunRow): string {
+  if (run.issueNumber != null) return run.issueTitle ?? `Issue #${run.issueNumber}`;
+  return run.reason || `${run.trigger} run`;
+}
+
 function SectionHead({
   title,
-  sample = false,
   action,
 }: {
   title: string;
-  sample?: boolean;
   action?: { href: string; label: string };
 }) {
   return (
     <div className="mb-4 flex items-baseline justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#111]">{title}</h2>
-        {sample && (
-          <span className="rounded-sm border border-[#C9C9C9] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#9B9B9B]">
-            Sample
-          </span>
-        )}
-      </div>
+      <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#111]">{title}</h2>
       {action && (
         <Link href={action.href} className="text-[13px] text-[#6B6B6B] no-underline hover:text-[#111]">
           {action.label} →
@@ -108,6 +159,62 @@ function SectionHead({
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return <div className={`rounded border border-[#E4E4E4] bg-white ${className}`}>{children}</div>;
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+  href,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  href?: string;
+}) {
+  const body = (
+    <>
+      <p className="text-xs uppercase tracking-[0.14em] text-[#9B9B9B]">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight text-[#111]">{value}</p>
+      <p className="mt-1 truncate text-[13px] text-[#6B6B6B]">{sub}</p>
+    </>
+  );
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="block rounded border border-[#E4E4E4] bg-white px-5 py-4 no-underline transition-colors hover:bg-[#FAFAFA]"
+      >
+        {body}
+      </Link>
+    );
+  }
+  return <div className="rounded border border-[#E4E4E4] bg-white px-5 py-4">{body}</div>;
+}
+
+function AttentionRow({
+  title,
+  detail,
+  href,
+}: {
+  title: string;
+  detail: string;
+  href?: string;
+}) {
+  const body = (
+    <>
+      <p className="text-sm font-semibold text-[#111]">{title}</p>
+      <p className="mt-0.5 text-[13px] text-[#6B6B6B]">{detail}</p>
+    </>
+  );
+  if (href) {
+    return (
+      <Link href={href} className="block px-5 py-3.5 no-underline transition-colors hover:bg-[#FAFAFA]">
+        {body}
+      </Link>
+    );
+  }
+  return <div className="px-5 py-3.5">{body}</div>;
 }
 
 export function MonoDashboard({
@@ -123,10 +230,43 @@ export function MonoDashboard({
   isLoggedIn: boolean;
   userName?: string;
 }) {
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [activity, setActivity] = useState<ActivityEvent[]>([]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setSummary(null);
+      setActivity([]);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      const [summaryRes, activityRes] = await Promise.all([
+        fetchDashboardSummary().catch(() => null),
+        fetchDashboardActivity(12).catch(() => null),
+      ]);
+      if (cancelled) return;
+      if (summaryRes) setSummary(summaryRes.summary);
+      if (activityRes) setActivity(activityRes.events);
+    };
+    void load();
+    const timer = window.setInterval(() => void load(), REFRESH_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [isLoggedIn]);
+
   const onDuty = agents.filter((a) => a.providerId);
   const idle = agents.length - onDuty.length;
   const recentProjects = projects.slice(0, 4);
   const recentTeams = teams.slice(0, 4);
+
+  const runRows = summary ? [...summary.activeRuns, ...summary.recentRuns].slice(0, 6) : [];
+  const inReview = summary?.issues.byStatus['in_review'] ?? 0;
+  const blocked = summary?.issues.byStatus['blocked'] ?? 0;
+  const failedToday = summary?.today.failedRuns ?? 0;
+  const hasAttention = idle > 0 || inReview > 0 || blocked > 0 || failedToday > 0;
 
   return (
     <div className="hidden text-[#111] md:block">
@@ -161,6 +301,42 @@ export function MonoDashboard({
           </div>
         </div>
 
+        {/* Stats */}
+        {isLoggedIn && summary && (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="Open issues"
+              value={String(summary.issues.open)}
+              sub={
+                inReview > 0
+                  ? `${inReview} in review${blocked > 0 ? ` · ${blocked} blocked` : ''}`
+                  : blocked > 0
+                    ? `${blocked} blocked`
+                    : 'Across all projects'
+              }
+              href="/issues"
+            />
+            <StatCard
+              label="Active runs"
+              value={String(summary.runs.active)}
+              sub={`${summary.runs.running} running · ${summary.runs.queued} queued`}
+            />
+            <StatCard
+              label="Agents busy"
+              value={`${summary.agents.busy}/${summary.agents.total}`}
+              sub={idle > 0 ? `${idle} missing a provider key` : 'All providers configured'}
+              href="/agents"
+            />
+            <StatCard
+              label="Spent today"
+              value={formatCost(summary.today.costUsd)}
+              sub={`${summary.today.runs} ${summary.today.runs === 1 ? 'run' : 'runs'} · ${formatTokens(
+                summary.today.tokensIn + summary.today.tokensOut
+              )} tokens`}
+            />
+          </div>
+        )}
+
         {/* Roster */}
         <section className="mt-10">
           <SectionHead
@@ -179,26 +355,44 @@ export function MonoDashboard({
           <div className="space-y-10">
             {/* Runs */}
             <section>
-              <SectionHead title="Workflow runs" sample />
-              <Card>
-                {SAMPLE_RUNS.map((run, i) => (
-                  <div
-                    key={run.id}
-                    className={`flex items-center gap-4 px-5 py-3.5 ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}
-                  >
-                    <span
-                      className={`w-[72px] shrink-0 rounded-sm px-2 py-1 text-center text-[11px] font-semibold leading-none ${RUN_STATUS_STYLES[run.status]}`}
+              <SectionHead title="Runs" action={{ href: '/issues', label: 'Board' }} />
+              {runRows.length > 0 ? (
+                <Card>
+                  {runRows.map((run, i) => (
+                    <div
+                      key={run.id}
+                      className={`flex items-center gap-4 px-5 py-3.5 ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}
                     >
-                      {RUN_STATUS_LABELS[run.status]}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{run.title}</p>
-                      <p className="truncate text-[13px] text-[#6B6B6B]">{run.detail}</p>
+                      <span
+                        className={`w-[72px] shrink-0 rounded-sm px-2 py-1 text-center text-[11px] font-semibold leading-none ${RUN_STATUS_STYLES[run.status]}`}
+                      >
+                        {RUN_STATUS_LABELS[run.status]}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">{runTitle(run)}</p>
+                        <p className="truncate text-[13px] text-[#6B6B6B]">{runDetail(run)}</p>
+                      </div>
+                      <span className="shrink-0 font-sans text-xs text-[#9B9B9B]">{runTiming(run)}</span>
                     </div>
-                    <span className="shrink-0 font-sans text-xs text-[#9B9B9B]">{run.when}</span>
-                  </div>
-                ))}
-              </Card>
+                  ))}
+                </Card>
+              ) : (
+                <Card className="px-5 py-8 text-center">
+                  <p className="text-sm text-[#6B6B6B]">
+                    {isLoggedIn ? (
+                      <>
+                        No runs yet. Assign an agent to an issue on the{' '}
+                        <Link href="/issues" className="font-semibold text-[#111]">
+                          board
+                        </Link>{' '}
+                        to wake one up.
+                      </>
+                    ) : (
+                      'Sign in to see your agents at work.'
+                    )}
+                  </p>
+                </Card>
+              )}
             </section>
 
             {/* Projects */}
@@ -248,36 +442,39 @@ export function MonoDashboard({
             <section>
               <SectionHead title="Needs attention" />
               <Card className="divide-y divide-[#F0F0F0]">
-                {idle > 0 && (
-                  <Link
-                    href="/settings/providers"
-                    className="block px-5 py-3.5 no-underline transition-colors hover:bg-[#FAFAFA]"
-                  >
-                    <p className="text-sm font-semibold text-[#111]">
-                      {idle} {idle === 1 ? 'agent has' : 'agents have'} no provider key
-                    </p>
-                    <p className="mt-0.5 text-[13px] text-[#6B6B6B]">Configure a provider to put them on duty</p>
-                  </Link>
+                {inReview > 0 && (
+                  <AttentionRow
+                    title={`${inReview} ${inReview === 1 ? 'issue' : 'issues'} waiting for review`}
+                    detail="Approve or request changes on the board"
+                    href="/issues"
+                  />
                 )}
-                {/* Placeholder items until review/run APIs exist. */}
-                <div className="px-5 py-3.5">
-                  <p className="text-sm font-semibold">
-                    2 deliverables waiting for review{' '}
-                    <span className="ml-1 rounded-sm border border-[#C9C9C9] px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-[#9B9B9B]">
-                      sample
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-[13px] text-[#6B6B6B]">API error triage · finished 10:24</p>
-                </div>
-                <div className="px-5 py-3.5">
-                  <p className="text-sm font-semibold">
-                    1 run failed overnight{' '}
-                    <span className="ml-1 rounded-sm border border-[#C9C9C9] px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-[#9B9B9B]">
-                      sample
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-[13px] text-[#6B6B6B]">Nightly dependency audit · step 2 timed out</p>
-                </div>
+                {blocked > 0 && (
+                  <AttentionRow
+                    title={`${blocked} ${blocked === 1 ? 'issue is' : 'issues are'} blocked`}
+                    detail="Unblock them so assignees can resume"
+                    href="/issues"
+                  />
+                )}
+                {failedToday > 0 && (
+                  <AttentionRow
+                    title={`${failedToday} ${failedToday === 1 ? 'run' : 'runs'} failed today`}
+                    detail="Check the run output for what went wrong"
+                  />
+                )}
+                {idle > 0 && (
+                  <AttentionRow
+                    title={`${idle} ${idle === 1 ? 'agent has' : 'agents have'} no provider key`}
+                    detail="Configure a provider to put them on duty"
+                    href="/settings/providers"
+                  />
+                )}
+                {!hasAttention && (
+                  <AttentionRow
+                    title="All clear"
+                    detail={isLoggedIn ? 'Nothing is waiting on you right now' : 'Sign in to see what needs you'}
+                  />
+                )}
               </Card>
             </section>
 
@@ -316,16 +513,24 @@ export function MonoDashboard({
 
             {/* Activity */}
             <section>
-              <SectionHead title="Activity" sample />
+              <SectionHead title="Activity" />
               <Card className="px-5 py-4">
-                <ol className="space-y-3">
-                  {SAMPLE_ACTIVITY.map((item) => (
-                    <li key={item.id} className="flex gap-3 text-[13px] leading-snug">
-                      <span className="shrink-0 font-sans text-xs text-[#9B9B9B]">{item.time}</span>
-                      <span className="text-[#3C3C3C]">{item.text}</span>
-                    </li>
-                  ))}
-                </ol>
+                {activity.length > 0 ? (
+                  <ol className="space-y-3">
+                    {activity.map((event) => (
+                      <li key={event.id} className="flex gap-3 text-[13px] leading-snug">
+                        <span className="w-10 shrink-0 font-sans text-xs text-[#9B9B9B]">
+                          {clockTime(event.occurredAt)}
+                        </span>
+                        <span className="min-w-0 text-[#3C3C3C]">{activityText(event)}</span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="py-2 text-center text-[13px] text-[#6B6B6B]">
+                    {isLoggedIn ? 'No activity yet — file an issue to get things moving.' : 'Sign in to see your feed.'}
+                  </p>
+                )}
               </Card>
             </section>
           </div>
