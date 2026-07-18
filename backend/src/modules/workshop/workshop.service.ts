@@ -16,7 +16,7 @@ import { createTeam, getTeam, saveWorkflow, updateTeamMeta, type TeamView } from
 import type { WorkflowDsl, WorkflowOrigin } from '../teams/workflow-dsl';
 
 /**
- * Roundtable sessions are in-memory by design (v1): a server restart loses
+ * Workshop sessions are in-memory by design (v1): a server restart loses
  * the running loop and server-side transcript, but the client re-seeds
  * members/messages/notes on every wake call, so history it holds survives.
  */
@@ -24,8 +24,8 @@ import type { WorkflowDsl, WorkflowOrigin } from '../teams/workflow-dsl';
 export const WHITEBOARD_COLUMNS = ['ideas', 'questions', 'actions', 'risks'] as const;
 export type WhiteboardColumn = (typeof WHITEBOARD_COLUMNS)[number];
 
-const TURN_TIMEOUT_MS = Number(process.env.ROUNDTABLE_TURN_TIMEOUT_MS || 75_000);
-const SESSION_MAX_ROUNDS = Number(process.env.ROUNDTABLE_MAX_ROUNDS || 240);
+const TURN_TIMEOUT_MS = Number(process.env.WORKSHOP_TURN_TIMEOUT_MS || 75_000);
+const SESSION_MAX_ROUNDS = Number(process.env.WORKSHOP_MAX_ROUNDS || 240);
 const MAX_SPEAKERS_PER_ROUND = 3;
 const ROUND_DELAY_MS = [500, 1400] as const;
 const BETWEEN_SPEAKER_DELAY_MS = [120, 450] as const;
@@ -42,14 +42,14 @@ const NOTE_WIDTH = 220;
 const NOTE_HEIGHT = 148;
 const NOTE_START_Y = 118;
 
-export interface RoundtableMember {
+export interface WorkshopMember {
   agentId: string;
   name: string;
   role?: string;
   description?: string;
 }
 
-export interface RoundtableMessage {
+export interface WorkshopMessage {
   id: string;
   senderId: string;
   senderName: string;
@@ -92,12 +92,12 @@ export interface WorkflowDraft {
   createdAt: string;
 }
 
-interface RoundtableSession {
+interface WorkshopSession {
   userId: string;
   sessionId: string;
   title: string;
-  members: RoundtableMember[];
-  messages: RoundtableMessage[];
+  members: WorkshopMember[];
+  messages: WorkshopMessage[];
   notes: WhiteboardNote[];
   runLogs: RunLogEntry[];
   workflowDrafts: WorkflowDraft[];
@@ -113,7 +113,7 @@ interface RoundtableSession {
   loop?: Promise<void>;
 }
 
-const sessions = new Map<string, RoundtableSession>();
+const sessions = new Map<string, WorkshopSession>();
 
 const sessionKey = (userId: string, sessionId: string) => `${userId}:${sessionId}`;
 const makeId = (prefix: string) => `${prefix}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
@@ -182,7 +182,7 @@ export function summarizeNoteText(content: string): string {
     .join('\n');
 }
 
-function buildNoteFromMessage(session: RoundtableSession, content: string, authorName: string): WhiteboardNote {
+function buildNoteFromMessage(session: WorkshopSession, content: string, authorName: string): WhiteboardNote {
   const position = defaultNotePosition(session.notes.length);
   const now = new Date().toISOString();
   return {
@@ -200,7 +200,7 @@ function buildNoteFromMessage(session: RoundtableSession, content: string, autho
 // ---------------------------------------------------------------------------
 // Speaker selection
 
-export function detectMentions(content: string, members: RoundtableMember[]): RoundtableMember[] {
+export function detectMentions(content: string, members: WorkshopMember[]): WorkshopMember[] {
   const explicit = members.filter((member) => content.includes(`@${member.name}`));
   if (explicit.length > 0) return explicit;
   if (/@(all|everyone|everybody)\b/i.test(content)) {
@@ -237,7 +237,7 @@ const RELEVANCE_GROUPS: Array<{ keywords: string[]; roles: string[]; score: numb
   },
 ];
 
-function roleRelevanceScore(member: RoundtableMember, content: string): number {
+function roleRelevanceScore(member: WorkshopMember, content: string): number {
   const profile = `${member.name} ${member.role ?? ''} ${member.description ?? ''}`.toLowerCase();
   const lower = content.toLowerCase();
   return RELEVANCE_GROUPS.reduce((score, group) => {
@@ -247,10 +247,10 @@ function roleRelevanceScore(member: RoundtableMember, content: string): number {
 }
 
 function pickMemberByTopic(
-  members: RoundtableMember[],
+  members: WorkshopMember[],
   content: string,
   round: number
-): RoundtableMember | null {
+): WorkshopMember | null {
   if (members.length === 0) return null;
   const lower = content.toLowerCase();
   const groups: Array<{ keywords: string[]; roleWords: string[] }> = [
@@ -295,16 +295,16 @@ function desiredSpeakerCount(content: string, memberCount: number, round: number
  * penalized for having just spoken or being the latest sender.
  */
 function selectSpeakers(
-  session: RoundtableSession,
+  session: WorkshopSession,
   content: string,
   latestSenderId?: string
-): RoundtableMember[] {
+): WorkshopMember[] {
   const members = session.members;
   if (members.length === 0) return [];
 
   const mentioned = session.pendingMentions
     .map((id) => members.find((member) => member.agentId === id))
-    .filter((member): member is RoundtableMember => Boolean(member));
+    .filter((member): member is WorkshopMember => Boolean(member));
   if (mentioned.length > 0) return mentioned.slice(0, MAX_SPEAKERS_PER_ROUND);
 
   const count = desiredSpeakerCount(content, members.length, session.round);
@@ -352,9 +352,9 @@ const RUNTIME_BLOCKED_ENTRIES = [
 ];
 
 const RUNTIME_GUARD_DOC = [
-  '# Roundtable Runtime',
+  '# Workshop Runtime',
   '',
-  'This directory is used only for roundtable group-chat turns.',
+  'This directory is used only for workshop group-chat turns.',
   'Use SOUL.md and the platform prompt as persona reference, then answer the current group conversation directly.',
   'Do not run bootstrap, onboarding, identity setup, or skill initialization protocols here.',
   'Do not report file status, online status, or initialization status.',
@@ -401,12 +401,12 @@ function buildRetryPrompt(prompt: string, invalidReply: string): string {
   return [
     prompt,
     '',
-    '[ROUNDTABLE_RETRY_GUARD]',
+    '[WORKSHOP_RETRY_GUARD]',
     'Your previous reply was invalid for this group chat because it reported bootstrap, identity-file, SOUL-file, initialization, or online-status information.',
     `Invalid reply excerpt: ${invalidReply.slice(0, 800)}`,
     'Reply again as the same agent. Output only a useful group-chat contribution about the current topic.',
     'Do not mention BOOTSTRAP, IDENTITY, SOUL file status, initialization, onboarding, being uninitialized, receiving the message, or being online.',
-    '[/ROUNDTABLE_RETRY_GUARD]',
+    '[/WORKSHOP_RETRY_GUARD]',
   ].join('\n');
 }
 
@@ -415,7 +415,7 @@ export interface TurnInput {
   prompt: string;
   sessionTitle?: string;
   topic?: string;
-  members: RoundtableMember[];
+  members: WorkshopMember[];
   messages: Array<{ senderName?: string; content?: string }>;
   notes: Array<{ column?: string; text?: string; authorName?: string }>;
 }
@@ -427,7 +427,7 @@ export interface TurnResult {
   content: string;
 }
 
-function buildRoundtablePrompt(agent: Agent, input: TurnInput): string {
+function buildWorkshopPrompt(agent: Agent, input: TurnInput): string {
   const members =
     input.members
       .map(
@@ -451,7 +451,7 @@ function buildRoundtablePrompt(agent: Agent, input: TurnInput): string {
     'You are one participant in a multi-agent group chat on the Loxo platform. Speak only as the agent described below; never impersonate other members.',
     `Agent: ${agent.name}`,
     agent.description ? `Description: ${sanitizeInjected(agent.description)}` : '',
-    `Roundtable: ${sanitizeInjected(input.sessionTitle || 'Untitled roundtable')}`,
+    `Workshop: ${sanitizeInjected(input.sessionTitle || 'Untitled workshop')}`,
     `Current context: ${sanitizeInjected(input.topic || 'group discussion')}`,
     '',
     'Participants:',
@@ -507,7 +507,7 @@ async function runAgentReply(
     return result.text;
   }
 
-  const runtime = storage.roundtableRuntime(userId, agent.id);
+  const runtime = storage.workshopRuntime(userId, agent.id);
   prepareRuntimeWorkspace(runtime.workspace, storage.agentPaths(userId, agent.id).workspace);
   // Fresh state dir per turn: group-chat turns must not build up CLI session
   // state or leak it into direct-chat sessions.
@@ -535,9 +535,9 @@ export function setReplyRunnerForTests(runner: ReplyRunner | null): void {
   replyRunner = runner ?? runAgentReply;
 }
 
-export async function executeRoundtableTurn(userId: string, input: TurnInput): Promise<TurnResult> {
+export async function executeWorkshopTurn(userId: string, input: TurnInput): Promise<TurnResult> {
   const agent = await getAgent(userId, input.agentId);
-  const prompt = buildRoundtablePrompt(agent, input);
+  const prompt = buildWorkshopPrompt(agent, input);
 
   let content = await replyRunner(userId, agent, prompt);
   if (content && isBootstrapNoise(content)) {
@@ -556,7 +556,7 @@ export async function executeRoundtableTurn(userId: string, input: TurnInput): P
 // Session state
 
 function pushRunLog(
-  session: RoundtableSession,
+  session: WorkshopSession,
   agentName: string,
   status: RunLogEntry['status'],
   message: string
@@ -568,14 +568,14 @@ function pushRunLog(
   session.updatedAt = new Date().toISOString();
 }
 
-function setSpeaking(session: RoundtableSession, agentName: string, speaking: boolean): void {
+function setSpeaking(session: WorkshopSession, agentName: string, speaking: boolean): void {
   session.speakingAgents = speaking
     ? Array.from(new Set([...session.speakingAgents, agentName]))
     : session.speakingAgents.filter((name) => name !== agentName);
   session.updatedAt = new Date().toISOString();
 }
 
-function mergeMessages(session: RoundtableSession, incoming: RoundtableMessage[]): void {
+function mergeMessages(session: WorkshopSession, incoming: WorkshopMessage[]): void {
   const byId = new Map(session.messages.map((m) => [m.id, m]));
   for (const message of incoming) byId.set(message.id, message);
   session.messages = [...byId.values()]
@@ -583,7 +583,7 @@ function mergeMessages(session: RoundtableSession, incoming: RoundtableMessage[]
     .slice(-MESSAGE_CAP);
 }
 
-function mergeNotes(session: RoundtableSession, incoming: WhiteboardNote[]): void {
+function mergeNotes(session: WorkshopSession, incoming: WhiteboardNote[]): void {
   const byId = new Map(session.notes.map((n) => [n.id, n]));
   for (const note of incoming) byId.set(note.id, note);
   session.notes = [...byId.values()]
@@ -591,7 +591,7 @@ function mergeNotes(session: RoundtableSession, incoming: WhiteboardNote[]): voi
     .slice(-NOTE_CAP);
 }
 
-function getOrCreateSession(userId: string, sessionId: string, title?: string): RoundtableSession {
+function getOrCreateSession(userId: string, sessionId: string, title?: string): WorkshopSession {
   const key = sessionKey(userId, sessionId);
   const existing = sessions.get(key);
   if (existing) {
@@ -601,10 +601,10 @@ function getOrCreateSession(userId: string, sessionId: string, title?: string): 
   }
 
   const now = new Date().toISOString();
-  const session: RoundtableSession = {
+  const session: WorkshopSession = {
     userId,
     sessionId,
-    title: title?.trim() || 'Roundtable',
+    title: title?.trim() || 'Workshop',
     members: [],
     messages: [],
     notes: [],
@@ -630,8 +630,8 @@ export interface SessionState {
   active: boolean;
   stopRequested: boolean;
   round: number;
-  members: RoundtableMember[];
-  messages: RoundtableMessage[];
+  members: WorkshopMember[];
+  messages: WorkshopMessage[];
   notes: WhiteboardNote[];
   runLogs: RunLogEntry[];
   workflowDrafts: WorkflowDraft[];
@@ -639,7 +639,7 @@ export interface SessionState {
   updatedAt: string;
 }
 
-function serializeSession(session: RoundtableSession): SessionState {
+function serializeSession(session: WorkshopSession): SessionState {
   return {
     sessionId: session.sessionId,
     title: session.title,
@@ -678,7 +678,7 @@ function emptySessionState(sessionId: string): SessionState {
 
 const mergeUniqueIds = (...groups: string[][]) => [...new Set(groups.flat().filter(Boolean))];
 
-function updateAfterSpeakers(session: RoundtableSession, speakers: RoundtableMember[]): void {
+function updateAfterSpeakers(session: WorkshopSession, speakers: WorkshopMember[]): void {
   const spoke = new Set(speakers.map((s) => s.agentId));
   session.lastSpeakerIds = speakers.map((s) => s.agentId);
   session.silenceRounds = Object.fromEntries(
@@ -689,18 +689,18 @@ function updateAfterSpeakers(session: RoundtableSession, speakers: RoundtableMem
   );
 }
 
-async function runSessionLoop(session: RoundtableSession): Promise<void> {
+async function runSessionLoop(session: WorkshopSession): Promise<void> {
   if (session.loop) return session.loop;
 
   session.loop = (async () => {
     session.active = true;
     session.stopRequested = false;
-    pushRunLog(session, 'Roundtable', 'running', 'Discussion started. Say "stop this topic" to stop.');
+    pushRunLog(session, 'Workshop', 'running', 'Discussion started. Say "stop this topic" to stop.');
 
     try {
       while (session.active && !session.stopRequested && session.round < SESSION_MAX_ROUNDS) {
         if (session.members.length === 0) {
-          pushRunLog(session, 'Roundtable', 'error', 'No members in the session; paused.');
+          pushRunLog(session, 'Workshop', 'error', 'No members in the session; paused.');
           break;
         }
 
@@ -722,7 +722,7 @@ async function runSessionLoop(session: RoundtableSession): Promise<void> {
         }
         if (speakers.length === 0) break;
 
-        const completed: RoundtableMember[] = [];
+        const completed: WorkshopMember[] = [];
         for (const speaker of speakers) {
           if (!session.active || session.stopRequested) break;
 
@@ -736,7 +736,7 @@ async function runSessionLoop(session: RoundtableSession): Promise<void> {
               .map((m) => ({ senderName: m.senderName, content: m.content }));
             const prompt = liveHistory[liveHistory.length - 1]?.content || content;
 
-            const result = await executeRoundtableTurn(session.userId, {
+            const result = await executeWorkshopTurn(session.userId, {
               agentId: speaker.agentId,
               prompt,
               sessionTitle: session.title,
@@ -796,7 +796,7 @@ async function runSessionLoop(session: RoundtableSession): Promise<void> {
 
         if (completed.length === 0) {
           session.stopRequested = true;
-          pushRunLog(session, 'Roundtable', 'error', 'No agent replied successfully this round; paused.');
+          pushRunLog(session, 'Workshop', 'error', 'No agent replied successfully this round; paused.');
           break;
         }
 
@@ -818,7 +818,7 @@ async function runSessionLoop(session: RoundtableSession): Promise<void> {
       session.loop = undefined;
       session.updatedAt = new Date().toISOString();
       if (reachedLimit) {
-        pushRunLog(session, 'Roundtable', 'success', 'Round limit reached; discussion paused.');
+        pushRunLog(session, 'Workshop', 'success', 'Round limit reached; discussion paused.');
       }
     }
   })();
@@ -832,8 +832,8 @@ async function runSessionLoop(session: RoundtableSession): Promise<void> {
 export interface WakeInput {
   title?: string;
   userMessage: { content: string; senderName?: string };
-  members: RoundtableMember[];
-  messages?: RoundtableMessage[];
+  members: WorkshopMember[];
+  messages?: WorkshopMessage[];
   notes?: WhiteboardNote[];
 }
 
@@ -851,7 +851,7 @@ export function postSessionMessage(userId: string, sessionId: string, input: Wak
   mergeMessages(session, input.messages ?? []);
   mergeNotes(session, (input.notes ?? []).map((note, index) => normalizeNote(note, index)));
 
-  const userMessage: RoundtableMessage = {
+  const userMessage: WorkshopMessage = {
     id: makeId('msg'),
     senderId: 'user',
     senderName: input.userMessage.senderName?.trim() || 'You',
@@ -870,12 +870,12 @@ export function postSessionMessage(userId: string, sessionId: string, input: Wak
     session.stopRequested = true;
     session.active = false;
     session.speakingAgents = [];
-    pushRunLog(session, 'Roundtable', 'success', 'Topic stopped.');
+    pushRunLog(session, 'Workshop', 'success', 'Topic stopped.');
     return serializeSession(session);
   }
 
   if (session.members.length === 0) {
-    pushRunLog(session, 'Roundtable', 'error', 'No members yet; invite agents first.');
+    pushRunLog(session, 'Workshop', 'error', 'No members yet; invite agents first.');
     return serializeSession(session);
   }
 
@@ -889,7 +889,7 @@ export function postSessionMessage(userId: string, sessionId: string, input: Wak
       session.loop = undefined;
       pushRunLog(
         session,
-        'Roundtable',
+        'Workshop',
         'error',
         error instanceof Error ? error.message : 'Discussion loop crashed'
       );
@@ -909,7 +909,7 @@ function normalizeNote(raw: Partial<WhiteboardNote>, index: number): WhiteboardN
       ? (raw.column as WhiteboardColumn)
       : 'ideas',
     text: (raw.text ?? '').trim(),
-    authorName: raw.authorName?.trim() || 'Roundtable',
+    authorName: raw.authorName?.trim() || 'Workshop',
     x: position.x,
     y: position.y,
     createdAt,
@@ -928,7 +928,7 @@ export function stopSession(userId: string, sessionId: string): SessionState {
   session.stopRequested = true;
   session.active = false;
   session.speakingAgents = [];
-  pushRunLog(session, 'Roundtable', 'success', 'Topic stopped.');
+  pushRunLog(session, 'Workshop', 'success', 'Topic stopped.');
   return serializeSession(session);
 }
 
@@ -958,7 +958,7 @@ export function updateSessionNote(
 // Workflow drafts: whiteboard consensus -> proposed DSL -> confirmed Team
 
 function buildDraftPrompt(
-  session: RoundtableSession,
+  session: WorkshopSession,
   feedback?: string,
   previous?: WorkflowDraft
 ): string {
@@ -976,7 +976,7 @@ function buildDraftPrompt(
     .join('\n');
 
   const parts = [
-    `Roundtable topic: ${session.title}`,
+    `Workshop topic: ${session.title}`,
     'The whiteboard below is the converged consensus of a team discussion.',
     'Design a workflow that turns these notes into an executable multi-agent plan.',
     '',
@@ -1001,7 +1001,7 @@ function buildDraftPrompt(
 
 export interface DraftRequest {
   title?: string;
-  members?: RoundtableMember[];
+  members?: WorkshopMember[];
   notes?: WhiteboardNote[];
   feedback?: string;
   previousDraftId?: string;
@@ -1026,7 +1026,7 @@ export async function generateSessionWorkflowDraft(
     : undefined;
   if (input.previousDraftId && !previous) throw notFound('Previous draft not found');
 
-  pushRunLog(session, 'Roundtable', 'running', 'Generating a workflow draft from the whiteboard…');
+  pushRunLog(session, 'Workshop', 'running', 'Generating a workflow draft from the whiteboard…');
   const result = await generateWorkflow(userId, buildDraftPrompt(session, input.feedback, previous));
 
   const draft: WorkflowDraft = {
@@ -1048,13 +1048,13 @@ export async function generateSessionWorkflowDraft(
     {
       id: makeId('msg'),
       senderId: 'system',
-      senderName: 'Roundtable',
+      senderName: 'Workshop',
       content: `Workflow draft v${draft.revision}: "${result.workflow.name}" — ${agentSteps} agent step(s) from ${noteCount} whiteboard note(s). Confirm it as a team or regenerate with feedback.`,
       sentAt: draft.createdAt,
       draftId: draft.id,
     },
   ]);
-  pushRunLog(session, 'Roundtable', 'success', `Workflow draft v${draft.revision} ready (${draft.generator}).`);
+  pushRunLog(session, 'Workshop', 'success', `Workflow draft v${draft.revision} ready (${draft.generator}).`);
   session.updatedAt = new Date().toISOString();
   return { draft, state: serializeSession(session) };
 }
@@ -1075,7 +1075,7 @@ export async function confirmSessionWorkflowDraft(
   const existing = input.teamId ? await getTeam(userId, input.teamId) : null;
   const version = existing ? (existing.workflow.metadata?.version ?? 1) + 1 : 1;
   const origin: WorkflowOrigin = {
-    kind: 'roundtable',
+    kind: 'workshop',
     sessionId: session.sessionId,
     sessionTitle: session.title,
     revision: draft.revision,
@@ -1111,13 +1111,13 @@ export async function confirmSessionWorkflowDraft(
     {
       id: makeId('msg'),
       senderId: 'system',
-      senderName: 'Roundtable',
+      senderName: 'Workshop',
       content: `Workflow draft v${draft.revision} confirmed as team "${team.name}" (workflow v${version}).`,
       sentAt: new Date().toISOString(),
       draftId: draft.id,
     },
   ]);
-  pushRunLog(session, 'Roundtable', 'success', `Team "${team.name}" saved (workflow v${version}).`);
+  pushRunLog(session, 'Workshop', 'success', `Team "${team.name}" saved (workflow v${version}).`);
   session.updatedAt = new Date().toISOString();
   return { team, state: serializeSession(session) };
 }

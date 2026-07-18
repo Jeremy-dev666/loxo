@@ -4,20 +4,20 @@ import { badRequest } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
 import {
   confirmSessionWorkflowDraft,
-  executeRoundtableTurn,
+  executeWorkshopTurn,
   generateSessionWorkflowDraft,
   getSessionState,
   postSessionMessage,
   stopSession,
   updateSessionNote,
   WHITEBOARD_COLUMNS,
-  type RoundtableMember,
+  type WorkshopMember,
   type WhiteboardColumn,
   type WhiteboardNote,
-} from './roundtable.service';
+} from './workshop.service';
 
-export const roundtableRouter = Router();
-roundtableRouter.use(requireAuth);
+export const workshopRouter = Router();
+workshopRouter.use(requireAuth);
 
 function parseOr400<S extends z.ZodTypeAny>(schema: S, value: unknown): z.output<S> {
   const parsed = schema.safeParse(value);
@@ -58,10 +58,10 @@ const turnSchema = z.object({
     .default([]),
 });
 
-roundtableRouter.post('/turn', async (req: AuthedRequest, res, next) => {
+workshopRouter.post('/turn', async (req: AuthedRequest, res, next) => {
   try {
     const input = parseOr400(turnSchema, req.body);
-    res.json(await executeRoundtableTurn(req.auth!.userId, input));
+    res.json(await executeWorkshopTurn(req.auth!.userId, input));
   } catch (error) {
     next(error);
   }
@@ -103,14 +103,14 @@ const messageSchema = z.object({
     .optional(),
 });
 
-roundtableRouter.post('/sessions/:sessionId/messages', (req: AuthedRequest, res, next) => {
+workshopRouter.post('/sessions/:sessionId/messages', (req: AuthedRequest, res, next) => {
   try {
     const sessionId = parseOr400(sessionIdSchema, req.params.sessionId);
     const input = parseOr400(messageSchema, req.body);
     res.json(
       postSessionMessage(req.auth!.userId, sessionId, {
         ...input,
-        members: input.members as RoundtableMember[],
+        members: input.members as WorkshopMember[],
         messages: input.messages ?? [],
         notes: (input.notes ?? []) as never,
       })
@@ -120,7 +120,7 @@ roundtableRouter.post('/sessions/:sessionId/messages', (req: AuthedRequest, res,
   }
 });
 
-roundtableRouter.get('/sessions/:sessionId', (req: AuthedRequest, res, next) => {
+workshopRouter.get('/sessions/:sessionId', (req: AuthedRequest, res, next) => {
   try {
     const sessionId = parseOr400(sessionIdSchema, req.params.sessionId);
     res.json(getSessionState(req.auth!.userId, sessionId));
@@ -129,7 +129,7 @@ roundtableRouter.get('/sessions/:sessionId', (req: AuthedRequest, res, next) => 
   }
 });
 
-roundtableRouter.post('/sessions/:sessionId/stop', (req: AuthedRequest, res, next) => {
+workshopRouter.post('/sessions/:sessionId/stop', (req: AuthedRequest, res, next) => {
   try {
     const sessionId = parseOr400(sessionIdSchema, req.params.sessionId);
     res.json(stopSession(req.auth!.userId, sessionId));
@@ -157,14 +157,14 @@ const draftRequestSchema = z.object({
   previousDraftId: z.string().max(80).optional(),
 });
 
-roundtableRouter.post('/sessions/:sessionId/workflow-drafts', async (req: AuthedRequest, res, next) => {
+workshopRouter.post('/sessions/:sessionId/workflow-drafts', async (req: AuthedRequest, res, next) => {
   try {
     const sessionId = parseOr400(sessionIdSchema, req.params.sessionId);
     const input = parseOr400(draftRequestSchema, req.body);
     res.json(
       await generateSessionWorkflowDraft(req.auth!.userId, sessionId, {
         ...input,
-        members: input.members as RoundtableMember[] | undefined,
+        members: input.members as WorkshopMember[] | undefined,
         notes: input.notes as WhiteboardNote[] | undefined,
       })
     );
@@ -179,7 +179,7 @@ const draftConfirmSchema = z.object({
   teamId: z.string().uuid().optional(),
 });
 
-roundtableRouter.post(
+workshopRouter.post(
   '/sessions/:sessionId/workflow-drafts/:draftId/confirm',
   async (req: AuthedRequest, res, next) => {
     try {
@@ -201,7 +201,7 @@ const notePatchSchema = z.object({
   text: z.string().min(1).max(2000).optional(),
 });
 
-roundtableRouter.patch('/sessions/:sessionId/notes/:noteId', (req: AuthedRequest, res, next) => {
+workshopRouter.patch('/sessions/:sessionId/notes/:noteId', (req: AuthedRequest, res, next) => {
   try {
     const sessionId = parseOr400(sessionIdSchema, req.params.sessionId);
     const patch = parseOr400(notePatchSchema, req.body);

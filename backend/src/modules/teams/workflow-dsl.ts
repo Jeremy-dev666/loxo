@@ -86,9 +86,9 @@ export interface WorkflowDsl {
   };
 }
 
-/** Provenance for workflows crystallized out of a roundtable discussion. */
+/** Provenance for workflows crystallized out of a workshop discussion. */
 export interface WorkflowOrigin {
-  kind: 'roundtable';
+  kind: 'workshop';
   sessionId: string;
   sessionTitle: string;
   revision: number;

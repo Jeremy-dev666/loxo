@@ -11,7 +11,7 @@ import { toHostPath } from './host-path';
  *       agents/<agentId>/{workspace,baseline,snapshots,state}
  *       projects/<projectId>/workspace
  *       teams/<teamId>/runs/<runId>/{workspace,artifacts,logs}
- *     runtime/roundtable/<userId>/<agentId>/{workspace,state}
+ *     runtime/workshop/<userId>/<agentId>/{workspace,state}
  *
  * Agent runtime state lives beside the workspace, not inside it, so
  * publishing and workspace diffing never have to filter state files out.
@@ -38,7 +38,7 @@ export interface StorageLayout {
     teamId: string,
     runId: string
   ) => { root: string; workspace: string; artifacts: string; logs: string };
-  roundtableRuntime: (userId: string, agentId: string) => { workspace: string; state: string };
+  workshopRuntime: (userId: string, agentId: string) => { workspace: string; state: string };
 }
 
 function ensured(dir: string): string {
@@ -79,8 +79,8 @@ export function createStorageLayout(rootInput: string): StorageLayout {
         logs: ensured(path.join(runRoot, 'logs')),
       };
     },
-    roundtableRuntime: (userId, agentId) => {
-      const base = path.join(root, 'runtime', 'roundtable', userId, agentId);
+    workshopRuntime: (userId, agentId) => {
+      const base = path.join(root, 'runtime', 'workshop', userId, agentId);
       return {
         workspace: ensured(path.join(base, 'workspace')),
         state: ensured(path.join(base, 'state')),

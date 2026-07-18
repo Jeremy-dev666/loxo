@@ -43,10 +43,10 @@ beforeAll(async () => {
   }
 });
 
-describe('roundtable workflow drafts', () => {
+describe('workshop workflow drafts', () => {
   it('rejects generation when the whiteboard is empty', async () => {
     const res = await request(app)
-      .post('/api/roundtable/sessions/empty-board/workflow-drafts')
+      .post('/api/workshop/sessions/empty-board/workflow-drafts')
       .set(auth())
       .send({ title: 'Empty board' });
     expect(res.status).toBe(400);
@@ -55,7 +55,7 @@ describe('roundtable workflow drafts', () => {
 
   it('generates a proposed draft from seeded whiteboard notes', async () => {
     const res = await request(app)
-      .post('/api/roundtable/sessions/draft-flow/workflow-drafts')
+      .post('/api/workshop/sessions/draft-flow/workflow-drafts')
       .set(auth())
       .send(draftBody());
     expect(res.status).toBe(200);
@@ -76,11 +76,11 @@ describe('roundtable workflow drafts', () => {
 
   it('regenerates with feedback and supersedes the previous draft', async () => {
     const first = await request(app)
-      .post('/api/roundtable/sessions/draft-revise/workflow-drafts')
+      .post('/api/workshop/sessions/draft-revise/workflow-drafts')
       .set(auth())
       .send(draftBody());
     const second = await request(app)
-      .post('/api/roundtable/sessions/draft-revise/workflow-drafts')
+      .post('/api/workshop/sessions/draft-revise/workflow-drafts')
       .set(auth())
       .send(draftBody({ feedback: 'Add a review gate before the end', previousDraftId: first.body.draft.id }));
 
@@ -95,21 +95,21 @@ describe('roundtable workflow drafts', () => {
 
   it('404s when regenerating from an unknown previous draft', async () => {
     const res = await request(app)
-      .post('/api/roundtable/sessions/draft-flow/workflow-drafts')
+      .post('/api/workshop/sessions/draft-flow/workflow-drafts')
       .set(auth())
       .send(draftBody({ previousDraftId: 'draft-nope', feedback: 'x' }));
     expect(res.status).toBe(404);
   });
 
-  it('confirms a draft into a team with version and roundtable origin', async () => {
+  it('confirms a draft into a team with version and workshop origin', async () => {
     const gen = await request(app)
-      .post('/api/roundtable/sessions/draft-confirm/workflow-drafts')
+      .post('/api/workshop/sessions/draft-confirm/workflow-drafts')
       .set(auth())
       .send(draftBody());
     const draftId = gen.body.draft.id as string;
 
     const confirm = await request(app)
-      .post(`/api/roundtable/sessions/draft-confirm/workflow-drafts/${draftId}/confirm`)
+      .post(`/api/workshop/sessions/draft-confirm/workflow-drafts/${draftId}/confirm`)
       .set(auth())
       .send({ name: 'Release Notes Crew' });
     expect(confirm.status).toBe(200);
@@ -126,12 +126,12 @@ describe('roundtable workflow drafts', () => {
     expect(team.status).toBe(200);
     const metadata = team.body.team.workflow.metadata;
     expect(metadata.version).toBe(1);
-    expect(metadata.origin.kind).toBe('roundtable');
+    expect(metadata.origin.kind).toBe('workshop');
     expect(metadata.origin.sessionId).toBe('draft-confirm');
     expect(metadata.origin.notes).toHaveLength(seedNotes.length);
 
     const again = await request(app)
-      .post(`/api/roundtable/sessions/draft-confirm/workflow-drafts/${draftId}/confirm`)
+      .post(`/api/workshop/sessions/draft-confirm/workflow-drafts/${draftId}/confirm`)
       .set(auth())
       .send({});
     expect(again.status).toBe(400);
@@ -140,21 +140,21 @@ describe('roundtable workflow drafts', () => {
 
   it('bumps the workflow version when confirming into an existing team', async () => {
     const gen1 = await request(app)
-      .post('/api/roundtable/sessions/draft-version/workflow-drafts')
+      .post('/api/workshop/sessions/draft-version/workflow-drafts')
       .set(auth())
       .send(draftBody());
     const c1 = await request(app)
-      .post(`/api/roundtable/sessions/draft-version/workflow-drafts/${gen1.body.draft.id}/confirm`)
+      .post(`/api/workshop/sessions/draft-version/workflow-drafts/${gen1.body.draft.id}/confirm`)
       .set(auth())
       .send({ name: 'Versioned Crew' });
     const teamId = c1.body.team.id as string;
 
     const gen2 = await request(app)
-      .post('/api/roundtable/sessions/draft-version/workflow-drafts')
+      .post('/api/workshop/sessions/draft-version/workflow-drafts')
       .set(auth())
       .send(draftBody({ feedback: 'Tighten the flow', previousDraftId: gen1.body.draft.id }));
     const c2 = await request(app)
-      .post(`/api/roundtable/sessions/draft-version/workflow-drafts/${gen2.body.draft.id}/confirm`)
+      .post(`/api/workshop/sessions/draft-version/workflow-drafts/${gen2.body.draft.id}/confirm`)
       .set(auth())
       .send({ teamId });
     expect(c2.status).toBe(200);

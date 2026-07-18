@@ -8,7 +8,7 @@ import {
   isBootstrapNoise,
   setReplyRunnerForTests,
   summarizeNoteText,
-} from '../src/modules/roundtable/roundtable.service';
+} from '../src/modules/workshop/workshop.service';
 
 const app = createApp();
 let token = '';
@@ -40,7 +40,7 @@ async function pollUntil(
 }> {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
-    const res = await request(app).get(`/api/roundtable/sessions/${sessionId}`).set(auth());
+    const res = await request(app).get(`/api/workshop/sessions/${sessionId}`).set(auth());
     if (predicate(res.body) || Date.now() > deadline) return res.body;
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
@@ -49,8 +49,8 @@ async function pollUntil(
 beforeAll(async () => {
   await pool.query('TRUNCATE TABLE users CASCADE');
   const reg = await request(app).post('/auth/register').send({
-    email: 'roundtable@example.com',
-    username: 'roundtableuser',
+    email: 'workshop@example.com',
+    username: 'workshopuser',
     password: 'a-strong-password',
   });
   token = reg.body.token;
@@ -111,12 +111,12 @@ describe('single turn', () => {
     let calls = 0;
     setReplyRunnerForTests(async (_userId, _agent, prompt) => {
       calls += 1;
-      if (calls === 2) expect(prompt).toContain('ROUNDTABLE_RETRY_GUARD');
+      if (calls === 2) expect(prompt).toContain('WORKSHOP_RETRY_GUARD');
       return replies[calls - 1]!;
     });
 
     const res = await request(app)
-      .post('/api/roundtable/turn')
+      .post('/api/workshop/turn')
       .set(auth())
       .send({
         agentId: agentIds[1],
@@ -132,7 +132,7 @@ describe('single turn', () => {
 
   it('404s for agents the user does not own', async () => {
     const res = await request(app)
-      .post('/api/roundtable/turn')
+      .post('/api/workshop/turn')
       .set(auth())
       .send({
         agentId: '00000000-0000-4000-8000-000000000000',
@@ -153,7 +153,7 @@ describe('session loop', () => {
     });
 
     const start = await request(app)
-      .post('/api/roundtable/sessions/loop-session/messages')
+      .post('/api/workshop/sessions/loop-session/messages')
       .set(auth())
       .send({
         title: 'Design review',
@@ -179,10 +179,10 @@ describe('session loop', () => {
   }, 30_000);
 
   it('supports whiteboard note drag updates', async () => {
-    const state = await request(app).get('/api/roundtable/sessions/loop-session').set(auth());
+    const state = await request(app).get('/api/workshop/sessions/loop-session').set(auth());
     const note = state.body.notes[0];
     const res = await request(app)
-      .patch(`/api/roundtable/sessions/loop-session/notes/${note.id}`)
+      .patch(`/api/workshop/sessions/loop-session/notes/${note.id}`)
       .set(auth())
       .send({ x: 400, y: 300, column: 'risks' });
     expect(res.status).toBe(200);
@@ -192,7 +192,7 @@ describe('session loop', () => {
   it('stops immediately when the user message is a stop phrase', async () => {
     setReplyRunnerForTests(async () => 'should never be called');
     const res = await request(app)
-      .post('/api/roundtable/sessions/stop-session/messages')
+      .post('/api/workshop/sessions/stop-session/messages')
       .set(auth())
       .send({
         userMessage: { content: 'ok, stop this topic' },
@@ -207,7 +207,7 @@ describe('session loop', () => {
       throw new Error('CLI unavailable');
     });
     await request(app)
-      .post('/api/roundtable/sessions/fail-session/messages')
+      .post('/api/workshop/sessions/fail-session/messages')
       .set(auth())
       .send({
         userMessage: { content: 'Anyone there?' },
@@ -224,7 +224,7 @@ describe('session loop', () => {
       () => new Promise((resolve) => setTimeout(() => resolve('slow reply'), 500))
     );
     await request(app)
-      .post('/api/roundtable/sessions/halt-session/messages')
+      .post('/api/workshop/sessions/halt-session/messages')
       .set(auth())
       .send({
         userMessage: { content: 'Let us discuss something long-running' },
@@ -232,7 +232,7 @@ describe('session loop', () => {
       });
 
     const stopped = await request(app)
-      .post('/api/roundtable/sessions/halt-session/stop')
+      .post('/api/workshop/sessions/halt-session/stop')
       .set(auth());
     expect(stopped.body.stopRequested).toBe(true);
 

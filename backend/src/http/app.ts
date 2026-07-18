@@ -8,7 +8,7 @@ import { integrationsRouter } from '../modules/integrations/integrations.routes'
 import { machinesRouter } from '../modules/machines/machines.routes';
 import { memosRouter } from '../modules/memory/memos.routes';
 import { marketRouter } from '../modules/market/market.routes';
-import { roundtableRouter } from '../modules/roundtable/roundtable.routes';
+import { workshopRouter } from '../modules/workshop/workshop.routes';
 import { communityRouter } from '../modules/community/community.routes';
 import { dashboardRouter } from '../modules/dashboard/dashboard.routes';
 import { goalsRouter } from '../modules/goals/goals.routes';
@@ -56,7 +56,7 @@ export function createApp(): express.Express {
   app.use('/api/agent-groups', groupsRouter);
   app.use('/api/conversations', conversationsRouter);
   app.use('/api/market', marketRouter);
-  app.use('/api/roundtable', roundtableRouter);
+  app.use('/api/workshop', workshopRouter);
   app.use('/api/community', communityRouter);
   app.use('/api/teams', teamsRouter);
   app.use('/api/projects', projectsRouter);
