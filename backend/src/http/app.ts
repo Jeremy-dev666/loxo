@@ -10,6 +10,7 @@ import { memosRouter } from '../modules/memory/memos.routes';
 import { marketRouter } from '../modules/market/market.routes';
 import { roundtableRouter } from '../modules/roundtable/roundtable.routes';
 import { communityRouter } from '../modules/community/community.routes';
+import { dashboardRouter } from '../modules/dashboard/dashboard.routes';
 import { goalsRouter } from '../modules/goals/goals.routes';
 import { issuesRouter } from '../modules/issues/issues.routes';
 import { projectsRouter } from '../modules/projects/projects.routes';
@@ -62,6 +63,7 @@ export function createApp(): express.Express {
   app.use('/api/goals', goalsRouter);
   app.use('/api/issues', issuesRouter);
   app.use('/api/runs', runsRouter);
+  app.use('/api/dashboard', dashboardRouter);
 
   // Agent control plane; authenticated by per-run tokens, not user JWTs.
   app
