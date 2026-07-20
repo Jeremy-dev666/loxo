@@ -84,6 +84,8 @@ export interface AgentManifest {
   };
 }
 
+export type AgentPermissionLevel = 'read_only' | 'edit' | 'full';
+
 /**
  * Workspace/baseline/state paths are derived from (userId, agentId) via the
  * storage layout and intentionally not stored.
@@ -112,6 +114,12 @@ export const agents = pgTable('agents', {
     onDelete: 'set null',
   }),
   machineWorkdir: text('machine_workdir'),
+  /**
+   * Ceiling for code-execution runs. A run may resolve lower (review runs are
+   * forced to read_only) but never higher; raising to full requires explicit
+   * user confirmation and imported agents always reset to edit.
+   */
+  permissionLevel: text('permission_level').$type<AgentPermissionLevel>().notNull().default('edit'),
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -815,6 +823,15 @@ export const issueReviews = pgTable(
     }),
     /** Review run that produced this verdict, when an agent reviewed. */
     runId: uuid('run_id').references(() => runs.id, { onDelete: 'set null' }),
+    /**
+     * Code reviews: the change snapshot this verdict applies to. An approval
+     * authorizes finalization only while the workspace content still matches
+     * the snapshot's fingerprint; any later change makes it stale.
+     */
+    changeSnapshotId: uuid('change_snapshot_id').references(
+      (): AnyPgColumn => runChangeSnapshots.id,
+      { onDelete: 'set null' }
+    ),
     decision: text('decision').$type<ReviewDecision>().notNull(),
     body: text('body').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -829,3 +846,181 @@ export const issueReviews = pgTable(
 );
 
 export type IssueReview = typeof issueReviews.$inferSelect;
+
+export type RepositoryLocation = 'server' | 'machine';
+
+export type CleanupPolicy = 'manual' | 'after_merge';
+
+/**
+ * Git repository bound to a project for code execution. The activeMerge*
+ * columns form a compare-and-set lock: at most one workspace may mutate the
+ * primary checkout, and the persisted operation id and pre-merge HEAD let
+ * crash recovery prove whether an interrupted merge never started, aborted,
+ * or completed — staleness is never inferred from age alone.
+ */
+export const projectRepositories = pgTable(
+  'project_repositories',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    location: text('location').$type<RepositoryLocation>().notNull(),
+    /** Deleting a machine with a bound repository is blocked, not silently unbound. */
+    machineId: uuid('machine_id').references(() => machines.id, { onDelete: 'restrict' }),
+    /** Primary checkout root. Null for server repositories, which use the project workspace. */
+    rootPath: text('root_path'),
+    /** Must resolve to a local branch under refs/heads/; the only valid merge target. */
+    defaultBaseRef: text('default_base_ref').notNull().default('main'),
+    branchPrefix: text('branch_prefix').notNull().default('swarmdev'),
+    cleanupPolicy: text('cleanup_policy').$type<CleanupPolicy>().notNull().default('manual'),
+    /** Stable repo identity (root, common dir, initial commit, remote); a change invalidates workspace reuse. */
+    repositoryFingerprint: text('repository_fingerprint'),
+    activeMergeWorkspaceId: uuid('active_merge_workspace_id').references(
+      (): AnyPgColumn => executionWorkspaces.id,
+      { onDelete: 'set null' }
+    ),
+    activeMergeOperationId: text('active_merge_operation_id'),
+    activeMergePreHead: text('active_merge_pre_head'),
+    activeMergeStartedAt: timestamp('active_merge_started_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('project_repositories_project').on(t.projectId),
+    check(
+      'project_repositories_machine_binding',
+      sql`NOT (${t.location} = 'machine' AND (${t.machineId} IS NULL OR ${t.rootPath} IS NULL))`
+    ),
+  ]
+);
+
+export type ProjectRepository = typeof projectRepositories.$inferSelect;
+
+export type ExecutionWorkspaceStatus =
+  | 'preparing'
+  | 'ready'
+  | 'dirty'
+  | 'conflicted'
+  | 'merged'
+  | 'retained'
+  | 'abandoned'
+  | 'missing'
+  | 'error';
+
+export const EXECUTION_WORKSPACE_TERMINAL_STATUSES = [
+  'merged',
+  'retained',
+  'abandoned',
+] as const satisfies readonly ExecutionWorkspaceStatus[];
+
+/**
+ * Issue-scoped git worktree. Status records only observable filesystem and
+ * Git facts — review and approval state live on the issue and issue_reviews.
+ * merged (landed on base), retained (branch kept, issue done) and abandoned
+ * (work discarded, issue cancelled) are distinct terminal outcomes; the
+ * partial unique index enforces at most one active workspace per issue.
+ */
+export const executionWorkspaces = pgTable(
+  'execution_workspaces',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    issueId: uuid('issue_id')
+      .notNull()
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    /** Survives repository unbinding so terminal rows keep their audit value. */
+    repositoryId: uuid('repository_id').references(() => projectRepositories.id, {
+      onDelete: 'set null',
+    }),
+    location: text('location').$type<RepositoryLocation>().notNull(),
+    machineId: uuid('machine_id').references(() => machines.id, { onDelete: 'set null' }),
+    /** Generated by the workspace driver; never supplied by the client. */
+    worktreePath: text('worktree_path').notNull(),
+    branchName: text('branch_name').notNull(),
+    baseRef: text('base_ref').notNull(),
+    /** Immutable creation point; cumulative diffs and change fingerprints are relative to it. */
+    baseCommit: text('base_commit').notNull(),
+    headCommit: text('head_commit'),
+    status: text('status').$type<ExecutionWorkspaceStatus>().notNull().default('preparing'),
+    lastRunId: uuid('last_run_id').references(() => runs.id, { onDelete: 'set null' }),
+    lastError: text('last_error'),
+    preparedAt: timestamp('prepared_at', { withTimezone: true }),
+    mergedAt: timestamp('merged_at', { withTimezone: true }),
+    retainedAt: timestamp('retained_at', { withTimezone: true }),
+    abandonedAt: timestamp('abandoned_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('execution_workspaces_issue_active')
+      .on(t.issueId)
+      .where(sql`${t.status} NOT IN ('merged', 'retained', 'abandoned')`),
+    index('execution_workspaces_repository_status').on(t.repositoryId, t.status),
+    index('execution_workspaces_user_status').on(t.userId, t.status),
+  ]
+);
+
+export type ExecutionWorkspace = typeof executionWorkspaces.$inferSelect;
+
+/** Per-file view of a captured change set; paths are repo-relative. */
+export interface ChangeSummary {
+  files: { path: string; status: string; additions: number; deletions: number }[];
+  untracked: string[];
+}
+
+/**
+ * Platform-collected git evidence for one run. The patch is cumulative
+ * against the run's starting commit, so commits the agent created itself are
+ * covered. changeFingerprint is content-only relative to the workspace base
+ * commit (no HEAD, commit ids, or author metadata), so a checkpoint commit
+ * of identical content leaves it — and any approval bound to it — unchanged.
+ */
+export const runChangeSnapshots = pgTable(
+  'run_change_snapshots',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => runs.id, { onDelete: 'cascade' }),
+    /** Nullable so snapshots outlive their workspace row, mirroring runs vs issues. */
+    executionWorkspaceId: uuid('execution_workspace_id').references(
+      () => executionWorkspaces.id,
+      { onDelete: 'set null' }
+    ),
+    beforeHead: text('before_head').notNull(),
+    afterHead: text('after_head').notNull(),
+    changedFiles: integer('changed_files').notNull().default(0),
+    additions: integer('additions').notNull().default(0),
+    deletions: integer('deletions').notNull().default(0),
+    /** Pre-run state, kept so pre-existing dirt is distinguishable from run output. */
+    beforeSummaryJson: jsonb('before_summary_json')
+      .$type<ChangeSummary>()
+      .notNull()
+      .default({ files: [], untracked: [] }),
+    afterSummaryJson: jsonb('after_summary_json')
+      .$type<ChangeSummary>()
+      .notNull()
+      .default({ files: [], untracked: [] }),
+    changeFingerprint: text('change_fingerprint').notNull(),
+    patchStorageKey: text('patch_storage_key'),
+    patchTruncated: boolean('patch_truncated').notNull().default(false),
+    /** A read-only run mutated tracked files; blocks automated verdicts. */
+    policyViolation: boolean('policy_violation').notNull().default(false),
+    capturedAt: timestamp('captured_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('run_change_snapshots_run').on(t.runId),
+    index('run_change_snapshots_workspace').on(t.executionWorkspaceId),
+  ]
+);
+
+export type RunChangeSnapshot = typeof runChangeSnapshots.$inferSelect;
