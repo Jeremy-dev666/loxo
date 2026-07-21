@@ -21,8 +21,13 @@ import {
   type CaptureChangesInput,
   type CaptureLimits,
   type ChangeSnapshot,
+  type CheckpointInput,
+  type CheckpointResult,
   type ExecutionWorkspaceDriver,
   type InspectRepositoryInput,
+  type MergeOutcome,
+  type MergeWorkspaceInput,
+  type PrimaryCheckoutState,
   type PrepareWorkspaceInput,
   type PrepareWorkspaceResult,
   type ReconcileWorkspaceInput,
@@ -341,6 +346,112 @@ export class LocalGitWorkspaceDriver implements ExecutionWorkspaceDriver {
       branchAhead,
       branchBehind,
       diverged: branchAhead > 0 && branchBehind > 0,
+    };
+  }
+
+  /** Ancestry proof used by merge-lock recovery. */
+  async isAncestor(repositoryRoot: string, ancestor: string, descendant: string): Promise<boolean> {
+    return isAncestor(repositoryRoot, ancestor, descendant);
+  }
+
+  /**
+   * Recovery-only merge abort: runs `git merge --abort` in the primary
+   * checkout and returns true only when restoration to the recorded pre-merge
+   * HEAD is verified.
+   */
+  async mergeAbortForRecovery(repositoryRoot: string, preHead: string): Promise<boolean> {
+    assertCommitId(preHead);
+    await tryGit(repositoryRoot, ['merge', '--abort']);
+    const after = await this.inspectPrimaryCheckout(repositoryRoot);
+    return after.head === preHead && after.clean && after.mergeHead === null;
+  }
+
+  async inspectPrimaryCheckout(repositoryRoot: string): Promise<PrimaryCheckoutState> {
+    const branchOut = await tryGit(repositoryRoot, ['symbolic-ref', '--short', '-q', 'HEAD']);
+    const head = line(await runGit(repositoryRoot, ['rev-parse', 'HEAD']));
+    const status = parseStatusZ(
+      text(await runGit(repositoryRoot, ['status', '--porcelain=v1', '-z']))
+    );
+    const mergeHead = await tryGit(repositoryRoot, ['rev-parse', '-q', '--verify', 'MERGE_HEAD']);
+    const origHead = await tryGit(repositoryRoot, ['rev-parse', '-q', '--verify', 'ORIG_HEAD']);
+    return {
+      branch: branchOut === null ? null : line(branchOut),
+      head,
+      clean: status.length === 0,
+      mergeHead: mergeHead === null ? null : line(mergeHead),
+      origHead: origHead === null ? null : line(origHead),
+    };
+  }
+
+  /**
+   * Stages and commits everything left in the worktree so Git merge can carry
+   * it. Uses the repository's configured identity; a missing identity blocks
+   * finalization instead of inventing or leaking host identity.
+   */
+  async commitCheckpoint(input: CheckpointInput): Promise<CheckpointResult> {
+    const name = await tryGit(input.worktreePath, ['config', 'user.name']);
+    const email = await tryGit(input.worktreePath, ['config', 'user.email']);
+    if (name === null || email === null || !line(name) || !line(email)) {
+      throw new GitDriverError(
+        'git_identity_missing',
+        'Configure git user.name and user.email before finalizing'
+      );
+    }
+    await runGit(input.worktreePath, ['add', '-A', '--', '.']);
+    const staged = await tryGit(input.worktreePath, ['diff', '--cached', '--quiet']);
+    if (staged !== null) return { commit: null };
+    await runGit(input.worktreePath, ['commit', '-m', input.message]);
+    return { commit: line(await runGit(input.worktreePath, ['rev-parse', 'HEAD'])) };
+  }
+
+  /**
+   * Merges the issue branch into the registered primary checkout. The caller
+   * verifies preconditions and holds the repository merge lock; this method
+   * re-verifies the checkout immediately before mutating it.
+   */
+  async mergeWorkspace(input: MergeWorkspaceInput): Promise<MergeOutcome> {
+    const baseRef = assertSafeRefName(input.baseRef);
+    const branchName = assertSafeRefName(input.branchName);
+    const checkout = await this.inspectPrimaryCheckout(input.repositoryRoot);
+    if (checkout.branch !== baseRef) {
+      throw new GitDriverError(
+        'merge_precondition_failed',
+        `The primary checkout is on "${checkout.branch ?? '(detached)'}", not "${baseRef}"; check out the base branch manually`
+      );
+    }
+    if (!checkout.clean) {
+      throw new GitDriverError(
+        'merge_precondition_failed',
+        'The primary checkout has uncommitted changes; commit or stash them before merging'
+      );
+    }
+
+    const preHead = checkout.head;
+    const merge = await tryGit(input.repositoryRoot, [
+      'merge',
+      '--no-ff',
+      '-m',
+      input.message,
+      branchName,
+    ]);
+    if (merge !== null) {
+      return {
+        result: 'merged',
+        newHead: line(await runGit(input.repositoryRoot, ['rev-parse', 'HEAD'])),
+        preHead,
+      };
+    }
+
+    // Conflict path: abort, then prove the checkout was restored.
+    const abort = await tryGit(input.repositoryRoot, ['merge', '--abort']);
+    const after = await this.inspectPrimaryCheckout(input.repositoryRoot);
+    if (abort !== null && after.head === preHead && after.clean && after.mergeHead === null) {
+      return { result: 'conflicted', preHead };
+    }
+    return {
+      result: 'abort_failed',
+      preHead,
+      error: 'Merge abort could not restore the primary checkout; manual recovery required',
     };
   }
 

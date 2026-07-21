@@ -5,6 +5,8 @@ export type GitDriverErrorCode =
   | 'base_ref_not_branch'
   | 'invalid_ref'
   | 'dirty_workspace'
+  | 'git_identity_missing'
+  | 'merge_precondition_failed'
   | 'output_overflow'
   | 'git_failed';
 
@@ -136,6 +138,37 @@ export interface BaseDriftReport {
   diverged: boolean;
 }
 
+/** Observable facts about the repository's primary checkout, for merge preconditions and lock recovery. */
+export interface PrimaryCheckoutState {
+  branch: string | null;
+  head: string;
+  clean: boolean;
+  mergeHead: string | null;
+  origHead: string | null;
+}
+
+export interface CheckpointInput {
+  worktreePath: string;
+  message: string;
+}
+
+export interface CheckpointResult {
+  /** Null when the tree was already fully committed. */
+  commit: string | null;
+}
+
+export interface MergeWorkspaceInput {
+  repositoryRoot: string;
+  baseRef: string;
+  branchName: string;
+  message: string;
+}
+
+export type MergeOutcome =
+  | { result: 'merged'; newHead: string; preHead: string }
+  | { result: 'conflicted'; preHead: string }
+  | { result: 'abort_failed'; preHead: string; error: string };
+
 export interface RemoveWorkspaceInput {
   repositoryRoot: string;
   worktreePath: string;
@@ -145,8 +178,7 @@ export interface RemoveWorkspaceInput {
 
 /**
  * Location-agnostic workspace operations; issue and run services never know
- * where Git executes. Merge and keep-branch finalization are added with the
- * review-integration commit.
+ * where Git executes.
  */
 export interface ExecutionWorkspaceDriver {
   inspectRepository(input: InspectRepositoryInput): Promise<RepositoryInfo>;
@@ -157,6 +189,9 @@ export interface ExecutionWorkspaceDriver {
   }): Promise<WorkingTreeSnapshot>;
   captureChanges(input: CaptureChangesInput): Promise<ChangeSnapshot>;
   reportBaseDrift(input: BaseDriftInput): Promise<BaseDriftReport>;
+  inspectPrimaryCheckout(repositoryRoot: string): Promise<PrimaryCheckoutState>;
+  commitCheckpoint(input: CheckpointInput): Promise<CheckpointResult>;
+  mergeWorkspace(input: MergeWorkspaceInput): Promise<MergeOutcome>;
   removeWorkspace(input: RemoveWorkspaceInput): Promise<void>;
   reconcileWorkspace(input: ReconcileWorkspaceInput): Promise<ReconcileWorkspaceResult>;
 }

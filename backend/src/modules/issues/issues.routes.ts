@@ -4,6 +4,8 @@ import { badRequest } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
 import { requestWake } from '../runs/wake';
 import {
+  abandonIssueWorkspace,
+  finalizeIssueWorkspace,
   getIssueChanges,
   getIssueWorkspace,
   prepareIssueWorkspace,
@@ -57,6 +59,47 @@ issuesRouter.get('/:id/changes', async (req: AuthedRequest, res, next) => {
   try {
     await getIssue(req.auth!.userId, String(req.params.id)); // ownership
     res.json(await getIssueChanges(req.auth!.userId, String(req.params.id)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/workspace/merge', async (req: AuthedRequest, res, next) => {
+  try {
+    await getIssue(req.auth!.userId, String(req.params.id)); // ownership
+    res.json(
+      await finalizeIssueWorkspace(req.auth!.userId, String(req.params.id), {
+        action: 'merge',
+        confirmCheckpoint: req.body?.confirmCheckpoint === true,
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/workspace/keep-branch', async (req: AuthedRequest, res, next) => {
+  try {
+    await getIssue(req.auth!.userId, String(req.params.id)); // ownership
+    res.json(
+      await finalizeIssueWorkspace(req.auth!.userId, String(req.params.id), {
+        action: 'keep_branch',
+        confirmCheckpoint: req.body?.confirmCheckpoint === true,
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/workspace/abandon', async (req: AuthedRequest, res, next) => {
+  try {
+    await getIssue(req.auth!.userId, String(req.params.id)); // ownership
+    res.json(
+      await abandonIssueWorkspace(req.auth!.userId, String(req.params.id), {
+        confirmDiscard: req.body?.confirmDiscard === true,
+      })
+    );
   } catch (error) {
     next(error);
   }

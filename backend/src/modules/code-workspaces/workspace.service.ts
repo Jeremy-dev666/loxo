@@ -1,10 +1,13 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { and, desc, eq, notInArray } from 'drizzle-orm';
+import { and, desc, eq, isNull, notInArray } from 'drizzle-orm';
 import { db } from '../../db/client';
 import {
   EXECUTION_WORKSPACE_TERMINAL_STATUSES,
   executionWorkspaces,
+  issueReviews,
+  issues,
   projectRepositories,
   projects,
   runChangeSnapshots,
@@ -15,6 +18,8 @@ import {
 } from '../../db/schema';
 import { badRequest, conflict, notFound } from '../../http/errors';
 import { storage } from '../../storage/layout';
+import { addSystemComment } from '../issues/comments.service';
+import { moveIssue } from '../issues/issues.service';
 import type { TurnPermission } from '../runner/runner';
 import { issueBranchName } from './branch-name';
 import { localGitDriver } from './local-git-driver';
@@ -436,6 +441,413 @@ export async function latestIssueSnapshot(
     .orderBy(desc(runChangeSnapshots.capturedAt))
     .limit(1);
   return row ?? null;
+}
+
+/** Operation ids of merges currently executing in this process; lock staleness is proven against it. */
+const liveMergeOperations = new Set<string>();
+
+/** Test seam: simulate a merge lock held by a live operation. */
+export function registerLiveMergeOperationForTests(operationId: string): void {
+  liveMergeOperations.add(operationId);
+}
+
+async function acquireMergeLock(
+  repository: ProjectRepository,
+  workspace: ExecutionWorkspace,
+  preHead: string
+): Promise<string> {
+  const operationId = crypto.randomUUID();
+  const [locked] = await db
+    .update(projectRepositories)
+    .set({
+      activeMergeWorkspaceId: workspace.id,
+      activeMergeOperationId: operationId,
+      activeMergePreHead: preHead,
+      activeMergeStartedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(projectRepositories.id, repository.id),
+        isNull(projectRepositories.activeMergeWorkspaceId)
+      )
+    )
+    .returning({ id: projectRepositories.id });
+  if (!locked) {
+    throw conflict('merge_in_progress', 'Another merge holds the repository lock');
+  }
+  liveMergeOperations.add(operationId);
+  return operationId;
+}
+
+async function releaseMergeLock(repositoryId: string, operationId: string): Promise<void> {
+  liveMergeOperations.delete(operationId);
+  await db
+    .update(projectRepositories)
+    .set({
+      activeMergeWorkspaceId: null,
+      activeMergeOperationId: null,
+      activeMergePreHead: null,
+      activeMergeStartedAt: null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(projectRepositories.id, repositoryId),
+        eq(projectRepositories.activeMergeOperationId, operationId)
+      )
+    );
+}
+
+/**
+ * Stale-lock recovery: a lock is stale only when its operation id is not
+ * live in this process; age alone never authorizes release. Every branch
+ * proves the primary checkout's Git state before touching the lock.
+ */
+async function recoverStaleMergeLock(
+  userId: string,
+  repository: ProjectRepository
+): Promise<ProjectRepository> {
+  if (!repository.activeMergeWorkspaceId || !repository.activeMergeOperationId) return repository;
+  if (liveMergeOperations.has(repository.activeMergeOperationId)) {
+    throw conflict('merge_in_progress', 'Another merge holds the repository lock');
+  }
+
+  const root = repositoryRoot(userId, repository);
+  const checkout = await localGitDriver.inspectPrimaryCheckout(root);
+  const preHead = repository.activeMergePreHead;
+  const [workspace] = await db
+    .select()
+    .from(executionWorkspaces)
+    .where(eq(executionWorkspaces.id, repository.activeMergeWorkspaceId))
+    .limit(1);
+
+  const clearLock = async () => {
+    await db
+      .update(projectRepositories)
+      .set({
+        activeMergeWorkspaceId: null,
+        activeMergeOperationId: null,
+        activeMergePreHead: null,
+        activeMergeStartedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(projectRepositories.id, repository.id));
+    return (await getProjectRepository(userId, repository.projectId))!;
+  };
+
+  if (checkout.mergeHead === null && preHead !== null && checkout.head === preHead) {
+    // The crashed merge never started or already aborted.
+    return clearLock();
+  }
+
+  if (checkout.mergeHead === null && preHead !== null && checkout.head !== preHead) {
+    // Possibly completed before the database update; prove it.
+    const provable =
+      checkout.clean &&
+      checkout.branch === repository.defaultBaseRef &&
+      workspace !== undefined &&
+      workspace.headCommit !== null &&
+      (await isAncestorIn(root, preHead, checkout.head)) &&
+      (await isAncestorIn(root, workspace.headCommit, checkout.head));
+    if (provable) {
+      await updateWorkspace(workspace.id, { status: 'merged', mergedAt: new Date() });
+      await moveIssue(userId, workspace.issueId, { status: 'done' }).catch(() => {});
+      await addSystemComment(
+        userId,
+        workspace.issueId,
+        'Merge recovered after an interruption: the base branch already contains this workspace.'
+      ).catch(() => {});
+      return clearLock();
+    }
+  }
+
+  if (checkout.mergeHead !== null && preHead !== null) {
+    // Abort only what is provably ours: on the base ref, ORIG_HEAD matches the
+    // recorded pre-merge HEAD, and no live operation owns the merge.
+    if (checkout.branch === repository.defaultBaseRef && checkout.origHead === preHead) {
+      const merge = await localGitDriver.mergeAbortForRecovery(root, preHead);
+      if (merge) {
+        if (workspace) await updateWorkspace(workspace.id, { status: 'conflicted' });
+        return clearLock();
+      }
+    }
+  }
+
+  if (workspace) {
+    await updateWorkspace(workspace.id, {
+      status: 'error',
+      lastError: 'Merge lock recovery could not prove the primary checkout state; recover manually',
+    });
+  }
+  throw conflict(
+    'merge_recovery_failed',
+    'A previous merge left the repository in an unprovable state; recover the primary checkout manually'
+  );
+}
+
+async function isAncestorIn(root: string, ancestor: string, descendant: string): Promise<boolean> {
+  return localGitDriver.isAncestor(root, ancestor, descendant);
+}
+
+export type FinalizeAction = 'merge' | 'keep_branch';
+
+export interface FinalizeInput {
+  action: FinalizeAction;
+  /** User saw the uncommitted-change summary and approved a checkpoint commit. */
+  confirmCheckpoint?: boolean;
+}
+
+export interface FinalizeResult {
+  workspace: ExecutionWorkspace;
+  issueStatus: string;
+}
+
+/**
+ * Merge or keep-branch, per 9.5: requires an in-review issue whose latest
+ * human approval still matches the workspace content fingerprint. Uncommitted
+ * changes become a confirmed checkpoint commit that provably preserves the
+ * approved fingerprint.
+ */
+export async function finalizeIssueWorkspace(
+  userId: string,
+  issueId: string,
+  input: FinalizeInput
+): Promise<FinalizeResult> {
+  const workspace = await getIssueWorkspace(userId, issueId);
+  if (!workspace) throw notFound('Issue has no active workspace');
+  if (workspace.status !== 'ready' && workspace.status !== 'dirty') {
+    throw conflict('workspace_unavailable', `Workspace is ${workspace.status}; reconcile it first`);
+  }
+  const [issue] = await db
+    .select()
+    .from(issues)
+    .where(and(eq(issues.id, issueId), eq(issues.userId, userId)))
+    .limit(1);
+  if (!issue) throw notFound('Issue not found');
+  if (issue.status !== 'in_review') {
+    throw conflict('not_in_review', 'Finalization requires the issue to be in review');
+  }
+  let repository = await getProjectRepository(userId, workspace.projectId);
+  if (!repository) throw conflict('repository_unbound', 'The project repository binding is gone');
+
+  const approval = await latestHumanApproval(userId, issueId);
+  if (!approval?.snapshot) {
+    throw conflict('approval_required', 'A human approval bound to a change snapshot is required');
+  }
+
+  const root = repositoryRoot(userId, repository);
+  const recapture = () =>
+    localGitDriver.captureChanges({
+      worktreePath: workspace.worktreePath,
+      beforeHead: workspace.baseCommit,
+      baseCommit: workspace.baseCommit,
+    });
+
+  let current = await recapture().catch(rethrowGitError);
+  if (current.fingerprint !== approval.snapshot.changeFingerprint) {
+    throw conflict(
+      'stale_approval',
+      'The workspace changed after approval; request a new review before finalizing'
+    );
+  }
+
+  // Git merge cannot carry uncommitted worktree changes; they become a
+  // confirmed checkpoint commit that must preserve the approved fingerprint.
+  const uncommitted =
+    current.summary.files.length > 0 || current.summary.untracked.length > 0
+      ? await localGitDriver
+          .snapshotWorkingTree({ worktreePath: workspace.worktreePath })
+          .then((s) => s.summary.files.length > 0 || s.summary.untracked.length > 0)
+      : false;
+  if (uncommitted) {
+    if (!input.confirmCheckpoint) {
+      throw conflict(
+        'checkpoint_required',
+        'Uncommitted changes need a confirmed checkpoint commit before finalizing'
+      );
+    }
+    await localGitDriver
+      .commitCheckpoint({
+        worktreePath: workspace.worktreePath,
+        message: `Issue #${issue.issueNumber}: ${issue.title}`,
+      })
+      .catch(rethrowGitError);
+    current = await recapture().catch(rethrowGitError);
+    if (current.fingerprint !== approval.snapshot.changeFingerprint) {
+      throw conflict(
+        'checkpoint_mismatch',
+        'The checkpoint commit altered the approved content; finalization aborted'
+      );
+    }
+  }
+
+  if (input.action === 'keep_branch') {
+    await localGitDriver
+      .removeWorkspace({ repositoryRoot: root, worktreePath: workspace.worktreePath })
+      .catch(rethrowGitError);
+    const updated = await updateWorkspace(workspace.id, {
+      status: 'retained',
+      headCommit: current.afterHead,
+      retainedAt: new Date(),
+    });
+    const moved = await moveIssue(userId, issueId, { status: 'done' });
+    await addSystemComment(
+      userId,
+      issueId,
+      `Branch ${workspace.branchName} retained; the managed worktree was removed.`
+    ).catch(() => {});
+    return { workspace: updated, issueStatus: moved.status };
+  }
+
+  // Merge path: serialize base-checkout mutation with the repository lock,
+  // recovering a provably stale one first.
+  if (repository.activeMergeWorkspaceId) {
+    repository = await recoverStaleMergeLock(userId, repository);
+  }
+  const checkout = await localGitDriver.inspectPrimaryCheckout(root);
+  const operationId = await acquireMergeLock(repository, workspace, checkout.head);
+  try {
+    const outcome = await localGitDriver
+      .mergeWorkspace({
+        repositoryRoot: root,
+        baseRef: repository.defaultBaseRef,
+        branchName: workspace.branchName,
+        message: `Merge issue #${issue.issueNumber}: ${issue.title}`,
+      })
+      .catch(rethrowGitError);
+
+    if (outcome.result === 'merged') {
+      await localGitDriver
+        .removeWorkspace({ repositoryRoot: root, worktreePath: workspace.worktreePath })
+        .catch((err) => {
+          console.error(`Worktree cleanup after merge failed for ${workspace.id}:`, err);
+        });
+      const updated = await updateWorkspace(workspace.id, {
+        status: 'merged',
+        headCommit: current.afterHead,
+        mergedAt: new Date(),
+      });
+      const moved = await moveIssue(userId, issueId, { status: 'done' });
+      await addSystemComment(
+        userId,
+        issueId,
+        `Merged ${workspace.branchName} into ${repository.defaultBaseRef} (${outcome.newHead.slice(0, 12)}).`
+      ).catch(() => {});
+      return { workspace: updated, issueStatus: moved.status };
+    }
+
+    if (outcome.result === 'conflicted') {
+      const updated = await updateWorkspace(workspace.id, {
+        status: 'conflicted',
+        lastError: `Merge into ${repository.defaultBaseRef} conflicted; the base checkout was restored`,
+      });
+      await addSystemComment(
+        userId,
+        issueId,
+        `Merge of ${workspace.branchName} conflicted; the base checkout was restored and the issue stays in review.`
+      ).catch(() => {});
+      return { workspace: updated, issueStatus: issue.status };
+    }
+
+    // abort_failed: keep the lock for manual recovery evidence, mark error.
+    liveMergeOperations.delete(operationId);
+    await updateWorkspace(workspace.id, { status: 'error', lastError: outcome.error });
+    throw conflict('merge_recovery_failed', outcome.error);
+  } finally {
+    if (liveMergeOperations.has(operationId)) {
+      await releaseMergeLock(repository.id, operationId);
+    }
+  }
+}
+
+export interface AbandonInput {
+  /** User explicitly accepted the loss of uncommitted changes. */
+  confirmDiscard?: boolean;
+}
+
+/**
+ * Explicit abandon: discards the managed worktree and cancels an active
+ * issue. Cleanup must succeed before any state transitions; done issues
+ * cannot be abandoned.
+ */
+export async function abandonIssueWorkspace(
+  userId: string,
+  issueId: string,
+  input: AbandonInput
+): Promise<FinalizeResult> {
+  const workspace = await getIssueWorkspace(userId, issueId);
+  if (!workspace) throw notFound('Issue has no active workspace');
+  const [issue] = await db
+    .select()
+    .from(issues)
+    .where(and(eq(issues.id, issueId), eq(issues.userId, userId)))
+    .limit(1);
+  if (!issue) throw notFound('Issue not found');
+  if (issue.status === 'done') {
+    throw conflict('issue_done', 'A completed issue cannot abandon its workspace');
+  }
+  const repository = await getProjectRepository(userId, workspace.projectId);
+  if (!repository) throw conflict('repository_unbound', 'The project repository binding is gone');
+
+  try {
+    await localGitDriver.removeWorkspace({
+      repositoryRoot: repositoryRoot(userId, repository),
+      worktreePath: workspace.worktreePath,
+      allowDirty: input.confirmDiscard === true,
+    });
+  } catch (err) {
+    if (err instanceof GitDriverError && err.code === 'dirty_workspace') {
+      throw conflict(
+        'discard_confirmation_required',
+        'The workspace has uncommitted changes; confirm that they may be discarded'
+      );
+    }
+    rethrowGitError(err);
+  }
+
+  const updated = await updateWorkspace(workspace.id, {
+    status: 'abandoned',
+    abandonedAt: new Date(),
+  });
+  let issueStatus: string = issue.status;
+  if (issue.status !== 'cancelled') {
+    const moved = await moveIssue(userId, issueId, { status: 'cancelled' });
+    issueStatus = moved.status;
+  }
+  await addSystemComment(
+    userId,
+    issueId,
+    `Workspace abandoned; branch ${workspace.branchName} and its worktree were discarded from management.`
+  ).catch(() => {});
+  return { workspace: updated, issueStatus };
+}
+
+async function latestHumanApproval(
+  userId: string,
+  issueId: string
+): Promise<{ reviewId: string; snapshot: RunChangeSnapshot | null } | null> {
+  const [review] = await db
+    .select()
+    .from(issueReviews)
+    .where(
+      and(
+        eq(issueReviews.issueId, issueId),
+        eq(issueReviews.userId, userId),
+        eq(issueReviews.reviewerType, 'human'),
+        eq(issueReviews.decision, 'approved')
+      )
+    )
+    .orderBy(desc(issueReviews.createdAt))
+    .limit(1);
+  if (!review) return null;
+  if (!review.changeSnapshotId) return { reviewId: review.id, snapshot: null };
+  const [snapshot] = await db
+    .select()
+    .from(runChangeSnapshots)
+    .where(eq(runChangeSnapshots.id, review.changeSnapshotId))
+    .limit(1);
+  return { reviewId: review.id, snapshot: snapshot ?? null };
 }
 
 export interface IssueChangesView {
