@@ -729,7 +729,8 @@ export const issues = pgTable(
 
 export type Issue = typeof issues.$inferSelect;
 
-export type IssueCommentAuthorType = 'human' | 'agent';
+/** system rows are platform-generated (workspace lifecycle, capture evidence); both author links stay null. */
+export type IssueCommentAuthorType = 'human' | 'agent' | 'system';
 
 /**
  * Issue activity timeline. Author columns mirror the dual-principal pattern;

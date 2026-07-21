@@ -55,7 +55,7 @@ export interface ActivityEvent {
   issueId: string | null;
   issueNumber: number | null;
   issueTitle: string | null;
-  actorType: 'agent' | 'human';
+  actorType: 'agent' | 'human' | 'system';
   actorName: string | null;
   /** Kind-specific qualifier: run/issue status or review decision. */
   detail: string | null;

@@ -10,7 +10,8 @@ import {
   teams,
   type Project,
 } from '../../db/schema';
-import { badRequest, notFound } from '../../http/errors';
+import { badRequest, conflict, notFound } from '../../http/errors';
+import { hasActiveWorkspaces } from '../code-workspaces/workspace.service';
 import { removeDir } from '../../storage/file-ops';
 import { storage } from '../../storage/layout';
 
@@ -184,6 +185,12 @@ export async function deleteProject(userId: string, projectId: string): Promise<
   if (!target) throw notFound('Project not found');
   if (target.kind === 'default') {
     throw badRequest('default_project_protected', 'The default project cannot be deleted');
+  }
+  if (await hasActiveWorkspaces({ projectId })) {
+    throw conflict(
+      'workspace_active',
+      'Merge, keep, or abandon the active code workspaces before deleting this project'
+    );
   }
 
   await db

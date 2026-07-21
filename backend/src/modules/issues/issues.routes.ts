@@ -3,6 +3,12 @@ import { z } from 'zod';
 import { badRequest } from '../../http/errors';
 import { requireAuth, type AuthedRequest } from '../../http/middleware/auth';
 import { requestWake } from '../runs/wake';
+import {
+  getIssueChanges,
+  getIssueWorkspace,
+  prepareIssueWorkspace,
+  reconcileIssueWorkspace,
+} from '../code-workspaces/workspace.service';
 import { addHumanComment, listComments } from './comments.service';
 import { createReview, listReviews } from './reviews.service';
 import {
@@ -17,6 +23,44 @@ import {
 
 export const issuesRouter = Router();
 issuesRouter.use(requireAuth);
+
+// Code workspace state and evidence. Preparation normally happens at run
+// admission; the manual endpoints exist for diagnosis and recovery.
+issuesRouter.get('/:id/workspace', async (req: AuthedRequest, res, next) => {
+  try {
+    await getIssue(req.auth!.userId, String(req.params.id)); // ownership
+    res.json({ workspace: await getIssueWorkspace(req.auth!.userId, String(req.params.id)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/workspace/prepare', async (req: AuthedRequest, res, next) => {
+  try {
+    const issue = await getIssue(req.auth!.userId, String(req.params.id));
+    res.json({ workspace: await prepareIssueWorkspace(req.auth!.userId, issue) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.post('/:id/workspace/reconcile', async (req: AuthedRequest, res, next) => {
+  try {
+    await getIssue(req.auth!.userId, String(req.params.id)); // ownership
+    res.json({ workspace: await reconcileIssueWorkspace(req.auth!.userId, String(req.params.id)) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+issuesRouter.get('/:id/changes', async (req: AuthedRequest, res, next) => {
+  try {
+    await getIssue(req.auth!.userId, String(req.params.id)); // ownership
+    res.json(await getIssueChanges(req.auth!.userId, String(req.params.id)));
+  } catch (error) {
+    next(error);
+  }
+});
 
 const issueStatus = z.enum([
   'backlog',

@@ -50,6 +50,20 @@ export async function addAgentComment(
   return comment!;
 }
 
+/** Platform-generated timeline entry (workspace lifecycle, capture evidence). */
+export async function addSystemComment(
+  userId: string,
+  issueId: string,
+  body: string
+): Promise<IssueComment> {
+  await assertOwnedIssue(userId, issueId);
+  const [comment] = await db
+    .insert(issueComments)
+    .values({ issueId, authorType: 'system', body })
+    .returning();
+  return comment!;
+}
+
 export async function listComments(userId: string, issueId: string): Promise<IssueComment[]> {
   await assertOwnedIssue(userId, issueId);
   return db

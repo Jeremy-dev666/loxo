@@ -11,9 +11,18 @@ import {
   lowerPermission,
   runTurn,
   RunnerError,
+  RUNTIME_CODE_CAPABILITIES,
   type TurnRequest,
   type TurnResult,
 } from '../runner/runner';
+import {
+  captureRunChanges,
+  getProjectRepository,
+  resolveExecutionWorkspace,
+  snapshotBeforeRun,
+  type ResolvedWorkspace,
+} from '../code-workspaces/workspace.service';
+import { addSystemComment } from '../issues/comments.service';
 import { buildIssueRunPrompt, buildReviewRunPrompt } from '../runner/turn-context';
 import type { CliRuntime } from '../agents/runtime-detect';
 import { config } from '../../config';
@@ -55,7 +64,13 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
     agentId: agent.id,
     projectId: issue.projectId,
   });
-  const workspace = storage.projectWorkspace(run.userId, issue.projectId);
+
+  // A repository binding switches the run into the issue's isolated worktree;
+  // without one the legacy shared project workspace remains in effect.
+  const codeWorkspace = await resolveCodeWorkspace(run, agent, issue);
+  const workspace = codeWorkspace
+    ? codeWorkspace.workspace.worktreePath
+    : storage.projectWorkspace(run.userId, issue.projectId);
 
   // Off-host turns cannot reach a loopback control plane; they stay on the
   // report fallback until MCP_PUBLIC_URL points somewhere routable. The api
@@ -107,24 +122,105 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
     run.trigger === 'review'
       ? lowerPermission(agent.permissionLevel, 'read_only')
       : agent.permissionLevel;
-  const result = await dispatchAgentTurn(
-    agent,
-    {
-      runtime: agent.runtime as CliRuntime,
-      workspace,
-      stateDir: paths.state,
-      prompt,
-      model: agent.model,
-      credentials: credentials ?? undefined,
-      sessionRef: null,
-      timeoutMs: ISSUE_RUN_TIMEOUT_MS,
-      permission,
-      mcp: controlPlane,
-      extraEnv: controlPlane
-        ? { SWARMDEV_MCP_URL: controlPlane.url, SWARMDEV_RUN_TOKEN: controlPlane.token }
-        : undefined,
-    },
-    turnExecutor
-  );
-  return { text: result.text, sessionRef: result.sessionRef ?? null };
+
+  const before = codeWorkspace ? await snapshotBeforeRun(codeWorkspace.workspace) : null;
+  try {
+    const result = await dispatchAgentTurn(
+      agent,
+      {
+        runtime: agent.runtime as CliRuntime,
+        workspace,
+        stateDir: paths.state,
+        prompt,
+        model: agent.model,
+        credentials: credentials ?? undefined,
+        sessionRef: null,
+        timeoutMs: ISSUE_RUN_TIMEOUT_MS,
+        permission,
+        mcp: controlPlane,
+        extraEnv: controlPlane
+          ? { SWARMDEV_MCP_URL: controlPlane.url, SWARMDEV_RUN_TOKEN: controlPlane.token }
+          : undefined,
+      },
+      turnExecutor
+    );
+    return { text: result.text, sessionRef: result.sessionRef ?? null };
+  } finally {
+    // Git evidence is captured on success, failure, and cancellation alike;
+    // a capture problem is logged, never allowed to mask the run outcome.
+    if (codeWorkspace && before) {
+      await settleRunCapture(run, issue, codeWorkspace, before, permission).catch((err) => {
+        console.error(`Run ${run.id} change capture failed:`, err);
+      });
+    }
+  }
+}
+
+/**
+ * Fails visibly when the agent cannot actually operate on the bound
+ * repository; compatibility is checked before any worktree is created.
+ */
+async function resolveCodeWorkspace(
+  run: Run,
+  agent: Agent,
+  issue: Issue
+): Promise<ResolvedWorkspace | null> {
+  const repository = await getProjectRepository(run.userId, issue.projectId);
+  if (!repository) return null;
+
+  if (agent.runtime === 'api') {
+    // API agents have no filesystem execution; a textual review is fine, a
+    // worker assignment on a code project is not.
+    if (run.trigger !== 'review') {
+      throw new RunnerError(
+        `Agent "${agent.name}" is API-hosted and cannot edit code; assign a CLI runtime`,
+        'cli_failed'
+      );
+    }
+    return null;
+  }
+
+  const capability = RUNTIME_CODE_CAPABILITIES[agent.runtime as CliRuntime];
+  if (!capability || capability.codeWorkspace === 'disabled') {
+    throw new RunnerError(
+      `Runtime "${agent.runtime}" is not supported for code workspaces`,
+      'cli_failed'
+    );
+  }
+  if (agent.execution === 'machine') {
+    throw new RunnerError(
+      'This project repository is server-hosted; machine-executed agents cannot run its code issues yet',
+      'cli_failed'
+    );
+  }
+  return resolveExecutionWorkspace(run.userId, issue);
+}
+
+async function settleRunCapture(
+  run: Run,
+  issue: Issue,
+  codeWorkspace: ResolvedWorkspace,
+  before: Awaited<ReturnType<typeof snapshotBeforeRun>>,
+  permission: 'read_only' | 'edit' | 'full'
+): Promise<void> {
+  const { snapshot, policyViolation } = await captureRunChanges({
+    runId: run.id,
+    userId: run.userId,
+    workspace: codeWorkspace.workspace,
+    before,
+    permission,
+  });
+  if (policyViolation) {
+    await addSystemComment(
+      run.userId,
+      issue.id,
+      `Read-only policy violation: tracked files changed during a read-only run (${snapshot.changedFiles} files).`
+    );
+  } else if (snapshot.changedFiles > 0) {
+    await addSystemComment(
+      run.userId,
+      issue.id,
+      `Code changes captured: ${snapshot.changedFiles} file(s), +${snapshot.additions}/-${snapshot.deletions} on ${codeWorkspace.workspace.branchName}.`
+    );
+  }
 }

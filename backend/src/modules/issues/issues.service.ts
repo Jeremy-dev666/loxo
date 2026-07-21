@@ -9,7 +9,8 @@ import {
   type Issue,
   type IssueStatus,
 } from '../../db/schema';
-import { badRequest, notFound } from '../../http/errors';
+import { badRequest, conflict, notFound } from '../../http/errors';
+import { hasActiveWorkspaces } from '../code-workspaces/workspace.service';
 import { getOrCreateDefaultProject } from '../projects/projects.service';
 import { requestWake } from '../runs/wake';
 import { isTransitionAllowed, TERMINAL_STATUSES } from './issue-transitions';
@@ -331,6 +332,12 @@ export async function moveIssue(
 }
 
 export async function deleteIssue(userId: string, issueId: string): Promise<void> {
+  if (await hasActiveWorkspaces({ issueId })) {
+    throw conflict(
+      'workspace_active',
+      'Merge, keep the branch, or abandon the code workspace before deleting this issue'
+    );
+  }
   const deleted = await db
     .delete(issues)
     .where(and(eq(issues.id, issueId), eq(issues.userId, userId)))

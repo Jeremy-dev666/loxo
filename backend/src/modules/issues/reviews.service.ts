@@ -9,6 +9,7 @@ import {
   type ReviewDecision,
 } from '../../db/schema';
 import { badRequest, notFound } from '../../http/errors';
+import { getProjectRepository, latestIssueSnapshot } from '../code-workspaces/workspace.service';
 import { addMemo } from '../memory/memos.service';
 import { addAgentComment, addHumanComment } from './comments.service';
 import { moveIssue } from './issues.service';
@@ -99,6 +100,13 @@ export async function createReview(
     reviewerUserId = userId;
   }
 
+  // Code projects: the verdict applies to an exact captured change set. A
+  // later workspace change makes an approval stale without another status.
+  const codeProject = (await getProjectRepository(userId, issue.projectId)) !== null;
+  const changeSnapshotId = codeProject
+    ? ((await latestIssueSnapshot(userId, issueId))?.id ?? null)
+    : null;
+
   const [review] = await db
     .insert(issueReviews)
     .values({
@@ -108,6 +116,7 @@ export async function createReview(
       reviewerAgentId,
       reviewerUserId,
       runId: input.runId ?? null,
+      changeSnapshotId,
       decision: input.decision,
       body,
     })
@@ -141,8 +150,13 @@ export async function createReview(
   }
 
   // in_review -> done | in_progress are both legal transitions; moving to
-  // in_progress re-wakes the assignee through the existing move hook.
+  // in_progress re-wakes the assignee through the existing move hook. On a
+  // code project an approval never closes the issue by itself: it stays in
+  // review until merge or keep-branch succeeds against this snapshot.
   if (options.applyTransition !== false) {
+    if (input.decision === 'approved' && codeProject) {
+      return review!;
+    }
     await moveIssue(userId, issueId, {
       status: input.decision === 'approved' ? 'done' : 'in_progress',
     });

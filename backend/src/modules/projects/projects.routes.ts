@@ -12,6 +12,12 @@ import {
   resolveDownload,
 } from './project-files.service';
 import {
+  bindProjectRepository,
+  getProjectRepository,
+  inspectProjectRepository,
+  unbindProjectRepository,
+} from '../code-workspaces/workspace.service';
+import {
   createProject,
   deleteProject,
   getProject,
@@ -88,6 +94,54 @@ projectsRouter.patch('/:id', async (req: AuthedRequest, res, next) => {
 projectsRouter.delete('/:id', async (req: AuthedRequest, res, next) => {
   try {
     await deleteProject(req.auth!.userId, String(req.params.id));
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Repository binding for code execution (server location in this milestone).
+projectsRouter.get('/:id/repository', async (req: AuthedRequest, res, next) => {
+  try {
+    await getProject(req.auth!.userId, String(req.params.id)); // ownership
+    res.json({
+      repository: await getProjectRepository(req.auth!.userId, String(req.params.id)),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+projectsRouter.put('/:id/repository', async (req: AuthedRequest, res, next) => {
+  try {
+    const schema = z.object({
+      location: z.enum(['server', 'machine']),
+      defaultBaseRef: z.string().trim().min(1).max(200).optional(),
+      branchPrefix: z.string().trim().min(1).max(60).optional(),
+      cleanupPolicy: z.enum(['manual', 'after_merge']).optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) throw badRequest('invalid_input', 'Invalid repository binding');
+    res.json({
+      repository: await bindProjectRepository(req.auth!.userId, String(req.params.id), parsed.data),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+projectsRouter.post('/:id/repository/inspect', async (req: AuthedRequest, res, next) => {
+  try {
+    await getProject(req.auth!.userId, String(req.params.id)); // ownership
+    res.json(await inspectProjectRepository(req.auth!.userId, String(req.params.id)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+projectsRouter.delete('/:id/repository', async (req: AuthedRequest, res, next) => {
+  try {
+    await unbindProjectRepository(req.auth!.userId, String(req.params.id));
     res.json({ ok: true });
   } catch (error) {
     next(error);

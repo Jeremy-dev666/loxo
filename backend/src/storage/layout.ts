@@ -33,6 +33,7 @@ export interface StorageLayout {
   agentPaths: (userId: string, agentId: string) => AgentPaths;
   projectWorkspace: (userId: string, projectId: string) => string;
   projectWorktreesRoot: (userId: string, projectId: string) => string;
+  projectCodeArtifacts: (userId: string, projectId: string, runId: string) => string;
   teamDir: (userId: string, teamId: string) => string;
   teamRunDirs: (
     userId: string,
@@ -73,6 +74,8 @@ export function createStorageLayout(rootInput: string): StorageLayout {
     // Managed issue worktrees live beside the workspace, never inside the repository.
     projectWorktreesRoot: (userId, projectId) =>
       ensured(path.join(root, 'users', userId, 'projects', projectId, 'worktrees')),
+    projectCodeArtifacts: (userId, projectId, runId) =>
+      ensured(path.join(root, 'users', userId, 'projects', projectId, 'code-artifacts', runId)),
     teamDir: (userId, teamId) => ensured(path.join(root, 'users', userId, 'teams', teamId)),
     teamRunDirs: (userId, teamId, runId) => {
       const runRoot = path.join(root, 'users', userId, 'teams', teamId, 'runs', runId);
