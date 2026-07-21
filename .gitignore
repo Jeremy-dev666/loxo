@@ -23,7 +23,9 @@ Thumbs.db
 
 # Local working files (not part of the published repository)
 CLAUDE.md
+AGENTS.md
 .claude/
+.agents/
 docs-internal/
 DEV_LOG.md
 QA_LOG.md
