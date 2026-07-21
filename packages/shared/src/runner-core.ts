@@ -121,6 +121,41 @@ export interface TurnCredentials {
   baseUrl?: string | null;
 }
 
+/**
+ * CLI permission posture for a turn. Mirrors the agent permission level;
+ * callers resolve the effective value (review turns are forced down to
+ * read_only) before building the request.
+ */
+export type TurnPermission = 'read_only' | 'edit' | 'full';
+
+const PERMISSION_RANK: Record<TurnPermission, number> = { read_only: 0, edit: 1, full: 2 };
+
+/** The more restrictive of two levels; a turn may lower permission, never raise it. */
+export function lowerPermission(a: TurnPermission, b: TurnPermission): TurnPermission {
+  return PERMISSION_RANK[a] <= PERMISSION_RANK[b] ? a : b;
+}
+
+export type CodeWorkspaceSupport = 'supported' | 'experimental' | 'disabled';
+
+export interface RuntimeCodeCapability {
+  codeWorkspace: CodeWorkspaceSupport;
+  /**
+   * Whether the runtime can hold the mapped permission level. claude-code
+   * read-only still permits allowlisted Git commands, so mutation detection
+   * via the post-run snapshot is part of the guarantee.
+   */
+  permissionEnforcement: 'enforced' | 'enforced_with_bash_caveat' | 'unverified';
+}
+
+/** Never describe an unverified runtime as sandboxed in product copy. */
+export const RUNTIME_CODE_CAPABILITIES: Record<CliRuntime, RuntimeCodeCapability> = {
+  'claude-code': { codeWorkspace: 'supported', permissionEnforcement: 'enforced_with_bash_caveat' },
+  codex: { codeWorkspace: 'supported', permissionEnforcement: 'enforced' },
+  opencode: { codeWorkspace: 'experimental', permissionEnforcement: 'unverified' },
+  hermes: { codeWorkspace: 'disabled', permissionEnforcement: 'unverified' },
+  openclaw: { codeWorkspace: 'disabled', permissionEnforcement: 'unverified' },
+};
+
 export interface TurnRequest {
   runtime: CliRuntime;
   workspace: string;
@@ -141,6 +176,11 @@ export interface TurnRequest {
    * framing only.
    */
   mcp?: { url: string; token: string };
+  /**
+   * Resolved permission for this turn. Absent keeps the runtime's legacy
+   * posture (claude-code acceptEdits, codex default sandbox).
+   */
+  permission?: TurnPermission;
 }
 
 export interface TurnResult {
@@ -301,16 +341,31 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
       // Partial-message streaming is deliberately off: replies are treated as
       // atomic messages. The parser still understands stream_event deltas if
       // the flag is ever re-enabled.
-      const args = [
-        '-p',
-        '--output-format',
-        'stream-json',
-        '--verbose',
-        '--permission-mode',
-        'acceptEdits',
-      ];
+      const permission = request.permission ?? 'edit';
+      const args = ['-p', '--output-format', 'stream-json', '--verbose'];
+      if (permission === 'full') {
+        // Only reachable when the user explicitly configured full access and
+        // confirmed the warning; this is a CLI bypass, not an OS sandbox.
+        args.push('--dangerously-skip-permissions');
+      } else if (permission === 'read_only') {
+        args.push('--permission-mode', 'plan', '--disallowedTools', 'Edit,Write,NotebookEdit');
+      } else {
+        args.push('--permission-mode', 'acceptEdits');
+      }
       if (request.sessionRef) args.push('--resume', request.sessionRef);
       if (request.model) args.push('--model', request.model);
+
+      const allowedTools: string[] = [];
+      if (permission !== 'full') {
+        // Read-only Git evidence commands; reviewers need them and the
+        // post-run snapshot catches any mutation regardless.
+        allowedTools.push(
+          'Bash(git status:*)',
+          'Bash(git diff:*)',
+          'Bash(git log:*)',
+          'Bash(git show:*)'
+        );
+      }
       if (request.mcp) {
         // strict-mcp-config keeps the turn limited to the platform control
         // plane; whatever is in the user's own claude config stays out.
@@ -327,11 +382,17 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
               },
             },
           }),
-          '--strict-mcp-config',
-          '--allowedTools',
-          'mcp__swarmdev__get_issue,mcp__swarmdev__comment_on_issue,mcp__swarmdev__update_issue_status,mcp__swarmdev__ask_blocker,mcp__swarmdev__submit_result'
+          '--strict-mcp-config'
+        );
+        allowedTools.push(
+          'mcp__swarmdev__get_issue',
+          'mcp__swarmdev__comment_on_issue',
+          'mcp__swarmdev__update_issue_status',
+          'mcp__swarmdev__ask_blocker',
+          'mcp__swarmdev__submit_result'
         );
       }
+      if (allowedTools.length > 0) args.push('--allowedTools', allowedTools.join(','));
       return args;
     },
     buildEnv: anthropicEnv,
@@ -343,6 +404,16 @@ export const ADAPTERS: Record<CliRuntime, RuntimeAdapter> = {
     command: 'codex',
     buildArgs: (request) => {
       const args = ['exec', '--skip-git-repo-check'];
+      if (request.permission) {
+        // The working root is set via process cwd; workspace-write confines
+        // writes to it. User config must not silently broaden the sandbox.
+        const sandbox: Record<TurnPermission, string> = {
+          read_only: 'read-only',
+          edit: 'workspace-write',
+          full: 'danger-full-access',
+        };
+        args.push('--sandbox', sandbox[request.permission]);
+      }
       if (request.model) args.push('--model', request.model);
       args.push('-'); // read prompt from stdin
       return args;

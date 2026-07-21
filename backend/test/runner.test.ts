@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { execProcess } from '@swarmdev/shared';
 import {
   ADAPTERS,
+  RUNTIME_CODE_CAPABILITIES,
   extractPlainReply,
+  lowerPermission,
   parseClaudeStreamLine,
   redactDiagnostic,
   type ClaudeStreamState,
@@ -45,7 +47,111 @@ describe('claude-code control-plane args', () => {
   it('adds no MCP args without a control plane', () => {
     const args = ADAPTERS['claude-code'].buildArgs(base);
     expect(args).not.toContain('--mcp-config');
+    expect(args[args.indexOf('--allowedTools') + 1] ?? '').not.toContain('mcp__swarmdev__');
+  });
+});
+
+describe('claude-code permission mapping', () => {
+  const base: TurnRequest = {
+    runtime: 'claude-code',
+    workspace: 'w',
+    stateDir: 's',
+    prompt: 'p',
+  };
+  const modeOf = (args: string[]) => args[args.indexOf('--permission-mode') + 1];
+
+  it('keeps the legacy acceptEdits posture when no permission is set', () => {
+    const args = ADAPTERS['claude-code'].buildArgs(base);
+    expect(modeOf(args)).toBe('acceptEdits');
+    expect(args).not.toContain('--dangerously-skip-permissions');
+  });
+
+  it('maps read_only to plan mode with editing tools disallowed', () => {
+    const args = ADAPTERS['claude-code'].buildArgs({ ...base, permission: 'read_only' });
+    expect(modeOf(args)).toBe('plan');
+    expect(args[args.indexOf('--disallowedTools') + 1]).toBe('Edit,Write,NotebookEdit');
+    expect(args).not.toContain('--dangerously-skip-permissions');
+  });
+
+  it('allowlists read-only Git evidence commands below full access', () => {
+    for (const permission of ['read_only', 'edit'] as const) {
+      const args = ADAPTERS['claude-code'].buildArgs({ ...base, permission });
+      const allowed = args[args.indexOf('--allowedTools') + 1] ?? '';
+      expect(allowed).toContain('Bash(git status:*)');
+      expect(allowed).toContain('Bash(git diff:*)');
+      expect(allowed).not.toContain('Bash(git push');
+    }
+  });
+
+  it('maps full to the explicit permission bypass and drops the allowlist', () => {
+    const args = ADAPTERS['claude-code'].buildArgs({ ...base, permission: 'full' });
+    expect(args).toContain('--dangerously-skip-permissions');
+    expect(args).not.toContain('--permission-mode');
     expect(args).not.toContain('--allowedTools');
+  });
+
+  it('keeps MCP tools allowlisted alongside the Git commands for a read-only reviewer', () => {
+    const args = ADAPTERS['claude-code'].buildArgs({
+      ...base,
+      permission: 'read_only',
+      mcp: { url: 'http://127.0.0.1:4000/mcp', token: 't' },
+    });
+    const occurrences = args.filter((a) => a === '--allowedTools');
+    expect(occurrences).toHaveLength(1);
+    const allowed = args[args.indexOf('--allowedTools') + 1]!;
+    expect(allowed).toContain('Bash(git diff:*)');
+    expect(allowed).toContain('mcp__swarmdev__get_issue');
+  });
+
+  it('never delegates worktree management to the runtime', () => {
+    for (const permission of ['read_only', 'edit', 'full'] as const) {
+      expect(ADAPTERS['claude-code'].buildArgs({ ...base, permission })).not.toContain('--worktree');
+    }
+  });
+});
+
+describe('codex permission mapping', () => {
+  const base: TurnRequest = { runtime: 'codex', workspace: 'w', stateDir: 's', prompt: 'p' };
+  const sandboxOf = (args: string[]) => args[args.indexOf('--sandbox') + 1];
+
+  it('adds no sandbox flag when no permission is set', () => {
+    expect(ADAPTERS.codex.buildArgs(base)).not.toContain('--sandbox');
+  });
+
+  it('maps each level to the matching sandbox', () => {
+    expect(sandboxOf(ADAPTERS.codex.buildArgs({ ...base, permission: 'read_only' }))).toBe(
+      'read-only'
+    );
+    expect(sandboxOf(ADAPTERS.codex.buildArgs({ ...base, permission: 'edit' }))).toBe(
+      'workspace-write'
+    );
+    expect(sandboxOf(ADAPTERS.codex.buildArgs({ ...base, permission: 'full' }))).toBe(
+      'danger-full-access'
+    );
+  });
+
+  it('keeps the stdin prompt marker as the final argument', () => {
+    const args = ADAPTERS.codex.buildArgs({ ...base, permission: 'edit' });
+    expect(args[args.length - 1]).toBe('-');
+  });
+});
+
+describe('permission resolution and capability matrix', () => {
+  it('lowerPermission picks the more restrictive level', () => {
+    expect(lowerPermission('full', 'read_only')).toBe('read_only');
+    expect(lowerPermission('read_only', 'full')).toBe('read_only');
+    expect(lowerPermission('edit', 'full')).toBe('edit');
+    expect(lowerPermission('edit', 'edit')).toBe('edit');
+  });
+
+  it('only verified runtimes advertise code workspace support', () => {
+    expect(RUNTIME_CODE_CAPABILITIES['claude-code'].codeWorkspace).toBe('supported');
+    expect(RUNTIME_CODE_CAPABILITIES.codex.codeWorkspace).toBe('supported');
+    expect(RUNTIME_CODE_CAPABILITIES.codex.permissionEnforcement).toBe('enforced');
+    expect(RUNTIME_CODE_CAPABILITIES.opencode.codeWorkspace).toBe('experimental');
+    expect(RUNTIME_CODE_CAPABILITIES.hermes.codeWorkspace).toBe('disabled');
+    expect(RUNTIME_CODE_CAPABILITIES.openclaw.codeWorkspace).toBe('disabled');
+    expect(RUNTIME_CODE_CAPABILITIES.opencode.permissionEnforcement).toBe('unverified');
   });
 });
 

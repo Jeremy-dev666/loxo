@@ -7,7 +7,13 @@ import { dispatchAgentTurn } from '../runner/dispatch';
 import { resolveApiModel, type ApiProtocol } from '../runner/api-turn';
 import { executeApiToolLoop } from '../runner/api-tool-loop';
 import { buildControlPlaneToolDefs } from './control-plane';
-import { runTurn, RunnerError, type TurnRequest, type TurnResult } from '../runner/runner';
+import {
+  lowerPermission,
+  runTurn,
+  RunnerError,
+  type TurnRequest,
+  type TurnResult,
+} from '../runner/runner';
 import { buildIssueRunPrompt, buildReviewRunPrompt } from '../runner/turn-context';
 import type { CliRuntime } from '../agents/runtime-detect';
 import { config } from '../../config';
@@ -96,6 +102,11 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
   const controlPlane = mcpCapable
     ? { url: config.mcpUrl(), token: issueRunToken(run.id) }
     : undefined;
+  // The agent level is a ceiling: review turns are always forced to read-only.
+  const permission =
+    run.trigger === 'review'
+      ? lowerPermission(agent.permissionLevel, 'read_only')
+      : agent.permissionLevel;
   const result = await dispatchAgentTurn(
     agent,
     {
@@ -107,6 +118,7 @@ export async function executeIssueTurn(run: Run, agent: Agent, issue: Issue): Pr
       credentials: credentials ?? undefined,
       sessionRef: null,
       timeoutMs: ISSUE_RUN_TIMEOUT_MS,
+      permission,
       mcp: controlPlane,
       extraEnv: controlPlane
         ? { SWARMDEV_MCP_URL: controlPlane.url, SWARMDEV_RUN_TOKEN: controlPlane.token }

@@ -1,5 +1,7 @@
 /** Wire contract between the SwarmDev server and machine daemons. */
 
+import type { TurnPermission } from './runner-core';
+
 export const MACHINE_RUNTIMES = [
   'claude-code',
   'codex',
@@ -31,6 +33,8 @@ export interface MachineTurnStart {
   credentials?: { apiKey?: string; baseUrl?: string | null };
   /** Machine-level env vars injected into the runtime process (proxy, tokens). */
   env?: Record<string, string>;
+  /** Resolved turn permission; absent keeps the runtime's legacy posture. */
+  permission?: TurnPermission;
 }
 
 export interface MachineTurnFailure {

@@ -21,6 +21,7 @@ type Executor = (req: TurnRequest) => Promise<TurnResult>;
 const quick: Executor = async () => ({ text: 'stub output', durationMs: 5 });
 let executorImpl: Executor = quick;
 let lastPrompt = '';
+let lastPermission: TurnRequest['permission'];
 const pendingReleases: Array<() => void> = [];
 
 /** Parks the first REVIEW run (identified by its prompt) until release. */
@@ -46,6 +47,7 @@ beforeAll(async () => {
   await pool.query('TRUNCATE TABLE users CASCADE');
   setIssueTurnExecutorForTests((req) => {
     lastPrompt = req.prompt;
+    lastPermission = req.permission;
     return executorImpl(req);
   });
 
@@ -148,6 +150,8 @@ describe('reviewer routing', () => {
     expect(runs[0]!.status).toBe('succeeded');
     expect(lastPrompt).toContain(REVIEWER_MARK);
     expect(lastPrompt).toContain('do NOT modify any files');
+    // Review turns are forced below the agent's own permission ceiling.
+    expect(lastPermission).toBe('read_only');
   });
 
   it('skips the reviewer wake when reviewer and assignee are the same agent', async () => {

@@ -68,6 +68,7 @@ export async function startTurn(
       sessionRef: payload.sessionRef,
       timeoutMs: payload.timeoutMs,
       extraEnv: payload.env,
+      permission: payload.permission,
       signal: controller.signal,
       onChunk: (text) =>
         send({ type: 'machine.turn.delta', payload: { turnId: payload.turnId, text } }),

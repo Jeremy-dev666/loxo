@@ -34,6 +34,7 @@ export async function dispatchAgentTurn(
       credentials: request.credentials
         ? { apiKey: request.credentials.apiKey, baseUrl: request.credentials.baseUrl }
         : undefined,
+      permission: request.permission,
     },
     { signal: request.signal, onChunk: request.onChunk }
   );

@@ -143,6 +143,7 @@ async function runAgentNode(request: AgentNodeRequest): Promise<AgentNodeResult>
       sessionRef: null,
       timeoutMs: request.timeoutSec * 1000,
       signal: request.signal,
+      permission: agent.permissionLevel,
     },
     turnExecutor
   );

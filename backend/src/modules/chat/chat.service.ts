@@ -166,6 +166,7 @@ export async function runChatTurn(
             sessionRef: resumable ? conversation.runnerSessionRef : null,
             signal: controller.signal,
             onChunk: events.onChunk,
+            permission: agent.permissionLevel,
           },
           turnExecutor
         );
