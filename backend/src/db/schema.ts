@@ -975,6 +975,8 @@ export type ExecutionWorkspace = typeof executionWorkspaces.$inferSelect;
 export interface ChangeSummary {
   files: { path: string; status: string; additions: number; deletions: number }[];
   untracked: string[];
+  /** File lists capped at the summary limit; snapshot totals still reflect the full change set. */
+  truncated?: boolean;
 }
 
 /**

@@ -9,7 +9,7 @@ import { toHostPath } from './host-path';
  *     marketplace/agents/<listingId>/versions/<version>/source
  *     users/<userId>/
  *       agents/<agentId>/{workspace,baseline,snapshots,state}
- *       projects/<projectId>/workspace
+ *       projects/<projectId>/{workspace,worktrees/<issueId>}
  *       teams/<teamId>/runs/<runId>/{workspace,artifacts,logs}
  *     runtime/workshop/<userId>/<agentId>/{workspace,state}
  *
@@ -32,6 +32,7 @@ export interface StorageLayout {
   userRoot: (userId: string) => string;
   agentPaths: (userId: string, agentId: string) => AgentPaths;
   projectWorkspace: (userId: string, projectId: string) => string;
+  projectWorktreesRoot: (userId: string, projectId: string) => string;
   teamDir: (userId: string, teamId: string) => string;
   teamRunDirs: (
     userId: string,
@@ -69,6 +70,9 @@ export function createStorageLayout(rootInput: string): StorageLayout {
     },
     projectWorkspace: (userId, projectId) =>
       ensured(path.join(root, 'users', userId, 'projects', projectId, 'workspace')),
+    // Managed issue worktrees live beside the workspace, never inside the repository.
+    projectWorktreesRoot: (userId, projectId) =>
+      ensured(path.join(root, 'users', userId, 'projects', projectId, 'worktrees')),
     teamDir: (userId, teamId) => ensured(path.join(root, 'users', userId, 'teams', teamId)),
     teamRunDirs: (userId, teamId, runId) => {
       const runRoot = path.join(root, 'users', userId, 'teams', teamId, 'runs', runId);
