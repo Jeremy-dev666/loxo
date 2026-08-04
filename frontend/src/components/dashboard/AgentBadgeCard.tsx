@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { AgentSprite } from '@/components/agent/AgentSprite';
-import type { Agent } from '@/lib/agents';
+import { PixelPortrait } from '@/components/agent/PixelPortrait';
+import { avatarUrl, type Agent } from '@/lib/agents';
 
 const RUNTIME_ROLES: Record<string, string> = {
   claude: 'Claude CLI Agent',
@@ -50,7 +50,16 @@ export function AgentBadgeCard({ agent }: { agent: Agent }) {
           />
         </div>
         <div className="flex h-28 items-center justify-center py-2 grayscale contrast-125">
-          <AgentSprite agent={agent} size="lg" />
+          {avatarUrl(agent) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl(agent)!}
+              alt={agent.name}
+              className="h-24 w-24 border border-pixel-line object-cover pixelated"
+            />
+          ) : (
+            <PixelPortrait seed={agent.id} className="h-24 w-24 text-pixel-black" />
+          )}
         </div>
         <p className="text-[15px] font-semibold leading-snug text-[#111]">{roleFor(agent)}</p>
         <p className="mt-1 line-clamp-2 min-h-[2.4em] text-[13px] leading-snug text-[#6B6B6B]">
