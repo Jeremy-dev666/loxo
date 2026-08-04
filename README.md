@@ -1,6 +1,6 @@
-# SwarmDev
+# Loxo
 
-**An operations platform for AI employee teams.** Run a roster of persistent AI agents the way you'd run a real team: set goals, assign issues, watch execution live, review the work, and let every cycle make the next one better — with a human holding final authority at every step.
+**An operations platform for AI employee teams** — the loxodrome for your AI crew: a constant bearing through the chaos of multi-agent work. Run a roster of persistent AI agents the way you'd run a real team: set goals, assign issues, watch execution live, review the work, and let every cycle make the next one better — with a human holding final authority at every step.
 
 ```
 Goal ──> Issue ──> Assign (wake) ──> Run ──> Review ──> Distill ──> better next Run
@@ -8,9 +8,11 @@ Goal ──> Issue ──> Assign (wake) ──> Run ──> Review ──> Dist
                         └───────── rejection re-wakes ─────┘
 ```
 
-SwarmDev is not another agent runtime. Runtimes do the work; SwarmDev keeps continuous, multi-agent work **from spiraling out of control** — every task has an owner, an audit trail, a review gate, and a cost line.
+Loxo is not another agent runtime. Runtimes do the work; Loxo keeps continuous, multi-agent work **from spiraling out of control** — every task has an owner, an audit trail, a review gate, and a cost line.
 
 *TypeScript end to end · Express + Postgres backend · Next.js 14 frontend · 480 tests, all green.*
+
+![Dashboard — the live operations view: on-duty agent roster, run ledger, spend, and a needs-attention triage panel](docs/screenshots/dashboard.png)
 
 ---
 
@@ -73,6 +75,8 @@ A lightweight **machine daemon** pairs a user's own computer to the platform ove
 | **Projects & goals** | Projects group issues, workspaces, and automations; a hierarchical goal tree gives issues a "why" axis independent of the "where" axis. |
 | **Marketplace** | Publish and adopt packaged agents, API-agent presets, and team templates. Publishing sanitizes workspaces — sensitive paths omitted, secrets (API keys, private keys, JWTs) redacted — and the same secret scan runs client-side before upload so credentials never leave the browser unnoticed. |
 | **Slack** | Route Slack messages to agents and teams: HMAC signature verification with constant-time comparison, a five-minute replay window, and event-id deduplication. |
+
+![Issue receipt — every issue renders as a thermal-printer work order; the rubber stamp is the status control](docs/screenshots/issue-receipt.png)
 
 ---
 
