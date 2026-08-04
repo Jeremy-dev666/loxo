@@ -1,170 +1,199 @@
 # Loxo
 
-**An operations platform for AI employee teams** — the loxodrome for your AI crew: a constant bearing through the chaos of multi-agent work. Run a roster of persistent AI agents the way you'd run a real team: set goals, assign issues, watch execution live, review the work, and let every cycle make the next one better — with a human holding final authority at every step.
+**A control plane for persistent AI agent teams.**
+
+Loxo coordinates continuous work across CLI coding agents and API agents: set goals, assign issues, isolate code changes, observe execution, review system-captured evidence, and keep humans in control of completion. Agent runtimes do the work; Loxo provides ownership, audit trails, review gates, and cost tracking around it.
+
+*TypeScript end to end · Express + Postgres backend · Next.js 14 frontend · 480 automated tests*
+
+![Dashboard — the live operations view: on-duty agent roster, run ledger, spend, and a needs-attention triage panel](docs/screenshots/dashboard.png)
+
+## Core loop
 
 ```
-Goal ──> Issue ──> Assign (wake) ──> Run ──> Review ──> Distill ──> better next Run
+Goal ──> Issue ──> Assign (wake) ──> Run ──> Review ──> Distill ──> better next run
                         ▲                                  │
                         └───────── rejection re-wakes ─────┘
 ```
 
-Loxo is not another agent runtime. Runtimes do the work; Loxo keeps continuous, multi-agent work **from spiraling out of control** — every task has an owner, an audit trail, a review gate, and a cost line.
+Every task has an owner, every run leaves evidence, and every completion passes through a human-controlled boundary. Rejected work returns to the assignee with feedback; an agent approval is a recommendation, not permission to ship.
 
-*TypeScript end to end · Express + Postgres backend · Next.js 14 frontend · 480 tests, all green.*
+## Why Loxo
 
-![Dashboard — the live operations view: on-duty agent roster, run ledger, spend, and a needs-attention triage panel](docs/screenshots/dashboard.png)
+### Evidence, not self-reporting
 
----
+Agent-authored summaries provide context, but the platform collects the proof.
 
-## What makes it interesting
+- **Isolated git workspaces** — each issue runs in its own git worktree and branch. After every run, including failures and cancellations, Loxo captures the diff, patch, file summary, and change fingerprint.
+- **Permission ceilings** — workspace access is enforced as read-only, edit, or full. Review turns are always read-only; tracked-file mutations become visible policy violations on the issue timeline.
+- **Snapshot-pinned approvals** — approvals bind to the exact captured change snapshot. If the workspace changes afterward, the approval becomes stale and cannot authorize a merge.
 
-### One control plane, six execution lanes
+### Concurrency enforced by the system
 
-Agents bind to any of **five CLI coding runtimes** — Claude Code, Codex, OpenCode, Hermes, OpenClaw — or run as **API agents** speaking OpenAI Chat Completions or Anthropic Messages (SSE), all behind a single turn dispatcher. Runtime detection is fingerprint-based (`.claude/` vs `.codex/` markers with confidence scoring), and per-runtime capability differences are absorbed entirely in the adapter layer.
+Agents are concurrent OS processes, so correctness cannot depend on caller discipline.
 
-The two lanes are deliberate: **CLI agents** do heavy work that changes the world (code, files, commands); **API agents** do desk work (triage, drafting, summarization) through a thin in-process tool loop. Same agent model, same governance, different execution weight.
+- **One admission surface** handles assignment, chat mention, manual wake, and review rejection. It merges duplicate triggers, claims the agent, locks the issue, or queues the request FIFO.
+- **Atomic cross-surface claims** use a conditional `UPDATE … RETURNING`, preventing chat and issue runs from executing the same agent simultaneously.
+- **Schema-backed issue locks** prevent duplicate execution of one issue across every trigger path.
 
-### Agents don't get trusted — they get audited
+### Human authority at the final boundary
 
-The platform's core stance: **agent-authored summaries are never treated as proof.** Evidence is collected by the system.
+Reviewer agents can reject work, reopen the issue, and re-wake the assignee. Their approvals only recommend completion; a human decides whether the issue closes. A three-cycle fuse stops automated rejection loops and escalates them for human review.
 
-- **Isolated git workspaces** — each issue's code work happens in its own git worktree on its own branch. After every run (success, failure, or cancellation alike) the platform captures the diff, patch file, and a change fingerprint. Evidence capture cannot be skipped, and a capture failure never masks the run result.
-- **Permission ceilings** — every agent has a workspace access tier (read-only / edit / full), enforced at run time. Review turns are always forced to read-only regardless of tier. If a read-only run still touches tracked files, git catches it and the violation is posted to the issue timeline as a visible policy breach.
-- **Snapshot-pinned approvals** — a review approval is bound to the exact captured change snapshot it looked at. If the workspace drifts afterward, the approval is stale; merges validate against the approved snapshot, so a sign-off can never ship code it didn't see.
+The learning loop follows the same rule. Retrospectives become agent-, team-, and project-scoped memos under strict context caps, but promotion into persistent agent memory requires human review.
 
-### Asymmetric review authority
+## Execution model
 
-Reviewer agents can **reject** — which reopens the issue and re-wakes the assignee with the feedback — but an **approval only recommends**: closing an issue stays a human decision. A three-cycle fuse breaks agent-to-agent rework loops: after three automated rejections the exchange halts and escalates to a human reviewer.
+### Six runtime options, two execution modes
 
-### Concurrency treated as a real distributed-systems problem
+Loxo supports five CLI coding runtimes — Claude Code, Codex, OpenCode, Hermes, and OpenClaw — plus API agents using OpenAI Chat Completions or Anthropic Messages.
 
-Agents are concurrent OS processes, so the platform handles the classic failure modes explicitly rather than by convention:
+- **CLI agents** handle code, files, and commands in isolated workspaces.
+- **API agents** handle triage, drafting, and summarization through an in-process tool loop.
 
-- **Single admission surface** — every wake trigger (issue assignment, chat mention, manual, review rejection) funnels through one entry point that merges duplicate triggers, atomically claims the agent, and locks the issue — or queues the request FIFO for later promotion.
-- **Atomic cross-surface claims** — chat turns and issue runs share one agent claim via a conditional `UPDATE … RETURNING`, so an agent never executes two turns at once across surfaces. Chat busy? The run queues. Run busy? Chat reports it. Turn ends? The next queued run is promoted.
-- **Per-issue execution locks live in the schema**, not in application convention — the same issue can never run twice concurrently.
+Both modes use the same agent model, governance rules, run ledger, and review flow. Runtime detection uses local markers and confidence scoring, while adapter boundaries absorb capability differences.
 
-### An MCP control plane with self-expiring credentials
+### MCP control plane
 
-Woken agents call back into the platform through a six-tool **MCP server** (`get_issue`, `comment_on_issue`, `update_issue_status`, `submit_review`, `ask_blocker`, `submit_result`). Each run is issued a **stateless HMAC-signed run token**: nothing is stored, nothing needs revoking — the token is valid exactly as long as the run is alive, collapsing credential revocation into a state lookup. Prompt injection with output parsing exists only as a fallback for runtimes without MCP support.
+Woken agents call back through six MCP tools: `get_issue`, `comment_on_issue`, `update_issue_status`, `submit_review`, `ask_blocker`, and `submit_result`. Every run receives a stateless HMAC-signed token whose validity is checked against active run state. Output parsing remains a fallback for runtimes without MCP support.
 
-### A learning loop with a human gate
+### Deterministic workflow automation
 
-Run retrospectives are distilled into agent-, team-, and project-scoped memos and re-injected into later prompts — under hard caps (four memos per scope, 300 characters each) to guard against context rot. Distillation is automatic; promotion into an agent's working memory is human-reviewed. Agent behavior never changes silently.
+Repeatable work compiles into a validated workflow DSL executed by a deterministic DAG engine. It supports expected-edge joins, conditional branches, skip propagation, bounded loops, and concurrency caps. Execution state is event-sourced in Postgres, allowing interrupted workflows to recover after restart.
 
-### Workflow automations, event-sourced
+Workflows can be drawn on a React Flow canvas with bidirectional DSL conversion and auto-layout, or generated from natural language with deterministic normalization, repair passes, and thirteen structural validation rules around the LLM.
 
-Repeatable work compiles into a validated workflow DSL executed by a deterministic DAG engine: expected-edge joins, conditional branches, skip propagation, bounded loops, and concurrency caps. Execution state is **event-sourced in Postgres** — interrupted executions recover on restart instead of being lost. Workflows can be drawn on a visual canvas (React Flow, bidirectional DSL ⟷ canvas conversion with auto-layout) or generated from natural language with deterministic normalize-and-repair passes and thirteen structural validation rules behind the LLM.
+### Execution on connected machines
 
-### Run anywhere, govern in one place
-
-A lightweight **machine daemon** pairs a user's own computer to the platform over a reconnecting WebSocket (pairing codes, machine tokens, allowed-workdir fencing, exponential backoff), so agents can execute on hardware you control while the control plane stays centralized.
-
----
+A lightweight daemon pairs a user's computer with Loxo over a reconnecting WebSocket. Pairing codes, hashed machine tokens, allowed-workdir fencing, and exponential backoff let agents use local runtimes and files while the control plane remains centralized.
 
 ## Feature tour
 
 | Surface | What it does |
 |---|---|
-| **Dashboard** | Live operations view: open issues, active runs, busy agents, today's spend, a needs-attention triage panel, and an activity feed. |
-| **Issue board** | Kanban with a full server-side state machine; the client mirrors legal transitions to dim invalid drop targets, and drag ordering uses fractional midpoints so a move is one `PATCH`, never a renumber. |
-| **Chat** | One thread per agent, WebSocket-backed. Any conversation topic converts to an issue in one click — the LLM drafts it, you edit, the thread keeps a linked receipt. |
-| **Agents** | Persistent employees with runtime bindings, provider credentials, skills, three-scope memory, and per-agent Slack integration. |
-| **Runs** | Every wake-up produces a run: full transcript, status, token usage, and cost — bidirectionally traceable with its issue. |
-| **Workshop** | Multi-agent discussion room with a deterministic speaker scorer (role relevance, topic match, silence decay), turn caps, and stop phrases — group deliberation without runaway API spend. Discussions deposit into a shared whiteboard that compiles into versioned workflow drafts. |
-| **Projects & goals** | Projects group issues, workspaces, and automations; a hierarchical goal tree gives issues a "why" axis independent of the "where" axis. |
-| **Marketplace** | Publish and adopt packaged agents, API-agent presets, and team templates. Publishing sanitizes workspaces — sensitive paths omitted, secrets (API keys, private keys, JWTs) redacted — and the same secret scan runs client-side before upload so credentials never leave the browser unnoticed. |
-| **Slack** | Route Slack messages to agents and teams: HMAC signature verification with constant-time comparison, a five-minute replay window, and event-id deduplication. |
+| **Dashboard** | Shows open issues, active runs, busy agents, daily spend, recent activity, and work that needs attention. |
+| **Issue board** | Enforces a server-side state machine. The client mirrors valid transitions, while fractional ordering makes a drag operation one `PATCH` instead of a full-column renumber. |
+| **Chat** | Provides one WebSocket-backed thread per agent. A conversation can become an editable LLM-drafted issue while retaining a link to its source. |
+| **Agents** | Manages persistent agents, runtime bindings, provider credentials, skills, scoped memory, permission levels, and Slack routing. |
+| **Runs** | Records every wake-up with its transcript, status, token usage, cost, issue, and captured workspace evidence. |
+| **Workshop** | Runs bounded multi-agent discussions with deterministic speaker selection, stop phrases, and a shared whiteboard that can become a versioned workflow draft. |
+| **Projects & goals** | Groups issues, repositories, workspaces, and automations while a hierarchical goal tree preserves the reason behind the work. |
+| **Marketplace** | Publishes and adopts packaged agents, API presets, and team templates after server- and client-side secret scanning and workspace sanitization. |
+| **Slack** | Routes signed Slack events to agents and teams with constant-time signature verification, replay protection, and event deduplication. |
 
 ![Issue receipt — every issue renders as a thermal-printer work order; the rubber stamp is the status control](docs/screenshots/issue-receipt.png)
-
----
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     subgraph Client
-        FE["Next.js 14 web app<br/>(React Flow canvas, Kanban, chat)"]
+        FE[Next.js 14 web app<br/>React Flow, Kanban, chat]
     end
-    subgraph Server["Backend — single port"]
-        API["Express REST API"]
-        WS["WebSocket gateway<br/>(chat, workflow events)"]
-        WAKE["Wake admission surface<br/>(claims · locks · FIFO)"]
-        ENGINE["Workflow engine<br/>(event-sourced DAG executor)"]
-        MCP["MCP control plane<br/>(6 tools · HMAC run tokens)"]
-        RUNNER["Agent runner<br/>(5 CLI runtimes + API lane)"]
+    subgraph Server[Backend REST and WebSocket on port 4000]
+        API[Express REST API]
+        WS[WebSocket gateway<br/>chat, workflow, machines]
+        WAKE[Wake admission<br/>claims, locks, FIFO]
+        ENGINE[Workflow engine<br/>event-sourced DAG executor]
+        MCP[MCP control plane<br/>6 tools and run tokens]
+        RUNNER[Agent runner<br/>5 CLI runtimes and API mode]
     end
     subgraph Data
-        PG[("Postgres 16<br/>34 tables · Drizzle ORM")]
-        FS["Workspace storage<br/>(git worktrees, manifests)"]
+        PG[(Postgres 16<br/>34 tables and Drizzle ORM)]
+        FS[Workspace storage<br/>git worktrees and manifests]
     end
-    DAEMON["Machine daemon<br/>(user hardware)"]
-    LLM["OpenAI / Anthropic APIs"]
-    SLACK["Slack"]
+    DAEMON[Machine daemon<br/>user hardware]
+    LLM[OpenAI and Anthropic APIs]
+    SLACK[Slack]
 
-    FE -->|REST + WS| API
-    FE --- WS
+    FE -->|REST| API
+    FE -->|WebSocket upgrade| WS
     API --> WAKE --> RUNNER
+    API --> ENGINE
     RUNNER --> MCP
     RUNNER -->|spawn CLI| FS
     RUNNER -->|SSE| LLM
     ENGINE --> PG
     API --> PG
-    RUNNER -.->|paired WS| DAEMON
+    RUNNER -.->|paired machine turn| DAEMON
     SLACK -->|signed webhooks| API
 ```
 
-- **Single port** serves REST and WebSocket via HTTP upgrade.
-- **Postgres 16 + Drizzle ORM** with migration history; join tables over JSON columns for relations; execution locks and review state live in the schema.
-- **Security posture:** provider API keys and IM secrets encrypted at rest with AES-256-GCM; the server refuses to start without `JWT_SECRET` (fail-closed); Slack webhook paths are derived from the master key so forged URLs die without a database lookup; path-safety checks fence all workspace file access.
-- **Monorepo:** `backend/` (Express API, ~20 domain modules), `frontend/` (Next.js App Router, 22 routes, one deliberate Zustand store), `daemon/` (headless machine agent), `packages/shared` (protocol and runner types shared by all three).
-
----
+- **One backend port** serves REST and WebSocket traffic through HTTP upgrade.
+- **Postgres 16 + Drizzle ORM** provides migration history, normalized relations, execution locks, review state, and event-sourced workflow state.
+- **Security posture:** provider keys and integration secrets use AES-256-GCM encryption at rest; startup fails without `JWT_SECRET`; webhook paths derive from the master key; path checks fence workspace access.
+- **Monorepo:** `backend/` contains about 20 domain modules, `frontend/` contains 20 App Router routes, `daemon/` hosts the machine connector, and `packages/shared/` holds shared runner and protocol types.
 
 ## Getting started
 
-Prerequisites: Node 20+, Docker.
+Prerequisites: Node.js 20+, Docker, and Git.
+
+Start Postgres from the repository root:
 
 ```bash
-# 1. Postgres (host port 5434)
 docker compose up -d
+```
 
-# 2. Backend — REST + WebSocket on :4000
+Start the backend in one terminal:
+
+```bash
 cd backend
-cp .env.example .env   # set JWT_SECRET and SECRETS_KEY (generation command inside)
+cp .env.example .env   # PowerShell: Copy-Item .env.example .env
+# Set JWT_SECRET and SECRETS_KEY; generation guidance is in the file.
 npm install
 npm run db:migrate
 npm run dev
+```
 
-# 3. Frontend — http://localhost:3000
-cd ../frontend
-cp .env.example .env
+Start the frontend in a second terminal:
+
+```bash
+cd frontend
+cp .env.example .env   # PowerShell: Copy-Item .env.example .env
 npm install
 npm run dev
 ```
 
-Optional — let agents execute on your own machine:
+Open `http://localhost:3000`, register an account, and then:
+
+1. Configure a provider or verify a local CLI runtime.
+2. Create an agent and a project.
+3. Create an issue, assign it, and inspect the resulting run and evidence.
+
+For code work, bind a Git repository to the project. To execute agents on another machine, start the optional daemon:
 
 ```bash
-cd daemon && npm install && npm run dev   # prints a pairing code
-# approve it under Settings → Machines in the web UI
+cd daemon
+npm install
+npm run dev   # prints a pairing code
 ```
+
+Approve the code under **Settings → Machines**, then bind a machine-backed agent to an allowed working directory.
 
 ## Testing
 
 ```bash
-cd backend && npm test    # 467 tests — API, engine, governance, integrations (vitest + supertest)
-cd daemon  && npm test    # 13 tests — turn relay, workdir fencing
+cd backend && npm test    # 467 tests — API, engine, governance, and integrations
+cd daemon  && npm test    # 13 tests — turn relay and workdir fencing
 ```
 
-The suite covers the wake admission surface and cross-surface claims, workspace capture and permission enforcement, review pinning, the workflow executor (including join/race regressions), Slack signature verification, and marketplace publish sanitization.
+The suite covers admission and cross-surface claims, workspace capture, permission enforcement, snapshot-bound review, workflow join and race regressions, Slack signature verification, and marketplace publish sanitization.
+
+## Status and roadmap
+
+Loxo is a working platform under active solo development. The core loop — issues, wakes, runs, reviews, workspaces, and memos — is implemented and tested end to end. Planned operational work includes:
+
+- **Observability** — structured traces and latency/error metrics, per-agent budget alerts and hard stops, and heartbeat checks for long-lived agents.
+- **Slack inbound** — direct conversion of inbound Slack messages into issues; routing to agents and teams already works.
+- **Approvals and triage** — a notification inbox, approval center, issue priorities, and sorting controls.
+- **Scale-out** — reporting lines for larger agent organizations, group messaging, and a shared document library.
+- **Distribution** — a desktop build, multi-tenant deployment, and a plugin system.
 
 ## Repository layout
 
 ```
-backend/    Express + TypeScript API, WebSocket gateway, agent runner, workflow engine
-frontend/   Next.js 14 web app (App Router, Tailwind, React Flow, Zustand)
-daemon/     Headless daemon that pairs a user machine to the platform
-packages/   Shared protocol and type definitions
+backend/          Express API, WebSocket gateway, runner, and workflow engine
+frontend/         Next.js 14 app with Tailwind, React Flow, and Zustand
+daemon/           Headless connector for execution on paired machines
+packages/shared/  Runner and machine-protocol types shared across processes
 ```
